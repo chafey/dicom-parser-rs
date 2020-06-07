@@ -1,8 +1,9 @@
-/*#[cfg(test)]
+#[cfg(test)]
 mod tests {
 
     use std::fs::File;
     use std::io::Read;
+    use dicomparser::accumulator::Accumulator;
     
     use dicomparser::parser::Parser;
 
@@ -16,10 +17,9 @@ mod tests {
 
     #[test]
     fn explicit_little_endian() {
-        //let bytes = read_file("tests/fixtures/CT1_UNC");
-
-        //let parser = Parser::new();
-        //parser.parse(&bytes);
+        let mut bytes = read_file("tests/fixtures/CT1_UNC");
+        let accumulator = Accumulator::new();
+        let mut parser = Parser::new(accumulator);
+        parser.parse(&mut bytes[132..]);
     }
 }
-*/

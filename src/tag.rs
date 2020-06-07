@@ -1,6 +1,7 @@
 use crate::byte_parser::le_u16;
+use std::fmt;
 
-#[derive(Debug,Eq)]
+#[derive(Eq)]
 pub struct Tag {
     group: u16,
     element: u16
@@ -19,6 +20,12 @@ impl Tag {
             group: le_u16(&bytes[0..=1]),
             element: le_u16(&bytes[2..=3]),
         }
+    }
+}
+
+impl fmt::Debug for Tag {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_fmt(format_args!("({:04X},{:04X})", self.group, self.element))
     }
 }
 

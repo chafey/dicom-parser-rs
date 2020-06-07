@@ -73,13 +73,13 @@ mod tests {
 
     impl Callback for TestCallback {
         fn element(&mut self, attribute: Attribute) -> Control {
-            println!("{:?}", attribute);
+            //println!("{:?}", attribute);
             self.attributes.push(attribute);
             Control::Element
         }
 
         fn data(&mut self, data: &[u8]) {
-            println!("data of len {:?}", data.len());
+            //println!("data of len {:?}", data.len());
             self.data.push(data.to_vec());
         }
     }
