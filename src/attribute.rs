@@ -10,7 +10,7 @@ fn length_is_u32(bytes: &[u8]) -> bool {
         (bytes[0] == b'U' && bytes[1] == b'N')
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Attribute {
     pub tag: Tag,
     pub vr: [u8;2],

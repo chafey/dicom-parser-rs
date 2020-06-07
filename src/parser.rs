@@ -13,7 +13,7 @@ pub trait Callback
 }
 
 pub struct Parser<T:Callback> {
-    callback: T,
+    pub callback: T,
     buffer: Vec<u8>,
     buffer_position: usize, // read position in current buffer
     data_position: usize, // position from first byte parsed

@@ -6,6 +6,7 @@ mod tests {
     use dicomparser::accumulator::Accumulator;
     
     use dicomparser::parser::Parser;
+    use dicomparser::condition;
 
     #[allow(dead_code)]
     pub fn read_file(filepath: &str) -> Vec<u8> {
@@ -18,7 +19,7 @@ mod tests {
     #[test]
     fn explicit_little_endian() {
         let mut bytes = read_file("tests/fixtures/CT1_UNC");
-        let accumulator = Accumulator::new();
+        let accumulator = Accumulator::new(condition::none, condition::none);
         let mut parser = Parser::new(accumulator);
         parser.parse(&mut bytes[132..]);
     }

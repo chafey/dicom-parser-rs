@@ -1,10 +1,10 @@
 use crate::byte_parser::le_u16;
 use std::fmt;
 
-#[derive(Eq)]
+#[derive(Eq, Clone, Copy)]
 pub struct Tag {
-    group: u16,
-    element: u16
+    pub group: u16,
+    pub element: u16
 }
 
 impl Tag {
@@ -20,6 +20,10 @@ impl Tag {
             group: le_u16(&bytes[0..=1]),
             element: le_u16(&bytes[2..=3]),
         }
+    }
+
+    pub fn is_private(&self) -> bool {
+        (self.group % 2) > 0
     }
 }
 
