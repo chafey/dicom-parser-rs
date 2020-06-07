@@ -1,5 +1,16 @@
-use crate::callback::{Callback};
 use crate::attribute::Attribute;
+
+pub enum Control {
+    Element, // skip data
+    Data, // send data
+    Stop, // stop parsing
+}
+
+pub trait Callback
+{
+    fn element(&mut self, attribute: Attribute) -> Control;
+    fn data(&mut self, data: &[u8]);
+}
 
 pub struct Parser<T:Callback> {
     callback: T,
@@ -9,10 +20,10 @@ pub struct Parser<T:Callback> {
     element_data_bytes_remaining: usize    
 }
 
-impl<T: crate::callback::Callback> Parser<T> {
+impl<T: Callback> Parser<T> {
     pub fn new(callback: T) -> Parser<T> {
         Parser {
-            callback: callback,
+            callback,
             buffer: vec![],
             buffer_position: 0,
             data_position: 0,
@@ -25,9 +36,10 @@ impl<T: crate::callback::Callback> Parser<T> {
 
         loop {
             if self.element_data_bytes_remaining > 0{
-                if (self.buffer.len() + self.buffer_position) > self.element_data_bytes_remaining {
+                if (self.buffer.len() - self.buffer_position) >= self.element_data_bytes_remaining {
                     self.callback.data(&self.buffer[self.buffer_position..self.buffer_position+self.element_data_bytes_remaining]);
                     self.buffer_position += self.element_data_bytes_remaining;
+                    self.data_position += self.element_data_bytes_remaining;
                     self.element_data_bytes_remaining = 0;
                 } else {
                     return;
@@ -35,7 +47,7 @@ impl<T: crate::callback::Callback> Parser<T> {
             }
     
             if (self.buffer.len() - self.buffer_position) >= 10 {
-                let mut attr = Attribute::ele(&self.buffer);
+                let mut attr = Attribute::ele(&self.buffer[self.buffer_position..]);
                 self.buffer_position += attr.data_position;
                 self.data_position += attr.data_position;
                 attr.data_position = self.data_position;
@@ -50,38 +62,57 @@ impl<T: crate::callback::Callback> Parser<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::callback::Callback;
     use crate::attribute::Attribute;
-    use super::Parser;
+    use crate::tag::Tag;
+    use super::{Parser, Callback, Control};
 
     struct TestCallback {
-        pub attributes: Vec<Attribute> 
+        pub attributes: Vec<Attribute>,
+        pub data: Vec<Vec<u8>>
     }
 
     impl Callback for TestCallback {
-        fn element(&mut self, attribute: Attribute) {
+        fn element(&mut self, attribute: Attribute) -> Control {
             println!("{:?}", attribute);
             self.attributes.push(attribute);
+            Control::Element
         }
 
         fn data(&mut self, data: &[u8]) {
-            println!("data of len {:?}", data.len())
+            println!("data of len {:?}", data.len());
+            self.data.push(data.to_vec());
         }
     }
 
-
     #[test]
     fn can_parse() {
-        let callback = TestCallback{attributes : vec![]};
+        let callback = TestCallback{
+            attributes : vec![],
+            data: vec![]
+        };
         let mut parser = Parser::<TestCallback>::new(callback);
-        let bytes = vec![8,0, 8,0, 0x43,0x53, 2,0, 0,0, 1, 2];
+        let bytes = vec![8,0, 8,0, 0x43,0x53, 4,0, 1,2,3,4,
+        8,0, 8,0, 0x43,0x53, 2,0, 0,0];
         parser.parse(&bytes);
-        assert_eq!(parser.callback.attributes.len(), 1);
-        assert_eq!(parser.callback.attributes[0].group, 8);
-        assert_eq!(parser.callback.attributes[0].element, 8);
+        assert_eq!(parser.callback.attributes.len(), 2);
+        assert_eq!(parser.callback.attributes[0].tag, Tag::new(8,8));
         assert_eq!(parser.callback.attributes[0].vr[0], b'C');
         assert_eq!(parser.callback.attributes[0].vr[1], b'S');
-        assert_eq!(parser.callback.attributes[0].length, 2);
+        assert_eq!(parser.callback.attributes[0].length, 4);
+        assert_eq!(parser.callback.attributes[1].tag, Tag::new(8,8));
+        assert_eq!(parser.callback.attributes[1].vr[0], b'C');
+        assert_eq!(parser.callback.attributes[1].vr[1], b'S');
+        assert_eq!(parser.callback.attributes[1].length, 2);
+        assert_eq!(parser.callback.data.len(), 2);
+        assert_eq!(parser.callback.data[0].len(), 4);
+        assert_eq!(parser.callback.data[0][0], 1);
+        assert_eq!(parser.callback.data[0][1], 2);
+        assert_eq!(parser.callback.data[0][2], 3);
+        assert_eq!(parser.callback.data[0][3], 4);
+        assert_eq!(parser.callback.data[1].len(), 2);
+        assert_eq!(parser.callback.data[1][0], 0);
+        assert_eq!(parser.callback.data[1][1], 0);
+
     }
 
 }
