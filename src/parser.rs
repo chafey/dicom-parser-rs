@@ -1,5 +1,6 @@
 use crate::attribute::Attribute;
 
+#[derive(PartialEq)]
 pub enum Control {
     Element, // skip data
     Data, // send data
@@ -17,7 +18,8 @@ pub struct Parser<T:Callback> {
     buffer: Vec<u8>,
     buffer_position: usize, // read position in current buffer
     data_position: usize, // position from first byte parsed
-    element_data_bytes_remaining: usize    
+    element_data_bytes_remaining: usize,
+    state: Control    
 }
 
 impl<T: Callback> Parser<T> {
@@ -27,17 +29,22 @@ impl<T: Callback> Parser<T> {
             buffer: vec![],
             buffer_position: 0,
             data_position: 0,
-            element_data_bytes_remaining: 0
+            element_data_bytes_remaining: 0,
+            state: Control::Element
         }
     }
 
     pub fn parse(&mut self, bytes: &[u8]) {
         self.buffer.extend_from_slice(&bytes);
 
-        loop {
+        while self.state != Control::Stop {
             if self.element_data_bytes_remaining > 0{
                 if (self.buffer.len() - self.buffer_position) >= self.element_data_bytes_remaining {
-                    self.callback.data(&self.buffer[self.buffer_position..self.buffer_position+self.element_data_bytes_remaining]);
+                    if self.state == Control::Data {
+                        self.callback.data(&self.buffer[self.buffer_position..self.buffer_position+self.element_data_bytes_remaining]);
+                        self.state = Control::Element;
+                    }
+                    
                     self.buffer_position += self.element_data_bytes_remaining;
                     self.data_position += self.element_data_bytes_remaining;
                     self.element_data_bytes_remaining = 0;
@@ -52,7 +59,7 @@ impl<T: Callback> Parser<T> {
                 self.data_position += attr.data_position;
                 attr.data_position = self.data_position;
                 self.element_data_bytes_remaining = attr.length;
-                self.callback.element(attr);
+                self.state = self.callback.element(attr);
             } else {
                 return;
             }
@@ -75,7 +82,7 @@ mod tests {
         fn element(&mut self, attribute: Attribute) -> Control {
             //println!("{:?}", attribute);
             self.attributes.push(attribute);
-            Control::Element
+            Control::Data
         }
 
         fn data(&mut self, data: &[u8]) {

@@ -24,7 +24,7 @@ impl Accumulator {
 
 impl Callback for Accumulator {
     fn element(&mut self, attribute: Attribute) -> Control {
-        println!("{:?}", attribute);
+        //println!("{:?}", attribute);
         if (self.filter)(&attribute) {
             return Control::Element;
         }
