@@ -7,7 +7,6 @@ mod tests {
 
     use dicomparser::condition;
     use dicomparser::dataset::Parser;
-    use dicomparser::meta_information;
 
     #[allow(dead_code)]
     pub fn read_file(filepath: &str) -> Vec<u8> {
@@ -24,12 +23,5 @@ mod tests {
         let mut parser = Parser::new(accumulator);
         parser.parse(&mut bytes[132..]);
         println!("Parsed {:?} attributes", parser.callback.attributes.len());
-    }
-
-    #[test]
-    fn p10_header() {
-        let bytes = read_file("tests/fixtures/CT1_UNC");
-        let attrs = meta_information::parse(&bytes).unwrap();
-        println!("Parsed {:?} attributes", attrs.len());
     }
 }

@@ -2,15 +2,6 @@ use crate::byte_parser::{le_u16, le_u32};
 use crate::tag::Tag;
 use crate::vr::VR;
 
-fn length_is_u32(bytes: &[u8]) -> bool {
-    (bytes[0] == b'O' && bytes[1] == b'B')
-        || (bytes[0] == b'O' && bytes[1] == b'W')
-        || (bytes[0] == b'S' && bytes[1] == b'Q')
-        || (bytes[0] == b'O' && bytes[1] == b'F')
-        || (bytes[0] == b'U' && bytes[1] == b'T')
-        || (bytes[0] == b'U' && bytes[1] == b'N')
-}
-
 #[derive(Debug, Clone, Copy)]
 pub struct Attribute {
     pub tag: Tag,
@@ -47,6 +38,15 @@ impl Attribute {
             data_position: 8,
         }
     }
+}
+
+fn length_is_u32(bytes: &[u8]) -> bool {
+    (bytes[0] == b'O' && bytes[1] == b'B')
+        || (bytes[0] == b'O' && bytes[1] == b'W')
+        || (bytes[0] == b'S' && bytes[1] == b'Q')
+        || (bytes[0] == b'O' && bytes[1] == b'F')
+        || (bytes[0] == b'U' && bytes[1] == b'T')
+        || (bytes[0] == b'U' && bytes[1] == b'N')
 }
 
 #[cfg(test)]
