@@ -1,5 +1,5 @@
 use crate::attribute::Attribute;
-use crate::parser::{Callback, Control};
+use crate::dataset::{Callback, Control};
 
 type ConditionFN = fn(&Attribute)->bool; 
 

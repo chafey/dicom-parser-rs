@@ -72,7 +72,8 @@ mod tests {
     use crate::attribute::Attribute;
     use crate::tag::Tag;
     use super::{Parser, Callback, Control};
-
+    use crate::vr::VR;
+    
     struct TestCallback {
         pub attributes: Vec<Attribute>,
         pub data: Vec<Vec<u8>>
@@ -103,12 +104,10 @@ mod tests {
         parser.parse(&bytes);
         assert_eq!(parser.callback.attributes.len(), 2);
         assert_eq!(parser.callback.attributes[0].tag, Tag::new(8,8));
-        assert_eq!(parser.callback.attributes[0].vr[0], b'C');
-        assert_eq!(parser.callback.attributes[0].vr[1], b'S');
+        assert_eq!(parser.callback.attributes[0].vr, Some(VR::CS));
         assert_eq!(parser.callback.attributes[0].length, 4);
         assert_eq!(parser.callback.attributes[1].tag, Tag::new(8,8));
-        assert_eq!(parser.callback.attributes[1].vr[0], b'C');
-        assert_eq!(parser.callback.attributes[1].vr[1], b'S');
+        assert_eq!(parser.callback.attributes[1].vr, Some(VR::CS));
         assert_eq!(parser.callback.attributes[1].length, 2);
         assert_eq!(parser.callback.data.len(), 2);
         assert_eq!(parser.callback.data[0].len(), 4);

@@ -1,5 +1,6 @@
 use crate::byte_parser::{le_u16, le_u32};
 use crate::tag::Tag;
+use crate::vr::VR;
 
 fn length_is_u32(bytes: &[u8]) -> bool {
     (bytes[0] == b'O' && bytes[1] == b'B') ||
@@ -13,7 +14,7 @@ fn length_is_u32(bytes: &[u8]) -> bool {
 #[derive(Debug, Clone, Copy)]
 pub struct Attribute {
     pub tag: Tag,
-    pub vr: [u8;2],
+    pub vr: Option<VR>,
     pub length: usize,
     pub data_position: usize
 }
@@ -22,7 +23,7 @@ impl Attribute {
     pub fn ele(bytes: &[u8]) -> Attribute {
         let mut attr = Attribute{
             tag: Tag::from_bytes(&bytes),
-            vr: [bytes[4], bytes[5]],
+            vr: Some(VR::from_bytes(&bytes[4..=5])),
             length: 0,
             data_position: 0
         };
@@ -41,7 +42,7 @@ impl Attribute {
     pub fn ile(bytes: &[u8]) -> Attribute {
         Attribute{
             tag: Tag::from_bytes(&bytes),
-            vr: [b'U', b'N'],
+            vr: None,
             length: le_u32(&bytes[4..]) as usize,
             data_position: 8
         }
@@ -52,14 +53,14 @@ impl Attribute {
 mod tests {
     use super::Attribute;
     use crate::tag::Tag;
+    use crate::vr::VR;
 
     #[test]
     fn ele_16_len() {
         let bytes = vec![8,0, 8,0, 0x43,0x53, 0x16, 00];
         let attr = Attribute::ele(&bytes);
         assert_eq!(attr.tag, Tag::new(8, 8));
-        assert_eq!(attr.vr[0], b'C');
-        assert_eq!(attr.vr[1], b'S');
+        assert_eq!(attr.vr, Some(VR::CS));
         assert_eq!(attr.length, 22);
     }
 
@@ -68,8 +69,7 @@ mod tests {
         let bytes = vec![2,0, 1,0, 0x4F,0x42, 0,0, 2,0,0,0];
         let attr = Attribute::ele(&bytes);
         assert_eq!(attr.tag, Tag::new(2, 1));
-        assert_eq!(attr.vr[0], b'O');
-        assert_eq!(attr.vr[1], b'B');
+        assert_eq!(attr.vr, Some(VR::OB));
         assert_eq!(attr.length, 2);
     }
 
@@ -78,6 +78,7 @@ mod tests {
         let bytes = vec![8,0, 8,0, 0x16,0,0,0];
         let attr = Attribute::ile(&bytes);
         assert_eq!(attr.tag, Tag::new(8, 8));
+        assert_eq!(attr.vr, None);
         assert_eq!(attr.length, 22);
     }
 }

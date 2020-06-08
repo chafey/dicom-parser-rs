@@ -5,7 +5,7 @@ mod tests {
     use std::io::Read;
     use dicomparser::accumulator::Accumulator;
     
-    use dicomparser::parser::Parser;
+    use dicomparser::dataset::Parser;
     use dicomparser::condition;
     use dicomparser::meta_information;
 
@@ -23,7 +23,7 @@ mod tests {
         let accumulator = Accumulator::new(condition::none, condition::none);
         let mut parser = Parser::new(accumulator);
         parser.parse(&mut bytes[132..]);
-        println!("{:?}", parser.callback.attributes);
+        println!("Parsed {:?} attributes", parser.callback.attributes.len());
 
     }
 
@@ -31,7 +31,7 @@ mod tests {
     fn p10_header() {
         let bytes = read_file("tests/fixtures/CT1_UNC");
         let attrs = meta_information::parse(&bytes).unwrap();
-        println!("{:?}", attrs);
+        println!("Parsed {:?} attributes", attrs.len());
     }
 
 }

@@ -1,5 +1,5 @@
 use crate::attribute::Attribute;
-use crate::parser::Parser;
+use crate::dataset::Parser;
 use crate::accumulator::Accumulator;
 use crate::prefix;
 use crate::condition;
@@ -55,6 +55,7 @@ mod tests {
         bytes[143] = 0;
         
         let attrs = parse(&bytes).unwrap();
-        println!("{:?}", attrs);
+        assert_eq!(attrs.len(), 1);
+        //println!("{:?}", attrs);
     }
 }
