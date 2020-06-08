@@ -1,4 +1,4 @@
-use crate::attribute::Attribute;
+use crate::attribute::{Attribute, AttributeFN};
 
 #[derive(PartialEq)]
 pub enum Control {
@@ -12,20 +12,25 @@ pub trait Callback {
     fn data(&mut self, attribute: &Attribute, data: &[u8]);
 }
 
-pub struct Parser<T: Callback> {
-    pub callback: T,
+pub struct Parser<'a, T>
+where
+    T: 'a,
+{
+    pub callback: &'a mut T,
+    attribute_fn: AttributeFN,
     buffer: Vec<u8>,
     buffer_position: usize, // read position in current buffer
     data_position: usize,   // position from first byte parsed
     element_data_bytes_remaining: usize,
     state: Control,
-    attribute: Option<Attribute>
+    attribute: Option<Attribute>,
 }
 
-impl<T: Callback> Parser<T> {
-    pub fn new(callback: T) -> Parser<T> {
+impl<'a, T: Callback> Parser<'a, T> {
+    pub fn new(callback: &'a mut T, attribute_fn: AttributeFN) -> Parser<T> {
         Parser {
             callback,
+            attribute_fn,
             buffer: vec![],
             buffer_position: 0,
             data_position: 0,
@@ -35,37 +40,49 @@ impl<T: Callback> Parser<T> {
         }
     }
 
+    fn handle_element(&mut self) {
+        let mut attribute = (self.attribute_fn)(&self.buffer[self.buffer_position..]);
+        self.buffer_position += attribute.data_position;
+        self.data_position += attribute.data_position;
+        attribute.data_position = self.data_position;
+        self.element_data_bytes_remaining = attribute.length;
+        self.state = self.callback.element(&attribute);
+        self.attribute = Some(attribute);
+    }
+
+    fn handle_data(&mut self) {
+        if self.state == Control::Data {
+            self.callback.data(
+                &self.attribute.unwrap(),
+                &self.buffer[self.buffer_position
+                    ..self.buffer_position + self.element_data_bytes_remaining],
+            );
+            self.state = Control::Element;
+        }
+
+        self.buffer_position += self.element_data_bytes_remaining;
+        self.data_position += self.element_data_bytes_remaining;
+        self.element_data_bytes_remaining = 0;
+    }
+
     pub fn parse(&mut self, bytes: &[u8]) {
+        if self.state == Control::Stop {
+            return;
+        }
+
         self.buffer.extend_from_slice(&bytes);
 
         while self.state != Control::Stop {
             if self.element_data_bytes_remaining > 0 {
                 if (self.buffer.len() - self.buffer_position) >= self.element_data_bytes_remaining {
-                    if self.state == Control::Data {
-                        self.callback.data(
-                            &self.attribute.unwrap(),
-                            &self.buffer[self.buffer_position
-                                ..self.buffer_position + self.element_data_bytes_remaining],
-                        );
-                        self.state = Control::Element;
-                    }
-
-                    self.buffer_position += self.element_data_bytes_remaining;
-                    self.data_position += self.element_data_bytes_remaining;
-                    self.element_data_bytes_remaining = 0;
+                    self.handle_data();
                 } else {
                     return;
                 }
             }
 
             if (self.buffer.len() - self.buffer_position) >= 10 {
-                let mut attribute = Attribute::ele(&self.buffer[self.buffer_position..]);
-                self.buffer_position += attribute.data_position;
-                self.data_position += attribute.data_position;
-                attribute.data_position = self.data_position;
-                self.element_data_bytes_remaining = attribute.length;
-                self.state = self.callback.element(&attribute);
-                self.attribute = Some(attribute);
+                self.handle_element();
             } else {
                 return;
             }
@@ -108,14 +125,13 @@ mod tests {
         bytes
     }
 
-
     #[test]
     fn full_parse() {
-        let callback = TestCallback {
+        let mut callback = TestCallback {
             attributes: vec![],
             data: vec![],
         };
-        let mut parser = Parser::<TestCallback>::new(callback);
+        let mut parser = Parser::<TestCallback>::new(&mut callback, Attribute::ele);
         let bytes = make_dataset();
         parser.parse(&bytes);
         assert_eq!(parser.callback.attributes.len(), 2);
@@ -138,11 +154,11 @@ mod tests {
 
     #[test]
     fn streaming_parse() {
-        let callback = TestCallback {
+        let mut callback = TestCallback {
             attributes: vec![],
             data: vec![],
         };
-        let mut parser = Parser::<TestCallback>::new(callback);
+        let mut parser = Parser::<TestCallback>::new(&mut callback, Attribute::ele);
         let bytes = make_dataset();
         parser.parse(&bytes[0..5]);
         parser.parse(&bytes[5..9]);
@@ -168,8 +184,7 @@ mod tests {
 
     struct StopCallback {
         pub element_count: usize,
-        pub data_count: usize
-
+        pub data_count: usize,
     }
 
     impl Callback for StopCallback {
@@ -183,15 +198,16 @@ mod tests {
         }
     }
 
-
     #[test]
     fn parse_stops() {
-        let callback = StopCallback {element_count: 0, data_count: 0};
-        let mut parser = Parser::<StopCallback>::new(callback);
+        let mut callback = StopCallback {
+            element_count: 0,
+            data_count: 0,
+        };
+        let mut parser = Parser::<StopCallback>::new(&mut callback, Attribute::ele);
         let bytes = make_dataset();
         parser.parse(&bytes);
         assert_eq!(parser.callback.element_count, 1);
         assert_eq!(parser.callback.data_count, 0);
     }
-
 }

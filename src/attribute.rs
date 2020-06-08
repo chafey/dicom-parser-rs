@@ -10,6 +10,8 @@ pub struct Attribute {
     pub data_position: usize,
 }
 
+pub type AttributeFN = fn(&[u8]) -> Attribute;
+
 impl Attribute {
     pub fn ele(bytes: &[u8]) -> Attribute {
         let mut attr = Attribute {

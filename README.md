@@ -17,7 +17,7 @@ dicom parser written in Rust
 * [X] DICOM P10 Meta Information
 * [X] Explicit Little Endian Transfer Syntax
 * [X] Streaming Parser
-* [ ] Implicit Little Endian Transfer Syntax
+* [X] Implicit Little Endian Transfer Syntax
 * [ ] Deflate Transfer Syntax
 * [ ] Explicit Big Endian Transfer Syntax
 * [ ] Undefined Lengths

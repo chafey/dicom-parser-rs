@@ -47,12 +47,12 @@ pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
     }
 
     let stop_if_not_group_2 = |x: &Attribute| x.tag.group != 2;
-    let accumulator = Accumulator::new(condition::none, stop_if_not_group_2);
-    let mut parser = Parser::<Accumulator>::new(accumulator);
+    let mut accumulator = Accumulator::new(condition::none, stop_if_not_group_2);
+    let mut parser = Parser::<Accumulator>::new(&mut accumulator, Attribute::ele);
     parser.parse(&bytes[132..]);
 
     let last_element = parser.callback.attributes.last().unwrap();
-    let end_position = last_element.data_position + last_element.length;
+    let end_position = last_element.data_position + last_element.length + 132;
 
     let meta = MetaInformation {
         media_storage_sop_class_uid: get_element(&parser.callback, Tag::new(0x02, 0x02))?,
@@ -60,8 +60,8 @@ pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
         transfer_syntax_uid: get_element(&parser.callback, Tag::new(0x0002, 0x0010))?,
         implementation_class_uid: get_element(&parser.callback, Tag::new(0x0002, 0x0012))?,
         end_position,
-        attributes: parser.callback.attributes,
-        data: parser.callback.data,
+        attributes: accumulator.attributes,
+        data: accumulator.data,
     };
 
     //println!("{:?}", meta);
