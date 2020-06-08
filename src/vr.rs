@@ -34,7 +34,7 @@ pub enum VR {
     US,
     UT,
     UV,
-    Unknown {bytes:[u8;2]}
+    Unknown { bytes: [u8; 2] },
 }
 
 impl VR {
@@ -75,7 +75,9 @@ impl VR {
             b"US" => VR::US,
             b"UT" => VR::UT,
             b"UV" => VR::UV,
-            _ => VR::Unknown{bytes:[bytes[0], bytes[1]]}
+            _ => VR::Unknown {
+                bytes: [bytes[0], bytes[1]],
+            },
         }
     }
 }
@@ -93,8 +95,11 @@ mod tests {
     #[test]
     fn from_bytes_returns_unknown() {
         let vr = VR::from_bytes(&vec![b'X', b'X']);
-        assert_eq!(vr, VR::Unknown{bytes:[b'X', b'X']});
+        assert_eq!(
+            vr,
+            VR::Unknown {
+                bytes: [b'X', b'X']
+            }
+        );
     }
-
-
 }

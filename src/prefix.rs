@@ -1,15 +1,11 @@
-
-pub fn detect(bytes: &[u8] ) -> bool {
+pub fn detect(bytes: &[u8]) -> bool {
     // check length
     if bytes.len() < 132 {
         return false;
     }
 
     // check for DICM
-    if  bytes[128] == 'D' as u8 && 
-        bytes[129] == 'I' as u8 &&
-        bytes[130] == 'C' as u8 && 
-        bytes[131] == 'M' as u8 {
+    if bytes[128] == b'D' && bytes[129] == b'I' && bytes[130] == b'C' && bytes[131] == b'M' {
         return true;
     }
 

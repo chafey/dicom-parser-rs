@@ -1,25 +1,22 @@
-use crate::attribute::Attribute;
-use crate::dataset::Parser;
 use crate::accumulator::Accumulator;
-use crate::prefix;
+use crate::attribute::Attribute;
 use crate::condition;
+use crate::dataset::Parser;
+use crate::prefix;
 
 pub struct MetaInformation {
     pub media_storage_sop_class_uid: String,
     pub media_storage_sop_instance_uid: String,
     pub transfer_syntax_uid: String,
-    pub implementation_class_uid: String
+    pub implementation_class_uid: String,
 }
 
 pub fn parse(bytes: &[u8]) -> Result<Vec<Attribute>, ()> {
-    
-    if prefix::detect(bytes) == false {
+    if !prefix::detect(bytes) {
         return Err(());
     }
 
-    let stop_if_not_group_2 = |x:&Attribute| {
-        x.tag.group != 2
-    };
+    let stop_if_not_group_2 = |x: &Attribute| x.tag.group != 2;
 
     let accumulator = Accumulator::new(condition::none, stop_if_not_group_2);
     let mut parser = Parser::<Accumulator>::new(accumulator);
@@ -32,7 +29,7 @@ pub fn parse(bytes: &[u8]) -> Result<Vec<Attribute>, ()> {
 #[cfg(test)]
 mod tests {
     use super::parse;
-    
+
     #[test]
     fn valid_meta_information() {
         let mut bytes = vec![];
@@ -53,7 +50,7 @@ mod tests {
         bytes[141] = 0;
         bytes[142] = 0;
         bytes[143] = 0;
-        
+
         let attrs = parse(&bytes).unwrap();
         assert_eq!(attrs.len(), 1);
         //println!("{:?}", attrs);

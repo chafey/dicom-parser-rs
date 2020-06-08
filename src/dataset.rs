@@ -3,23 +3,22 @@ use crate::attribute::Attribute;
 #[derive(PartialEq)]
 pub enum Control {
     Element, // skip data
-    Data, // send data
-    Stop, // stop parsing
+    Data,    // send data
+    Stop,    // stop parsing
 }
 
-pub trait Callback
-{
+pub trait Callback {
     fn element(&mut self, attribute: Attribute) -> Control;
     fn data(&mut self, data: &[u8]);
 }
 
-pub struct Parser<T:Callback> {
+pub struct Parser<T: Callback> {
     pub callback: T,
     buffer: Vec<u8>,
     buffer_position: usize, // read position in current buffer
-    data_position: usize, // position from first byte parsed
+    data_position: usize,   // position from first byte parsed
     element_data_bytes_remaining: usize,
-    state: Control    
+    state: Control,
 }
 
 impl<T: Callback> Parser<T> {
@@ -30,7 +29,7 @@ impl<T: Callback> Parser<T> {
             buffer_position: 0,
             data_position: 0,
             element_data_bytes_remaining: 0,
-            state: Control::Element
+            state: Control::Element,
         }
     }
 
@@ -38,13 +37,16 @@ impl<T: Callback> Parser<T> {
         self.buffer.extend_from_slice(&bytes);
 
         while self.state != Control::Stop {
-            if self.element_data_bytes_remaining > 0{
+            if self.element_data_bytes_remaining > 0 {
                 if (self.buffer.len() - self.buffer_position) >= self.element_data_bytes_remaining {
                     if self.state == Control::Data {
-                        self.callback.data(&self.buffer[self.buffer_position..self.buffer_position+self.element_data_bytes_remaining]);
+                        self.callback.data(
+                            &self.buffer[self.buffer_position
+                                ..self.buffer_position + self.element_data_bytes_remaining],
+                        );
                         self.state = Control::Element;
                     }
-                    
+
                     self.buffer_position += self.element_data_bytes_remaining;
                     self.data_position += self.element_data_bytes_remaining;
                     self.element_data_bytes_remaining = 0;
@@ -52,7 +54,7 @@ impl<T: Callback> Parser<T> {
                     return;
                 }
             }
-    
+
             if (self.buffer.len() - self.buffer_position) >= 10 {
                 let mut attr = Attribute::ele(&self.buffer[self.buffer_position..]);
                 self.buffer_position += attr.data_position;
@@ -63,20 +65,20 @@ impl<T: Callback> Parser<T> {
             } else {
                 return;
             }
-        } 
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use super::{Callback, Control, Parser};
     use crate::attribute::Attribute;
     use crate::tag::Tag;
-    use super::{Parser, Callback, Control};
     use crate::vr::VR;
-    
+
     struct TestCallback {
         pub attributes: Vec<Attribute>,
-        pub data: Vec<Vec<u8>>
+        pub data: Vec<Vec<u8>>,
     }
 
     impl Callback for TestCallback {
@@ -94,19 +96,20 @@ mod tests {
 
     #[test]
     fn can_parse() {
-        let callback = TestCallback{
-            attributes : vec![],
-            data: vec![]
+        let callback = TestCallback {
+            attributes: vec![],
+            data: vec![],
         };
         let mut parser = Parser::<TestCallback>::new(callback);
-        let bytes = vec![8,0, 8,0, 0x43,0x53, 4,0, 1,2,3,4,
-        8,0, 8,0, 0x43,0x53, 2,0, 0,0];
+        let bytes = vec![
+            8, 0, 8, 0, 0x43, 0x53, 4, 0, 1, 2, 3, 4, 8, 0, 8, 0, 0x43, 0x53, 2, 0, 0, 0,
+        ];
         parser.parse(&bytes);
         assert_eq!(parser.callback.attributes.len(), 2);
-        assert_eq!(parser.callback.attributes[0].tag, Tag::new(8,8));
+        assert_eq!(parser.callback.attributes[0].tag, Tag::new(8, 8));
         assert_eq!(parser.callback.attributes[0].vr, Some(VR::CS));
         assert_eq!(parser.callback.attributes[0].length, 4);
-        assert_eq!(parser.callback.attributes[1].tag, Tag::new(8,8));
+        assert_eq!(parser.callback.attributes[1].tag, Tag::new(8, 8));
         assert_eq!(parser.callback.attributes[1].vr, Some(VR::CS));
         assert_eq!(parser.callback.attributes[1].length, 2);
         assert_eq!(parser.callback.data.len(), 2);
@@ -118,7 +121,5 @@ mod tests {
         assert_eq!(parser.callback.data[1].len(), 2);
         assert_eq!(parser.callback.data[1][0], 0);
         assert_eq!(parser.callback.data[1][1], 0);
-
     }
-
 }

@@ -1,12 +1,12 @@
 #[cfg(test)]
 mod tests {
 
+    use dicomparser::accumulator::Accumulator;
     use std::fs::File;
     use std::io::Read;
-    use dicomparser::accumulator::Accumulator;
-    
-    use dicomparser::dataset::Parser;
+
     use dicomparser::condition;
+    use dicomparser::dataset::Parser;
     use dicomparser::meta_information;
 
     #[allow(dead_code)]
@@ -24,7 +24,6 @@ mod tests {
         let mut parser = Parser::new(accumulator);
         parser.parse(&mut bytes[132..]);
         println!("Parsed {:?} attributes", parser.callback.attributes.len());
-
     }
 
     #[test]
@@ -33,5 +32,4 @@ mod tests {
         let attrs = meta_information::parse(&bytes).unwrap();
         println!("Parsed {:?} attributes", attrs.len());
     }
-
 }

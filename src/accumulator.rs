@@ -1,23 +1,22 @@
 use crate::attribute::Attribute;
 use crate::dataset::{Callback, Control};
 
-type ConditionFN = fn(&Attribute)->bool; 
+type ConditionFN = fn(&Attribute) -> bool;
 
 pub struct Accumulator {
     pub filter: ConditionFN,
     pub stop: ConditionFN,
     pub attributes: Vec<Attribute>,
-    pub data: Vec<Vec<u8>>
+    pub data: Vec<Vec<u8>>,
 }
 
-
 impl Accumulator {
-    pub fn new(filter: ConditionFN, stop: ConditionFN,) -> Accumulator {
+    pub fn new(filter: ConditionFN, stop: ConditionFN) -> Accumulator {
         Accumulator {
             filter,
             stop,
             attributes: vec![],
-            data: vec![]
+            data: vec![],
         }
     }
 }
