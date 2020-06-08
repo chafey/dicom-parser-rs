@@ -22,7 +22,7 @@ mod tests {
         let mut accumulator = Accumulator::new(condition::none, condition::none);
         p10::parse(&mut accumulator, &mut bytes).unwrap();
         println!("Parsed {:?} attributes", accumulator.attributes.len());
-        println!("{:?}", accumulator.attributes);
+        //println!("{:?}", accumulator.attributes);
     }
 
     #[test]
@@ -31,8 +31,22 @@ mod tests {
         let mut accumulator = Accumulator::new(condition::none, condition::none);
         p10::parse(&mut accumulator, &mut bytes).unwrap();
         println!("Parsed {:?} attributes", accumulator.attributes.len());
-        println!("{:?}", accumulator.attributes);
+        //println!("{:?}", accumulator.attributes);
     }
+
+
+    #[test]
+    fn sequences() {
+        //(0008,9121) @ position 0x376 / 886
+        let mut bytes = read_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm");
+        let mut accumulator = Accumulator::new(condition::none, condition::none);
+        p10::parse(&mut accumulator, &mut bytes).unwrap();
+        println!("Parsed {:?} attributes", accumulator.attributes.len());
+        for attr in accumulator.attributes {
+            println!("{:?}", attr);
+        }
+    }
+
     /*
         #[test]
         fn explicit_big_endian() {

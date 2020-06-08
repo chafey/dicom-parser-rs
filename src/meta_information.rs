@@ -71,7 +71,7 @@ pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use super::parse;
 
     fn make_preamble_and_prefix() -> Vec<u8> {
@@ -85,7 +85,7 @@ mod tests {
         bytes
     }
 
-    fn make_p10_header() -> Vec<u8> {
+    pub fn make_p10_header() -> Vec<u8> {
         let mut bytes = make_preamble_and_prefix();
         bytes.extend_from_slice(&vec![0x02, 0x00, 0x00, 0x00, b'U', b'L', 4, 0, 0, 0, 0, 0]);
         bytes.extend_from_slice(&vec![
