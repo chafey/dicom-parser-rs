@@ -82,8 +82,5 @@ mod tests {
             Ok(_) => {}
         }
         println!("Parsed {:?} attributes", accumulator.attributes.len());
-        /*for attr in accumulator.attributes {
-            println!("{:?}", attr);
-        }*/
     }
 }

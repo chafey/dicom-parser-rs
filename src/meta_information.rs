@@ -20,8 +20,6 @@ pub struct MetaInformation {
     pub data: Vec<Vec<u8>>,
 }
 
-impl MetaInformation {}
-
 fn find_element_index(attributes: &[Attribute], tag: Tag) -> Result<usize, ()> {
     for (index, attribute) in attributes.iter().enumerate() {
         if attribute.tag == tag {
@@ -51,7 +49,6 @@ pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
 
     let stop_if_not_group_2 = |x: &Attribute| x.tag.group != 2;
     let mut accumulator = Accumulator::new(condition::none, stop_if_not_group_2);
-    //let mut parser = Parser::<Accumulator>::new(&mut accumulator, Attribute::ele);
     let parser = Box::new(ExplicitAttributeParser::<LittleEndianByteParser> {
         phantom: PhantomData,
     });
@@ -73,7 +70,6 @@ pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
 
     //println!("{:?}", meta);
 
-    //let result = parser.callback.attributes;
     Ok(meta)
 }
 
@@ -108,11 +104,6 @@ pub mod tests {
         bytes[141] = (length >> 8 & 0xff) as u8;
 
         bytes
-    }
-
-    #[test]
-    fn find_element_index_works() {
-        //find_element_index(attrs, Tag::new(0x002,0x002))
     }
 
     #[test]

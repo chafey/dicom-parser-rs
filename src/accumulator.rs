@@ -48,7 +48,7 @@ impl Callback for Accumulator {
 
     fn data(&mut self, _attribute: &Attribute, data: &[u8]) {
         if self.print {
-            //println!("{: <width$}  \\ data of len {:?}", " ", data.len(), width=(self.depth * 2));
+            println!("{: <width$}  \\ data of len {:?}", " ", data.len(), width=(self.depth * 2));
         }
         self.data.push(data.to_vec());
     }
