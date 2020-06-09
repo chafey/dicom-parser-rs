@@ -1,4 +1,3 @@
-use crate::byte_parser::le_u16;
 use std::fmt;
 
 #[derive(Eq, Clone, Copy)]
@@ -9,13 +8,6 @@ pub struct Tag {
 impl Tag {
     pub fn new(group: u16, element: u16) -> Tag {
         Tag { group, element }
-    }
-
-    pub fn from_bytes(bytes: &[u8]) -> Tag {
-        Tag {
-            group: le_u16(&bytes[0..=1]),
-            element: le_u16(&bytes[2..=3]),
-        }
     }
 
     #[allow(clippy::trivially_copy_pass_by_ref)]
@@ -43,13 +35,6 @@ mod tests {
     #[test]
     fn new() {
         let tag = Tag::new(8, 10);
-        assert_eq!(tag.group, 8);
-        assert_eq!(tag.element, 10);
-    }
-
-    #[test]
-    fn from_bytes() {
-        let tag = Tag::from_bytes(&[8, 0, 10, 0]);
         assert_eq!(tag.group, 8);
         assert_eq!(tag.element, 10);
     }

@@ -81,11 +81,11 @@ impl VR {
         }
     }
 
-    pub fn explicit_length_is_u32(&self) -> bool {
-        match self {
-            VR::OW | VR::OB |VR::SQ | VR::OF | VR::UT | VR::UN => true,
-            _ => false
-        } 
+    pub fn explicit_length_is_u32(vr: VR) -> bool {
+        match vr {
+            VR::OW | VR::OB | VR::SQ | VR::OF | VR::UT | VR::UN => true,
+            _ => false,
+        }
     }
 }
 
@@ -112,14 +112,10 @@ mod tests {
 
     #[test]
     fn explicit_length_is_u32_returns_true() {
-        let vr = VR::OW;
-        assert_eq!(true, vr.explicit_length_is_u32());
+        assert_eq!(true, VR::explicit_length_is_u32(VR::OW));
     }
     #[test]
     fn explicit_length_is_u32_returns_false() {
-        let vr = VR::CS;
-        assert_eq!(false, vr.explicit_length_is_u32());
+        assert_eq!(false, VR::explicit_length_is_u32(VR::CS));
     }
-
-
 }

@@ -1,24 +1,22 @@
-use crate::dataset::{Callback};
+use crate::byte_parser::{BigEndianByteParser, LittleEndianByteParser};
+use crate::dataset::Callback;
 use crate::meta_information;
 use crate::meta_information::MetaInformation;
-use crate::parser::parser::parse_full;
-use crate::byte_parser::{LittleEndianByteParser, BigEndianByteParser};
+use crate::parser::engine::parse_full;
 
 pub fn parse<'a, T: Callback>(
     callback: &'a mut T,
     bytes: &mut [u8],
 ) -> Result<MetaInformation, usize> {
     let meta = meta_information::parse(&bytes).unwrap();
-    let remaining_bytes = &bytes[meta.end_position..]; 
+    let remaining_bytes = &bytes[meta.end_position..];
     let result = match &meta.transfer_syntax_uid[..] {
-        "1.2.840.10008.1.2.2" => {
-            parse_full::<BigEndianByteParser>(callback, remaining_bytes)
-        },
-        _ => parse_full::<LittleEndianByteParser>(callback, remaining_bytes)
+        "1.2.840.10008.1.2.2" => parse_full::<BigEndianByteParser>(callback, remaining_bytes),
+        _ => parse_full::<LittleEndianByteParser>(callback, remaining_bytes),
     };
     match result {
         Err(bytes_remaining) => Err(bytes_remaining),
-        Ok(()) => Ok(meta)
+        Ok(()) => Ok(meta),
     }
 }
 
@@ -80,9 +78,7 @@ mod tests {
         let mut accumulator = Accumulator::new(condition::none, condition::none);
         accumulator.print = true;
         match parse(&mut accumulator, &mut bytes) {
-            Err(remaining) => {
-                println!("remaining {}", remaining)
-            },
+            Err(remaining) => println!("remaining {}", remaining),
             Ok(_) => {}
         }
         println!("Parsed {:?} attributes", accumulator.attributes.len());

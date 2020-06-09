@@ -5,7 +5,7 @@ mod tests {
     use dicomparser::accumulator::Accumulator;
     use std::fs::File;
     use std::io::Read;
-    
+
     use dicomparser::condition;
     use dicomparser::p10;
 

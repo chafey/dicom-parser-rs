@@ -1,6 +1,6 @@
 use crate::attribute::Attribute;
 use crate::dataset::{Callback, Control};
-use crate::vr::{VR};
+use crate::vr::VR;
 
 type ConditionFN = fn(&Attribute) -> bool;
 
@@ -10,7 +10,7 @@ pub struct Accumulator {
     pub attributes: Vec<Attribute>,
     pub data: Vec<Vec<u8>>,
     pub depth: usize,
-    pub print: bool
+    pub print: bool,
 }
 
 impl Accumulator {
@@ -21,7 +21,7 @@ impl Accumulator {
             attributes: vec![],
             data: vec![],
             depth: 0,
-            print: false
+            print: false,
         }
     }
 }
@@ -29,10 +29,10 @@ impl Accumulator {
 impl Callback for Accumulator {
     fn element(&mut self, attribute: &Attribute) -> Control {
         if self.print {
-            println!("{: <width$}{:?}", "", attribute, width=(self.depth * 2));
+            println!("{: <width$}{:?}", "", attribute, width = (self.depth * 2));
             if let Some(vr) = attribute.vr {
                 if vr == VR::SQ {
-                    println!("{: <width$}\\/", "", width=(self.depth * 2));
+                    println!("{: <width$}\\/", "", width = (self.depth * 2));
                 }
             }
         }
@@ -55,7 +55,7 @@ impl Callback for Accumulator {
 
     fn start_sequence_item(&mut self, _attribute: &Attribute) {
         if self.print {
-            println!("{: <width$} {{", "", width=(self.depth * 2));
+            println!("{: <width$} {{", "", width = (self.depth * 2));
         }
         self.depth += 1;
     }
@@ -63,7 +63,7 @@ impl Callback for Accumulator {
     fn end_sequence_item(&mut self, _attribute: &Attribute) {
         self.depth -= 1;
         if self.print {
-            println!("{: <width$} }}", "", width=(self.depth * 2));
+            println!("{: <width$} }}", "", width = (self.depth * 2));
         }
     }
 }
