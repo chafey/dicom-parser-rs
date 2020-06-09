@@ -1,12 +1,12 @@
-use crate::byte_parser::{
+use crate::encoding::{
     ExplicitBigEndianByteParser, ExplicitLittleEndianByteParser, ImplicitLittleEndianByteParser,
 };
-use crate::dataset::Callback;
+use crate::handler::Handler;
 use crate::meta_information;
 use crate::meta_information::MetaInformation;
-use crate::parser::engine::parse_full;
+use crate::parser::dataset::parse_full;
 
-pub fn parse<'a, T: Callback>(
+pub fn parse<'a, T: Handler>(
     callback: &'a mut T,
     bytes: &mut [u8],
 ) -> Result<MetaInformation, usize> {
@@ -107,6 +107,6 @@ mod tests {
             Err(remaining) => println!("remaining {}", remaining),
             Ok(_) => {}
         }
-        println!("Parsed {:?} attributes", accumulator.attributes.len());
+        //println!("Parsed {:?} attributes", accumulator.attributes.len());
     }
 }

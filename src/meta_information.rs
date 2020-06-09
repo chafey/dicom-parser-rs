@@ -1,9 +1,9 @@
 use crate::accumulator::Accumulator;
 use crate::attribute::Attribute;
-use crate::byte_parser::ExplicitLittleEndianByteParser;
 use crate::condition;
+use crate::encoding::ExplicitLittleEndianByteParser;
 use crate::parser::attribute::ExplicitAttributeParser;
-use crate::parser::engine;
+use crate::parser::dataset;
 use crate::prefix;
 use crate::tag::Tag;
 use std::marker::PhantomData;
@@ -52,7 +52,7 @@ pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
     let parser = Box::new(ExplicitAttributeParser::<ExplicitLittleEndianByteParser> {
         phantom: PhantomData,
     });
-    let end_position = match engine::parse::<ExplicitLittleEndianByteParser>(
+    let end_position = match dataset::parse::<ExplicitLittleEndianByteParser>(
         &mut accumulator,
         &bytes[132..],
         parser,

@@ -1,9 +1,9 @@
 use crate::attribute::Attribute;
-use crate::byte_parser::ByteParser;
-use crate::dataset::Callback;
+use crate::encoding::ByteParser;
+use crate::handler::Handler;
 use crate::parser::attribute::ExplicitAttributeParser;
-use crate::parser::engine::parse_full;
-use crate::parser::engine::Parser;
+use crate::parser::dataset::parse_full;
+use crate::parser::dataset::Parser;
 use std::marker::PhantomData;
 
 pub struct SequenceParser<T: ByteParser> {
@@ -16,7 +16,7 @@ impl<T: ByteParser> SequenceParser<T> {}
 impl<T: 'static + ByteParser> Parser<T> for SequenceParser<T> {
     fn parse(
         &mut self,
-        callback: &mut dyn Callback,
+        handler: &mut dyn Handler,
         bytes: &[u8],
     ) -> Result<(usize, Box<dyn Parser<T>>), ()> {
         // make sure we have enough bytes to parse the entire sequence
@@ -35,9 +35,9 @@ impl<T: 'static + ByteParser> Parser<T> for SequenceParser<T> {
 
             let sequence_item_bytes = &remaining_bytes[8..(8 + sequence_item_length)];
 
-            callback.start_sequence_item(&self.attribute);
+            handler.start_sequence_item(&self.attribute);
 
-            match parse_full::<T>(callback, sequence_item_bytes) {
+            match parse_full::<T>(handler, sequence_item_bytes) {
                 Ok(()) => {}
                 Err(_remaining) => {
                     // TODO: Handle this unrecoverable error more gracefully
@@ -45,7 +45,7 @@ impl<T: 'static + ByteParser> Parser<T> for SequenceParser<T> {
                 }
             }
 
-            callback.end_sequence_item(&self.attribute);
+            handler.end_sequence_item(&self.attribute);
 
             remaining_bytes = &remaining_bytes[(8 + sequence_item_length)..];
         }

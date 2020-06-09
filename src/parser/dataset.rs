@@ -1,5 +1,5 @@
-use crate::byte_parser::ByteParser;
-use crate::dataset::Callback;
+use crate::encoding::ByteParser;
+use crate::handler::Handler;
 use crate::parser::attribute::ExplicitAttributeParser;
 use std::marker::PhantomData;
 
@@ -7,20 +7,20 @@ pub trait Parser<T: ByteParser> {
     // parses bytes and returns the number consumed and the next Parser
     fn parse(
         &mut self,
-        callback: &mut dyn Callback,
+        handler: &mut dyn Handler,
         bytes: &[u8],
     ) -> Result<(usize, Box<dyn Parser<T>>), ()>;
 }
 
 pub fn parse<T: 'static + ByteParser>(
-    callback: &mut dyn Callback,
+    handler: &mut dyn Handler,
     bytes: &[u8],
     mut parser: Box<dyn Parser<T>>,
 ) -> Result<(), (usize, Box<dyn Parser<T>>)> {
     let mut remaining_bytes = bytes;
 
     while !remaining_bytes.is_empty() {
-        match parser.parse(callback, remaining_bytes) {
+        match parser.parse(handler, remaining_bytes) {
             Ok((bytes_consumed, next_parser)) => {
                 parser = next_parser;
                 remaining_bytes = &remaining_bytes[bytes_consumed..];
@@ -35,7 +35,7 @@ pub fn parse<T: 'static + ByteParser>(
 }
 
 pub fn parse_full<T: 'static + ByteParser>(
-    callback: &mut dyn Callback,
+    callback: &mut dyn Handler,
     bytes: &[u8],
 ) -> Result<(), usize> {
     let parser = Box::new(ExplicitAttributeParser::<T> {

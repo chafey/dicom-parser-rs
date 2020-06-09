@@ -1,9 +1,9 @@
 use crate::attribute::Attribute;
-use crate::byte_parser::ByteParser;
-use crate::dataset::Callback;
-use crate::dataset::Control;
+use crate::encoding::ByteParser;
+use crate::handler::Control;
+use crate::handler::Handler;
 use crate::parser::data::DataParser;
-use crate::parser::engine::Parser;
+use crate::parser::dataset::Parser;
 use crate::parser::sequence::SequenceParser;
 use crate::tag::Tag;
 use crate::vr::VR;
@@ -16,15 +16,15 @@ pub struct ExplicitAttributeParser<T: ByteParser> {
 impl<T: 'static + ByteParser> Parser<T> for ExplicitAttributeParser<T> {
     fn parse(
         &mut self,
-        callback: &mut dyn Callback,
+        handler: &mut dyn Handler,
         bytes: &[u8],
     ) -> Result<(usize, Box<dyn Parser<T>>), ()> {
-        parse(callback, bytes)
+        parse(handler, bytes)
     }
 }
 
 fn parse<T: 'static + ByteParser>(
-    callback: &mut dyn Callback,
+    handler: &mut dyn Handler,
     bytes: &[u8],
 ) -> Result<(usize, Box<dyn Parser<T>>), ()> {
     if bytes.len() < 6 {
@@ -39,7 +39,7 @@ fn parse<T: 'static + ByteParser>(
         attribute.had_unknown_length = true;
     }
 
-    match callback.element(&attribute) {
+    match handler.element(&attribute) {
         Control::Element => {}
         Control::Data => {}
         Control::Stop => {

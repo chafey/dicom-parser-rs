@@ -7,7 +7,7 @@ pub enum Control {
     Stop,    // stop parsing
 }
 
-pub trait Callback {
+pub trait Handler {
     fn element(&mut self, attribute: &Attribute) -> Control;
     fn data(&mut self, attribute: &Attribute, data: &[u8]);
     fn start_sequence_item(&mut self, attribute: &Attribute);

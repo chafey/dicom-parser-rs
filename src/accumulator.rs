@@ -1,5 +1,5 @@
 use crate::attribute::Attribute;
-use crate::dataset::{Callback, Control};
+use crate::handler::{Control, Handler};
 use crate::vr::VR;
 
 type ConditionFN = fn(&Attribute) -> bool;
@@ -26,7 +26,7 @@ impl Accumulator {
     }
 }
 
-impl Callback for Accumulator {
+impl Handler for Accumulator {
     fn element(&mut self, attribute: &Attribute) -> Control {
         if self.print {
             println!("{: <width$}{:?}", "", attribute, width = (self.depth * 2));
