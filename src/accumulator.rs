@@ -40,10 +40,10 @@ impl Callback for Accumulator {
     }
 
     fn start_sequence_item(&mut self, _attribute: &Attribute) {
-        println!("start_sequence_item");
+        println!("---->start_sequence_item");
     }
 
     fn end_sequence_item(&mut self, _attribute: &Attribute) {
-        println!("end_sequence_item");
+        println!("---->end_sequence_item");
     }
 }

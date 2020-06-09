@@ -34,7 +34,6 @@ mod tests {
         //println!("{:?}", accumulator.attributes);
     }
 
-
     #[test]
     fn sequences() {
         //(0008,9121) @ position 0x376 / 886

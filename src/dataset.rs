@@ -1,6 +1,6 @@
 use crate::attribute::{Attribute, AttributeFN};
-use crate::vr::VR;
 use crate::sequence_item;
+use crate::vr::VR;
 
 #[derive(PartialEq)]
 pub enum Control {
@@ -16,6 +16,11 @@ pub trait Callback {
     fn end_sequence_item(&mut self, attribute: &Attribute);
 }
 
+struct SequenceItem {
+    pub attribute: Attribute,
+    pub item_end_position: usize,
+}
+
 pub struct Parser<'a, T>
 where
     T: 'a,
@@ -28,7 +33,7 @@ where
     element_data_bytes_remaining: usize,
     state: Control,
     attribute: Option<Attribute>,
-    sequence_item_ends: Vec<usize>
+    sequence_items: Vec<SequenceItem>,
 }
 
 impl<'a, T: Callback> Parser<'a, T> {
@@ -42,7 +47,7 @@ impl<'a, T: Callback> Parser<'a, T> {
             attribute: None,
             element_data_bytes_remaining: 0,
             state: Control::Element,
-            sequence_item_ends: vec![]
+            sequence_items: vec![],
         }
     }
 
@@ -74,12 +79,18 @@ impl<'a, T: Callback> Parser<'a, T> {
 
     fn handle_sequence(&mut self) {
         let sequence_item = &(self.buffer[self.buffer_position..self.buffer_position + 8]);
-        //println!("sequence_item = {:02X},{:02X},{:02X},{:02X}", sequence_item[0], sequence_item[1],sequence_item[2],sequence_item[3]);
+        println!(
+            "sequence_item = {:02X},{:02X},{:02X},{:02X}",
+            sequence_item[0], sequence_item[1], sequence_item[2], sequence_item[3]
+        );
         let sequence_item_length = sequence_item::read(sequence_item).unwrap();
         self.buffer_position += 8;
         self.data_position += 8;
         self.callback.start_sequence_item(&self.attribute.unwrap());
-        self.sequence_item_ends.push(self.data_position + sequence_item_length);
+        self.sequence_items.push(SequenceItem {
+            attribute: self.attribute.unwrap(),
+            item_end_position: self.data_position + sequence_item_length,
+        });
     }
 
     pub fn parse(&mut self, bytes: &[u8]) {
@@ -103,10 +114,23 @@ impl<'a, T: Callback> Parser<'a, T> {
             }
 
             if (self.buffer.len() - self.buffer_position) >= 10 {
-                if let Some(sequence_item_end) = self.sequence_item_ends.last() {
-                    if sequence_item_end == &self.data_position {
-                        self.callback.end_sequence_item(&self.attribute.unwrap());
-                        self.sequence_item_ends.pop();
+                if let Some(sequence_item) = self.sequence_items.last() {
+                    if sequence_item.item_end_position == self.data_position {
+                        self.callback.end_sequence_item(&sequence_item.attribute);
+                        let end_sequence_data =
+                            sequence_item.attribute.data_position + sequence_item.attribute.length;
+                        if end_sequence_data == (self.data_position) {
+                            // end of sequence items
+                            //sequence_item::read_item_end(&);
+                            //self.buffer_position += 4;
+                            //self.data_position += 4;
+                            self.sequence_items.pop();
+                        } else {
+                            // another sequence item
+                            self.attribute = Some(sequence_item.attribute);
+                            self.sequence_items.pop();
+                            self.handle_sequence();
+                        }
                         self.state = Control::Data;
                         continue;
                     }
@@ -143,12 +167,9 @@ mod tests {
             self.data.push(data.to_vec());
         }
 
-        fn start_sequence_item(&mut self, _attribute: &Attribute) {
-        }
-    
-        fn end_sequence_item(&mut self, _attribute: &Attribute) {
-        }
+        fn start_sequence_item(&mut self, _attribute: &Attribute) {}
 
+        fn end_sequence_item(&mut self, _attribute: &Attribute) {}
     }
 
     fn make_dataset() -> Vec<u8> {
@@ -233,12 +254,9 @@ mod tests {
             self.data_count += 1;
         }
 
-        fn start_sequence_item(&mut self, _attribute: &Attribute) {
-        }
-    
-        fn end_sequence_item(&mut self, _attribute: &Attribute) {
-        }
+        fn start_sequence_item(&mut self, _attribute: &Attribute) {}
 
+        fn end_sequence_item(&mut self, _attribute: &Attribute) {}
     }
 
     #[test]
