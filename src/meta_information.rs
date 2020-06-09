@@ -1,10 +1,13 @@
 use crate::accumulator::Accumulator;
 use crate::attribute::Attribute;
 use crate::condition;
-use crate::dataset::Parser;
+use crate::parser::parser;
 use crate::prefix;
 use crate::tag::Tag;
 use std::str;
+use crate::byte_parser::LittleEndianByteParser;
+use crate::parser::attribute::ExplicitAttributeParser;
+use std::marker::PhantomData;
 
 #[derive(Debug)]
 pub struct MetaInformation {
@@ -48,17 +51,22 @@ pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
 
     let stop_if_not_group_2 = |x: &Attribute| x.tag.group != 2;
     let mut accumulator = Accumulator::new(condition::none, stop_if_not_group_2);
-    let mut parser = Parser::<Accumulator>::new(&mut accumulator, Attribute::ele);
-    parser.parse(&bytes[132..]);
-
-    let last_element = parser.callback.attributes.last().unwrap();
-    let end_position = last_element.data_position + last_element.length + 132;
+    //let mut parser = Parser::<Accumulator>::new(&mut accumulator, Attribute::ele);
+    let parser = Box::new(ExplicitAttributeParser::<LittleEndianByteParser>{phantom: PhantomData});
+    let end_position = match parser::parse::<LittleEndianByteParser>(&mut accumulator, &bytes[132..], parser) {
+        Err((bytes_remaining, _)) => {
+            bytes.len() - bytes_remaining
+        }
+        Ok(()) => {
+            bytes.len()
+        }
+    };
 
     let meta = MetaInformation {
-        media_storage_sop_class_uid: get_element(&parser.callback, Tag::new(0x02, 0x02))?,
-        media_storage_sop_instance_uid: get_element(&parser.callback, Tag::new(0x02, 0x03))?,
-        transfer_syntax_uid: get_element(&parser.callback, Tag::new(0x0002, 0x0010))?,
-        implementation_class_uid: get_element(&parser.callback, Tag::new(0x0002, 0x0012))?,
+        media_storage_sop_class_uid: get_element(&accumulator, Tag::new(0x02, 0x02))?,
+        media_storage_sop_instance_uid: get_element(&accumulator, Tag::new(0x02, 0x03))?,
+        transfer_syntax_uid: get_element(&accumulator, Tag::new(0x0002, 0x0010))?,
+        implementation_class_uid: get_element(&accumulator, Tag::new(0x0002, 0x0012))?,
         end_position,
         attributes: accumulator.attributes,
         data: accumulator.data,
@@ -113,6 +121,6 @@ pub mod tests {
         let bytes = make_p10_header();
         let meta = parse(&bytes).unwrap();
         assert_eq!(meta.attributes.len(), 6);
-        //println!("{:?}", meta.attributes);
+        println!("{:?}", meta.attributes);
     }
 }

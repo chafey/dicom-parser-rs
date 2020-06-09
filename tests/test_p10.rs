@@ -1,10 +1,11 @@
+/*
 #[cfg(test)]
 mod tests {
 
     use dicomparser::accumulator::Accumulator;
     use std::fs::File;
     use std::io::Read;
-
+    
     use dicomparser::condition;
     use dicomparser::p10;
 
@@ -20,33 +21,32 @@ mod tests {
     fn explicit_little_endian() {
         let mut bytes = read_file("tests/fixtures/CT1_UNC.explicit_little_endian.dcm");
         let mut accumulator = Accumulator::new(condition::none, condition::none);
+        accumulator.print = true;
         p10::parse(&mut accumulator, &mut bytes).unwrap();
         println!("Parsed {:?} attributes", accumulator.attributes.len());
         //println!("{:?}", accumulator.attributes);
     }
-
     #[test]
     fn implicit_little_endian() {
         let mut bytes = read_file("tests/fixtures/CT1_UNC.implicit_little_endian.dcm");
         let mut accumulator = Accumulator::new(condition::none, condition::none);
+        accumulator.print = true;
         p10::parse(&mut accumulator, &mut bytes).unwrap();
         println!("Parsed {:?} attributes", accumulator.attributes.len());
         //println!("{:?}", accumulator.attributes);
     }
-
     #[test]
     fn sequences() {
         //(0008,9121) @ position 0x376 / 886
         let mut bytes = read_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm");
         let mut accumulator = Accumulator::new(condition::none, condition::none);
+        accumulator.print = true;
         p10::parse(&mut accumulator, &mut bytes).unwrap();
         println!("Parsed {:?} attributes", accumulator.attributes.len());
         /*for attr in accumulator.attributes {
             println!("{:?}", attr);
         }*/
     }
-
-    /*
         #[test]
         fn explicit_big_endian() {
             let mut bytes = read_file("tests/fixtures/CT1_UNC.explicit_big_endian.dcm");
@@ -56,5 +56,5 @@ mod tests {
             parser.parse(&mut bytes[meta.end_position..]);
             println!("Parsed {:?} attributes", parser.callback.attributes.len());
         }
-    */
 }
+*/

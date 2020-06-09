@@ -30,17 +30,28 @@ pub fn none(_attribute: &Attribute) -> bool {
 mod tests {
     use super::{is_group, is_not_private};
     use crate::attribute::Attribute;
+    use crate::tag::Tag;
 
     #[test]
     fn is_group_8_8_returns_some() {
-        let attr = Attribute::ile(&vec![8, 0, 8, 0, 0, 0, 0, 0]);
+        let attr = Attribute {
+            tag: Tag{group: 8, element: 8},
+            vr: None,
+            length: 0,
+            had_unknown_length: false
+        };
         let result = is_group(8, Some(&attr));
         assert!(result.is_some());
     }
 
     #[test]
     fn is_group_8_2_returns_none() {
-        let attr = Attribute::ile(&vec![8, 0, 8, 0, 0, 0, 0, 0]);
+        let attr = Attribute {
+            tag: Tag{group: 8, element: 8},
+            vr: None,
+            length: 0,
+            had_unknown_length: false
+        };
         let result = is_group(2, Some(&attr));
         assert!(result.is_none());
     }
@@ -53,14 +64,24 @@ mod tests {
 
     #[test]
     fn is_not_private_8_returns_some() {
-        let attr = Attribute::ile(&vec![8, 0, 8, 0, 0, 0, 0, 0]);
+        let attr = Attribute {
+            tag: Tag{group: 8, element: 8},
+            vr: None,
+            length: 0,
+            had_unknown_length: false
+        };
         let result = is_not_private(Some(&attr));
         assert!(result.is_some());
     }
 
     #[test]
     fn is_not_private_9_returns_none() {
-        let attr = Attribute::ile(&vec![9, 0, 8, 0, 0, 0, 0, 0]);
+        let attr = Attribute {
+            tag: Tag{group: 9, element: 8},
+            vr: None,
+            length: 0,
+            had_unknown_length: false
+        };
         let result = is_not_private(Some(&attr));
         assert!(result.is_none());
     }

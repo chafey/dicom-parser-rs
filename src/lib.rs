@@ -11,3 +11,4 @@ pub mod prefix;
 pub mod sequence_item;
 pub mod tag;
 pub mod vr;
+pub mod parser;

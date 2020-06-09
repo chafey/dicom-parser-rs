@@ -1,25 +1,25 @@
-use crate::attribute::Attribute;
-use crate::attribute::AttributeFN;
-use crate::dataset::{Callback, Parser};
+use crate::dataset::{Callback};
 use crate::meta_information;
 use crate::meta_information::MetaInformation;
-
-fn get_attribute_fn(transfer_syntax_uid: &str) -> AttributeFN {
-    match transfer_syntax_uid {
-        "1.2.840.10008.1.2" => Attribute::ile,
-        _ => Attribute::ele,
-    }
-}
+use crate::parser::parser::parse_full;
+use crate::byte_parser::{LittleEndianByteParser, BigEndianByteParser};
 
 pub fn parse<'a, T: Callback>(
     callback: &'a mut T,
     bytes: &mut [u8],
-) -> Result<MetaInformation, ()> {
+) -> Result<MetaInformation, usize> {
     let meta = meta_information::parse(&bytes).unwrap();
-    let attribute_fn = get_attribute_fn(&meta.transfer_syntax_uid[..]);
-    let mut parser = Parser::new(callback, attribute_fn);
-    parser.parse(&bytes[meta.end_position..]);
-    Ok(meta)
+    let remaining_bytes = &bytes[meta.end_position..]; 
+    let result = match &meta.transfer_syntax_uid[..] {
+        "1.2.840.10008.1.2.2" => {
+            parse_full::<BigEndianByteParser>(callback, remaining_bytes)
+        },
+        _ => parse_full::<LittleEndianByteParser>(callback, remaining_bytes)
+    };
+    match result {
+        Err(bytes_remaining) => Err(bytes_remaining),
+        Ok(()) => Ok(meta)
+    }
 }
 
 #[cfg(test)]
@@ -29,6 +29,16 @@ mod tests {
     use crate::accumulator::Accumulator;
     use crate::condition;
     use crate::meta_information::tests::make_p10_header;
+    use std::fs::File;
+    use std::io::Read;
+
+    #[allow(dead_code)]
+    pub fn read_file(filepath: &str) -> Vec<u8> {
+        let mut file = File::open(filepath).unwrap();
+        let mut buffer = Vec::new();
+        file.read_to_end(&mut buffer).unwrap();
+        buffer
+    }
 
     fn make_p10_file() -> Vec<u8> {
         let mut bytes = make_p10_header();
@@ -43,5 +53,41 @@ mod tests {
         let mut accumulator = Accumulator::new(condition::none, condition::none);
         parse(&mut accumulator, &mut bytes).unwrap();
         assert_eq!(accumulator.attributes.len(), 1);
+    }
+
+    #[test]
+    fn explicit_little_endian() {
+        let mut bytes = read_file("tests/fixtures/CT1_UNC.explicit_little_endian.dcm");
+        let mut accumulator = Accumulator::new(condition::none, condition::none);
+        //accumulator.print = true;
+        parse(&mut accumulator, &mut bytes).unwrap();
+        println!("Parsed {:?} attributes", accumulator.attributes.len());
+        //println!("{:?}", accumulator.attributes);
+    }
+
+    #[test]
+    fn explicit_big_endian() {
+        let mut bytes = read_file("tests/fixtures/CT1_UNC.explicit_big_endian.dcm");
+        let mut accumulator = Accumulator::new(condition::none, condition::none);
+        //accumulator.print = true;
+        parse(&mut accumulator, &mut bytes).unwrap();
+        println!("Parsed {:?} attributes", accumulator.attributes.len());
+    }
+    #[test]
+    fn sequences() {
+        //(0008,9121) @ position 0x376 / 886
+        let mut bytes = read_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm");
+        let mut accumulator = Accumulator::new(condition::none, condition::none);
+        accumulator.print = true;
+        match parse(&mut accumulator, &mut bytes) {
+            Err(remaining) => {
+                println!("remaining {}", remaining)
+            },
+            Ok(_) => {}
+        }
+        println!("Parsed {:?} attributes", accumulator.attributes.len());
+        /*for attr in accumulator.attributes {
+            println!("{:?}", attr);
+        }*/
     }
 }

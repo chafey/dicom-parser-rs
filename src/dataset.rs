@@ -1,6 +1,6 @@
-use crate::attribute::{Attribute, AttributeFN};
-use crate::sequence_item;
-use crate::vr::VR;
+use crate::attribute::{Attribute};
+//use crate::sequence_item;
+//use crate::vr::VR;
 
 #[derive(PartialEq)]
 pub enum Control {
@@ -15,7 +15,7 @@ pub trait Callback {
     fn start_sequence_item(&mut self, attribute: &Attribute);
     fn end_sequence_item(&mut self, attribute: &Attribute);
 }
-
+/*
 struct SequenceItem {
     pub attribute: Attribute,
     pub item_end_position: usize,
@@ -79,10 +79,6 @@ impl<'a, T: Callback> Parser<'a, T> {
 
     fn handle_sequence(&mut self) {
         let sequence_item = &(self.buffer[self.buffer_position..self.buffer_position + 8]);
-        println!(
-            "sequence_item = {:02X},{:02X},{:02X},{:02X}",
-            sequence_item[0], sequence_item[1], sequence_item[2], sequence_item[3]
-        );
         let sequence_item_length = sequence_item::read(sequence_item).unwrap();
         self.buffer_position += 8;
         self.data_position += 8;
@@ -272,3 +268,4 @@ mod tests {
         assert_eq!(parser.callback.data_count, 0);
     }
 }
+*/
