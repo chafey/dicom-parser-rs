@@ -17,7 +17,7 @@ impl DataSetHandler {
         DataSetHandler {
             filter,
             stop,
-            dataset: DataSet::new(),
+            dataset: DataSet::default(),
             depth: 0,
             print: false,
         }

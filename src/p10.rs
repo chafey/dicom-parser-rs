@@ -3,7 +3,7 @@ use crate::encoding::ExplicitLittleEndian;
 use crate::encoding::ImplicitLittleEndian;
 use crate::meta_information;
 use crate::meta_information::MetaInformation;
-use crate::parser::dataset::parse_full;
+use crate::parser::data_set::parse_full;
 use crate::parser::handler::Handler;
 
 pub fn parse<'a, T: Handler>(

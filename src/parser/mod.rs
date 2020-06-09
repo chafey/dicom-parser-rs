@@ -1,5 +1,5 @@
 pub mod attribute;
 pub mod data;
-pub mod dataset;
+pub mod data_set;
 pub mod handler;
 pub mod sequence;

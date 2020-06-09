@@ -1,8 +1,8 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
 use crate::parser::attribute::ExplicitAttributeParser;
-use crate::parser::dataset::parse_full;
-use crate::parser::dataset::Parser;
+use crate::parser::data_set::parse_full;
+use crate::parser::data_set::Parser;
 use crate::parser::handler::Handler;
 use std::marker::PhantomData;
 

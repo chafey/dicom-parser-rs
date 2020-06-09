@@ -1,7 +1,7 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
 use crate::parser::data::DataParser;
-use crate::parser::dataset::Parser;
+use crate::parser::data_set::Parser;
 use crate::parser::handler::Control;
 use crate::parser::handler::Handler;
 use crate::parser::sequence::SequenceParser;

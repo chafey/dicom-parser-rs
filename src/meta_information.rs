@@ -4,7 +4,7 @@ use crate::attribute::Attribute;
 use crate::condition;
 use crate::encoding::ExplicitLittleEndian;
 use crate::parser::attribute::ExplicitAttributeParser;
-use crate::parser::dataset;
+use crate::parser::data_set;
 use crate::prefix;
 use crate::tag::Tag;
 use std::marker::PhantomData;
@@ -17,7 +17,7 @@ pub struct MetaInformation {
     pub transfer_syntax_uid: String,
     pub implementation_class_uid: String,
     pub end_position: usize,
-    pub dataset: DataSet
+    pub data_set: DataSet
 }
 
 fn find_element_index(attributes: &[Attribute], tag: Tag) -> Result<usize, ()> {
@@ -53,20 +53,20 @@ pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
         phantom: PhantomData,
     });
     let end_position =
-        match dataset::parse::<ExplicitLittleEndian>(&mut dataset_handler, &bytes[132..], parser) {
+        match data_set::parse::<ExplicitLittleEndian>(&mut dataset_handler, &bytes[132..], parser) {
             Err((bytes_remaining, _)) => bytes.len() - bytes_remaining,
             Ok(()) => bytes.len(),
         };
 
-    let dataset = dataset_handler.dataset;
+    let data_set = dataset_handler.dataset;
 
     let meta = MetaInformation {
-        media_storage_sop_class_uid: get_element(&dataset, Tag::new(0x02, 0x02))?,
-        media_storage_sop_instance_uid: get_element(&dataset, Tag::new(0x02, 0x03))?,
-        transfer_syntax_uid: get_element(&dataset, Tag::new(0x0002, 0x0010))?,
-        implementation_class_uid: get_element(&dataset, Tag::new(0x0002, 0x0012))?,
+        media_storage_sop_class_uid: get_element(&data_set, Tag::new(0x02, 0x02))?,
+        media_storage_sop_instance_uid: get_element(&data_set, Tag::new(0x02, 0x03))?,
+        transfer_syntax_uid: get_element(&data_set, Tag::new(0x0002, 0x0010))?,
+        implementation_class_uid: get_element(&data_set, Tag::new(0x0002, 0x0012))?,
         end_position,
-        dataset : dataset
+        data_set
     };
 
     Ok(meta)
@@ -109,6 +109,6 @@ pub mod tests {
     fn valid_meta_information() {
         let bytes = make_p10_header();
         let meta = parse(&bytes).unwrap();
-        assert_eq!(meta.dataset.attributes.len(), 6);
+        assert_eq!(meta.data_set.attributes.len(), 6);
     }
 }
