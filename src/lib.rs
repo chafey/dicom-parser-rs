@@ -10,3 +10,4 @@ pub mod p10;
 pub mod prefix;
 pub mod tag;
 pub mod vr;
+pub mod sequence_item;

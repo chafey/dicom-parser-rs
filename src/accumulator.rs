@@ -23,7 +23,7 @@ impl Accumulator {
 
 impl Callback for Accumulator {
     fn element(&mut self, attribute: &Attribute) -> Control {
-        //println!("{:?}", attribute);
+        println!("{:?}", attribute);
         if (self.filter)(&attribute) {
             return Control::Element;
         }
@@ -35,7 +35,15 @@ impl Callback for Accumulator {
     }
 
     fn data(&mut self, _attribute: &Attribute, data: &[u8]) {
-        //println!("data of len {:?}", data.len());
+        println!("data of len {:?}", data.len());
         self.data.push(data.to_vec());
+    }
+
+    fn start_sequence_item(&mut self, _attribute: &Attribute) {
+        println!("start_sequence_item");
+    }
+
+    fn end_sequence_item(&mut self, _attribute: &Attribute) {
+        println!("end_sequence_item");
     }
 }

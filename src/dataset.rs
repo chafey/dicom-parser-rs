@@ -1,15 +1,19 @@
 use crate::attribute::{Attribute, AttributeFN};
+use crate::vr::VR;
+use crate::sequence_item;
 
 #[derive(PartialEq)]
 pub enum Control {
-    Element, // skip data
-    Data,    // send data
+    Element, // skip to next element
+    Data,    // decode element data
     Stop,    // stop parsing
 }
 
 pub trait Callback {
     fn element(&mut self, attribute: &Attribute) -> Control;
     fn data(&mut self, attribute: &Attribute, data: &[u8]);
+    fn start_sequence_item(&mut self, attribute: &Attribute);
+    fn end_sequence_item(&mut self, attribute: &Attribute);
 }
 
 pub struct Parser<'a, T>
@@ -24,6 +28,7 @@ where
     element_data_bytes_remaining: usize,
     state: Control,
     attribute: Option<Attribute>,
+    sequence_item_ends: Vec<usize>
 }
 
 impl<'a, T: Callback> Parser<'a, T> {
@@ -37,11 +42,13 @@ impl<'a, T: Callback> Parser<'a, T> {
             attribute: None,
             element_data_bytes_remaining: 0,
             state: Control::Element,
+            sequence_item_ends: vec![]
         }
     }
 
     fn handle_element(&mut self) {
         let mut attribute = (self.attribute_fn)(&self.buffer[self.buffer_position..]);
+        // TODO: Handle undefined lengths (-1)
         self.buffer_position += attribute.data_position;
         self.data_position += attribute.data_position;
         attribute.data_position = self.data_position;
@@ -65,6 +72,16 @@ impl<'a, T: Callback> Parser<'a, T> {
         self.element_data_bytes_remaining = 0;
     }
 
+    fn handle_sequence(&mut self) {
+        let sequence_item = &(self.buffer[self.buffer_position..self.buffer_position + 8]);
+        //println!("sequence_item = {:02X},{:02X},{:02X},{:02X}", sequence_item[0], sequence_item[1],sequence_item[2],sequence_item[3]);
+        let sequence_item_length = sequence_item::read(sequence_item).unwrap();
+        self.buffer_position += 8;
+        self.data_position += 8;
+        self.callback.start_sequence_item(&self.attribute.unwrap());
+        self.sequence_item_ends.push(self.data_position + sequence_item_length);
+    }
+
     pub fn parse(&mut self, bytes: &[u8]) {
         if self.state == Control::Stop {
             return;
@@ -75,13 +92,25 @@ impl<'a, T: Callback> Parser<'a, T> {
         while self.state != Control::Stop {
             if self.element_data_bytes_remaining > 0 {
                 if (self.buffer.len() - self.buffer_position) >= self.element_data_bytes_remaining {
-                    self.handle_data();
+                    if self.attribute.unwrap().vr == Some(VR::SQ) {
+                        self.handle_sequence();
+                    } else {
+                        self.handle_data();
+                    }
                 } else {
                     return;
                 }
             }
 
             if (self.buffer.len() - self.buffer_position) >= 10 {
+                if let Some(sequence_item_end) = self.sequence_item_ends.last() {
+                    if sequence_item_end == &self.data_position {
+                        self.callback.end_sequence_item(&self.attribute.unwrap());
+                        self.sequence_item_ends.pop();
+                        self.state = Control::Data;
+                        continue;
+                    }
+                }
                 self.handle_element();
             } else {
                 return;
@@ -113,6 +142,13 @@ mod tests {
             //println!("data of len {:?}", data.len());
             self.data.push(data.to_vec());
         }
+
+        fn start_sequence_item(&mut self, _attribute: &Attribute) {
+        }
+    
+        fn end_sequence_item(&mut self, _attribute: &Attribute) {
+        }
+
     }
 
     fn make_dataset() -> Vec<u8> {
@@ -196,6 +232,13 @@ mod tests {
         fn data(&mut self, _attribute: &Attribute, _data: &[u8]) {
             self.data_count += 1;
         }
+
+        fn start_sequence_item(&mut self, _attribute: &Attribute) {
+        }
+    
+        fn end_sequence_item(&mut self, _attribute: &Attribute) {
+        }
+
     }
 
     #[test]

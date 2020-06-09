@@ -42,9 +42,9 @@ mod tests {
         let mut accumulator = Accumulator::new(condition::none, condition::none);
         p10::parse(&mut accumulator, &mut bytes).unwrap();
         println!("Parsed {:?} attributes", accumulator.attributes.len());
-        for attr in accumulator.attributes {
+        /*for attr in accumulator.attributes {
             println!("{:?}", attr);
-        }
+        }*/
     }
 
     /*
