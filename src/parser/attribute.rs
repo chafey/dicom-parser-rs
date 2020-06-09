@@ -1,9 +1,9 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
-use crate::parser::handler::Control;
-use crate::parser::handler::Handler;
 use crate::parser::data::DataParser;
 use crate::parser::dataset::Parser;
+use crate::parser::handler::Control;
+use crate::parser::handler::Handler;
 use crate::parser::sequence::SequenceParser;
 use crate::tag::Tag;
 use crate::vr::VR;
@@ -40,7 +40,9 @@ fn parse<T: 'static + Encoding>(
     }
 
     match handler.element(&attribute) {
-        Control::Element => {}
+        Control::Element => {
+            // TODO: Skip data
+        }
         Control::Data => {}
         Control::Stop => {
             return Err(());

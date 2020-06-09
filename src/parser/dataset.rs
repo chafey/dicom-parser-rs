@@ -1,6 +1,6 @@
 use crate::encoding::Encoding;
-use crate::parser::handler::Handler;
 use crate::parser::attribute::ExplicitAttributeParser;
+use crate::parser::handler::Handler;
 use std::marker::PhantomData;
 
 pub trait Parser<T: Encoding> {

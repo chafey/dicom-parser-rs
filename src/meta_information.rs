@@ -52,14 +52,11 @@ pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
     let parser = Box::new(ExplicitAttributeParser::<ExplicitLittleEndian> {
         phantom: PhantomData,
     });
-    let end_position = match dataset::parse::<ExplicitLittleEndian>(
-        &mut accumulator,
-        &bytes[132..],
-        parser,
-    ) {
-        Err((bytes_remaining, _)) => bytes.len() - bytes_remaining,
-        Ok(()) => bytes.len(),
-    };
+    let end_position =
+        match dataset::parse::<ExplicitLittleEndian>(&mut accumulator, &bytes[132..], parser) {
+            Err((bytes_remaining, _)) => bytes.len() - bytes_remaining,
+            Ok(()) => bytes.len(),
+        };
 
     let meta = MetaInformation {
         media_storage_sop_class_uid: get_element(&accumulator, Tag::new(0x02, 0x02))?,
@@ -114,6 +111,6 @@ pub mod tests {
         let bytes = make_p10_header();
         let meta = parse(&bytes).unwrap();
         assert_eq!(meta.attributes.len(), 6);
-        println!("{:?}", meta.attributes);
+        //println!("{:?}", meta.attributes);
     }
 }

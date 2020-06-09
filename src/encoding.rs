@@ -81,20 +81,12 @@ impl Encoding for ExplicitBigEndian {
                 return Err(());
             }
 
-            Ok((
-                Some(vr),
-                ExplicitBigEndian::u32(&bytes[8..12]) as usize,
-                12,
-            ))
+            Ok((Some(vr), ExplicitBigEndian::u32(&bytes[8..12]) as usize, 12))
         } else {
             if bytes.len() < 8 {
                 return Err(());
             }
-            Ok((
-                Some(vr),
-                ExplicitBigEndian::u16(&bytes[6..8]) as usize,
-                8,
-            ))
+            Ok((Some(vr), ExplicitBigEndian::u16(&bytes[6..8]) as usize, 8))
         }
     }
 }

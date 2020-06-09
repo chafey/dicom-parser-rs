@@ -1,8 +1,8 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
-use crate::parser::handler::Handler;
 use crate::parser::attribute::ExplicitAttributeParser;
 use crate::parser::dataset::Parser;
+use crate::parser::handler::Handler;
 use std::marker::PhantomData;
 
 pub struct DataParser<T: Encoding> {
