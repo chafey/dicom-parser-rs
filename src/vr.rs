@@ -94,13 +94,13 @@ mod tests {
 
     #[test]
     fn from_bytes_returns_cs() {
-        let vr = VR::from_bytes(&vec![b'C', b'S']);
+        let vr = VR::from_bytes(b"CS");
         assert_eq!(vr, VR::CS);
     }
 
     #[test]
     fn from_bytes_returns_unknown() {
-        let vr = VR::from_bytes(&vec![b'X', b'X']);
+        let vr = VR::from_bytes(b"XX");
         assert_eq!(
             vr,
             VR::Unknown {

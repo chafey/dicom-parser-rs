@@ -1,4 +1,5 @@
-use crate::accumulator::Accumulator;
+use crate::dataset::DataSet;
+use crate::dataset_handler::DataSetHandler;
 use crate::attribute::Attribute;
 use crate::condition;
 use crate::encoding::ExplicitLittleEndian;
@@ -16,8 +17,7 @@ pub struct MetaInformation {
     pub transfer_syntax_uid: String,
     pub implementation_class_uid: String,
     pub end_position: usize,
-    pub attributes: Vec<Attribute>,
-    pub data: Vec<Vec<u8>>,
+    pub dataset: DataSet
 }
 
 fn find_element_index(attributes: &[Attribute], tag: Tag) -> Result<usize, ()> {
@@ -29,13 +29,13 @@ fn find_element_index(attributes: &[Attribute], tag: Tag) -> Result<usize, ()> {
     Err(())
 }
 
-fn get_element(accumulator: &Accumulator, tag: Tag) -> Result<String, ()> {
-    let index = find_element_index(&accumulator.attributes, tag)?;
-    let attribute = &accumulator.attributes[index];
-    let bytes = if accumulator.data[index][attribute.length - 1] != 0 {
-        &accumulator.data[index]
+fn get_element(dataset: &DataSet, tag: Tag) -> Result<String, ()> {
+    let index = find_element_index(&dataset.attributes, tag)?;
+    let attribute = &dataset.attributes[index];
+    let bytes = if dataset.data[index][attribute.length - 1] != 0 {
+        &dataset.data[index]
     } else {
-        &accumulator.data[index][0..(attribute.length - 1)]
+        &dataset.data[index][0..(attribute.length - 1)]
     };
 
     let value = str::from_utf8(bytes).unwrap();
@@ -48,27 +48,26 @@ pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
     }
 
     let stop_if_not_group_2 = |x: &Attribute| x.tag.group != 2;
-    let mut accumulator = Accumulator::new(condition::none, stop_if_not_group_2);
+    let mut dataset_handler = DataSetHandler::new(condition::none, stop_if_not_group_2);
     let parser = Box::new(ExplicitAttributeParser::<ExplicitLittleEndian> {
         phantom: PhantomData,
     });
     let end_position =
-        match dataset::parse::<ExplicitLittleEndian>(&mut accumulator, &bytes[132..], parser) {
+        match dataset::parse::<ExplicitLittleEndian>(&mut dataset_handler, &bytes[132..], parser) {
             Err((bytes_remaining, _)) => bytes.len() - bytes_remaining,
             Ok(()) => bytes.len(),
         };
 
-    let meta = MetaInformation {
-        media_storage_sop_class_uid: get_element(&accumulator, Tag::new(0x02, 0x02))?,
-        media_storage_sop_instance_uid: get_element(&accumulator, Tag::new(0x02, 0x03))?,
-        transfer_syntax_uid: get_element(&accumulator, Tag::new(0x0002, 0x0010))?,
-        implementation_class_uid: get_element(&accumulator, Tag::new(0x0002, 0x0012))?,
-        end_position,
-        attributes: accumulator.attributes,
-        data: accumulator.data,
-    };
+    let dataset = dataset_handler.dataset;
 
-    //println!("{:?}", meta);
+    let meta = MetaInformation {
+        media_storage_sop_class_uid: get_element(&dataset, Tag::new(0x02, 0x02))?,
+        media_storage_sop_instance_uid: get_element(&dataset, Tag::new(0x02, 0x03))?,
+        transfer_syntax_uid: get_element(&dataset, Tag::new(0x0002, 0x0010))?,
+        implementation_class_uid: get_element(&dataset, Tag::new(0x0002, 0x0012))?,
+        end_position,
+        dataset : dataset
+    };
 
     Ok(meta)
 }
@@ -110,7 +109,6 @@ pub mod tests {
     fn valid_meta_information() {
         let bytes = make_p10_header();
         let meta = parse(&bytes).unwrap();
-        assert_eq!(meta.attributes.len(), 6);
-        //println!("{:?}", meta.attributes);
+        assert_eq!(meta.dataset.attributes.len(), 6);
     }
 }

@@ -5,11 +5,7 @@ pub fn detect(bytes: &[u8]) -> bool {
     }
 
     // check for DICM
-    if bytes[128] == b'D' && bytes[129] == b'I' && bytes[130] == b'C' && bytes[131] == b'M' {
-        return true;
-    }
-
-    false
+    &bytes[128..132] == b"DICM" 
 }
 
 #[cfg(test)]

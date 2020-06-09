@@ -37,7 +37,7 @@ pub fn parse<'a, T: Handler>(
 mod tests {
 
     use super::parse;
-    use crate::accumulator::Accumulator;
+    use crate::dataset_handler::DataSetHandler;
     use crate::condition;
     use crate::meta_information::tests::make_p10_header;
     use std::fs::File;
@@ -61,18 +61,18 @@ mod tests {
     #[test]
     fn explicit_little_endian_parses() {
         let mut bytes = make_p10_file();
-        let mut accumulator = Accumulator::new(condition::none, condition::none);
-        parse(&mut accumulator, &mut bytes).unwrap();
-        assert_eq!(accumulator.attributes.len(), 1);
+        let mut handler = DataSetHandler::new(condition::none, condition::none);
+        parse(&mut handler, &mut bytes).unwrap();
+        assert_eq!(handler.dataset.attributes.len(), 1);
     }
 
     #[test]
     fn explicit_little_endian() {
         let mut bytes = read_file("tests/fixtures/CT1_UNC.explicit_little_endian.dcm");
-        let mut accumulator = Accumulator::new(condition::none, condition::none);
+        let mut handler = DataSetHandler::new(condition::none, condition::none);
         //accumulator.print = true;
-        parse(&mut accumulator, &mut bytes).unwrap();
-        assert_eq!(257, accumulator.attributes.len());
+        parse(&mut handler, &mut bytes).unwrap();
+        assert_eq!(257, handler.dataset.attributes.len());
         //println!("Parsed {:?} attributes", accumulator.attributes.len());
         //println!("{:?}", accumulator.attributes);
     }
@@ -80,10 +80,10 @@ mod tests {
     #[test]
     fn implicit_little_endian() {
         let mut bytes = read_file("tests/fixtures/CT1_UNC.implicit_little_endian.dcm");
-        let mut accumulator = Accumulator::new(condition::none, condition::none);
+        let mut handler = DataSetHandler::new(condition::none, condition::none);
         //accumulator.print = true;
-        parse(&mut accumulator, &mut bytes).unwrap();
-        assert_eq!(257, accumulator.attributes.len());
+        parse(&mut handler, &mut bytes).unwrap();
+        assert_eq!(257, handler.dataset.attributes.len());
         //println!("Parsed {:?} attributes", accumulator.attributes.len());
         //println!("{:?}", accumulator.attributes);
     }
@@ -91,19 +91,19 @@ mod tests {
     #[test]
     fn explicit_big_endian() {
         let mut bytes = read_file("tests/fixtures/CT1_UNC.explicit_big_endian.dcm");
-        let mut accumulator = Accumulator::new(condition::none, condition::none);
+        let mut handler = DataSetHandler::new(condition::none, condition::none);
         //accumulator.print = true;
-        parse(&mut accumulator, &mut bytes).unwrap();
-        assert_eq!(257, accumulator.attributes.len());
+        parse(&mut handler, &mut bytes).unwrap();
+        assert_eq!(257, handler.dataset.attributes.len());
         //println!("Parsed {:?} attributes", accumulator.attributes.len());
     }
     #[test]
     fn sequences() {
         //(0008,9121) @ position 0x376 / 886
         let mut bytes = read_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm");
-        let mut accumulator = Accumulator::new(condition::none, condition::none);
+        let mut handler = DataSetHandler::new(condition::none, condition::none);
         //accumulator.print = true;
-        match parse(&mut accumulator, &mut bytes) {
+        match parse(&mut handler, &mut bytes) {
             Err(remaining) => println!("remaining {}", remaining),
             Ok(_) => {}
         }

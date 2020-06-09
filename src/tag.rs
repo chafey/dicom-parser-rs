@@ -38,4 +38,19 @@ mod tests {
         assert_eq!(tag.group, 8);
         assert_eq!(tag.element, 10);
     }
+
+    #[test]
+    fn tag_is_private_returns_false() {
+        let tag = Tag::new(8, 10);
+        assert_eq!(tag.is_private(), false);
+    }
+
+
+    #[test]
+    fn tag_is_private_returns_true() {
+        let tag = Tag::new(9, 10);
+        assert_eq!(tag.is_private(), true);
+    }
+
+
 }

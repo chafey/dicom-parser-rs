@@ -1,5 +1,7 @@
 use crate::attribute::Attribute;
 
+pub type ConditionFN = fn(&Attribute) -> bool;
+
 pub fn is_not_private(attribute: Option<&Attribute>) -> Option<&Attribute> {
     if let Some(attr) = attribute {
         if !attr.tag.is_private() {

@@ -1,32 +1,30 @@
 use crate::attribute::Attribute;
 use crate::parser::handler::{Control, Handler};
 use crate::vr::VR;
+use crate::condition::ConditionFN;
+use crate::dataset::DataSet;
 
-type ConditionFN = fn(&Attribute) -> bool;
-
-pub struct Accumulator {
+pub struct DataSetHandler {
     pub filter: ConditionFN,
     pub stop: ConditionFN,
-    pub attributes: Vec<Attribute>,
-    pub data: Vec<Vec<u8>>,
+    pub dataset: DataSet,
     pub depth: usize,
     pub print: bool,
 }
 
-impl Accumulator {
-    pub fn new(filter: ConditionFN, stop: ConditionFN) -> Accumulator {
-        Accumulator {
+impl DataSetHandler {
+    pub fn new(filter: ConditionFN, stop: ConditionFN) -> DataSetHandler {
+        DataSetHandler {
             filter,
             stop,
-            attributes: vec![],
-            data: vec![],
+            dataset: DataSet::new(),
             depth: 0,
             print: false,
         }
     }
 }
 
-impl Handler for Accumulator {
+impl Handler for DataSetHandler {
     fn element(&mut self, attribute: &Attribute) -> Control {
         if self.print {
             println!("{: <width$}{:?}", "", attribute, width = (self.depth * 2));
@@ -42,7 +40,7 @@ impl Handler for Accumulator {
         if (self.stop)(&attribute) {
             return Control::Stop;
         }
-        self.attributes.push(*attribute);
+        self.dataset.attributes.push(*attribute);
         Control::Data
     }
 
@@ -55,7 +53,7 @@ impl Handler for Accumulator {
                 width = (self.depth * 2)
             );
         }
-        self.data.push(data.to_vec());
+        self.dataset.data.push(data.to_vec());
     }
 
     fn start_sequence_item(&mut self, _attribute: &Attribute) {
