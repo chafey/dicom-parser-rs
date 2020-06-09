@@ -1,19 +1,19 @@
 use crate::attribute::Attribute;
-use crate::encoding::ByteParser;
-use crate::handler::Handler;
+use crate::encoding::Encoding;
+use crate::parser::handler::Handler;
 use crate::parser::attribute::ExplicitAttributeParser;
 use crate::parser::dataset::parse_full;
 use crate::parser::dataset::Parser;
 use std::marker::PhantomData;
 
-pub struct SequenceParser<T: ByteParser> {
+pub struct SequenceParser<T: Encoding> {
     pub attribute: Attribute,
     pub phantom: PhantomData<T>,
 }
 
-impl<T: ByteParser> SequenceParser<T> {}
+impl<T: Encoding> SequenceParser<T> {}
 
-impl<T: 'static + ByteParser> Parser<T> for SequenceParser<T> {
+impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
     fn parse(
         &mut self,
         handler: &mut dyn Handler,
@@ -58,7 +58,7 @@ impl<T: 'static + ByteParser> Parser<T> for SequenceParser<T> {
     }
 }
 
-pub fn parse_sequence_item<T: ByteParser>(bytes: &[u8]) -> Result<usize, ()> {
+pub fn parse_sequence_item<T: Encoding>(bytes: &[u8]) -> Result<usize, ()> {
     let group = T::u16(&bytes[0..2]);
     let element = T::u16(&bytes[2..4]);
     if group != 0xFFFE || element != 0xE000 {

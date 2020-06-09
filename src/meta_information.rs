@@ -1,7 +1,7 @@
 use crate::accumulator::Accumulator;
 use crate::attribute::Attribute;
 use crate::condition;
-use crate::encoding::ExplicitLittleEndianByteParser;
+use crate::encoding::ExplicitLittleEndian;
 use crate::parser::attribute::ExplicitAttributeParser;
 use crate::parser::dataset;
 use crate::prefix;
@@ -49,10 +49,10 @@ pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
 
     let stop_if_not_group_2 = |x: &Attribute| x.tag.group != 2;
     let mut accumulator = Accumulator::new(condition::none, stop_if_not_group_2);
-    let parser = Box::new(ExplicitAttributeParser::<ExplicitLittleEndianByteParser> {
+    let parser = Box::new(ExplicitAttributeParser::<ExplicitLittleEndian> {
         phantom: PhantomData,
     });
-    let end_position = match dataset::parse::<ExplicitLittleEndianByteParser>(
+    let end_position = match dataset::parse::<ExplicitLittleEndian>(
         &mut accumulator,
         &bytes[132..],
         parser,

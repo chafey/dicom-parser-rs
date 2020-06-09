@@ -1,5 +1,5 @@
 use crate::attribute::Attribute;
-use crate::handler::{Control, Handler};
+use crate::parser::handler::{Control, Handler};
 use crate::vr::VR;
 
 type ConditionFN = fn(&Attribute) -> bool;

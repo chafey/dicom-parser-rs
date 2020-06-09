@@ -1,16 +1,16 @@
 use crate::vr::VR;
 use std::convert::TryInto;
 
-pub trait ByteParser {
+pub trait Encoding {
     fn u16(bytes: &[u8]) -> u16;
     fn u32(bytes: &[u8]) -> u32;
     fn vr_and_length(bytes: &[u8]) -> Result<(Option<VR>, usize, usize), ()>;
 }
 
 #[allow(dead_code)]
-pub struct ExplicitLittleEndianByteParser {}
+pub struct ExplicitLittleEndian {}
 
-impl ByteParser for ExplicitLittleEndianByteParser {
+impl Encoding for ExplicitLittleEndian {
     fn u16(bytes: &[u8]) -> u16 {
         u16::from_le_bytes([bytes[0], bytes[1]].try_into().unwrap())
     }
@@ -28,7 +28,7 @@ impl ByteParser for ExplicitLittleEndianByteParser {
 
             Ok((
                 Some(vr),
-                ExplicitLittleEndianByteParser::u32(&bytes[8..12]) as usize,
+                ExplicitLittleEndian::u32(&bytes[8..12]) as usize,
                 12,
             ))
         } else {
@@ -37,7 +37,7 @@ impl ByteParser for ExplicitLittleEndianByteParser {
             }
             Ok((
                 Some(vr),
-                ExplicitLittleEndianByteParser::u16(&bytes[6..8]) as usize,
+                ExplicitLittleEndian::u16(&bytes[6..8]) as usize,
                 8,
             ))
         }
@@ -45,9 +45,9 @@ impl ByteParser for ExplicitLittleEndianByteParser {
 }
 
 #[allow(dead_code)]
-pub struct ImplicitLittleEndianByteParser {}
+pub struct ImplicitLittleEndian {}
 
-impl ByteParser for ImplicitLittleEndianByteParser {
+impl Encoding for ImplicitLittleEndian {
     fn u16(bytes: &[u8]) -> u16 {
         u16::from_le_bytes([bytes[0], bytes[1]].try_into().unwrap())
     }
@@ -57,15 +57,15 @@ impl ByteParser for ImplicitLittleEndianByteParser {
     }
 
     fn vr_and_length(bytes: &[u8]) -> Result<(Option<VR>, usize, usize), ()> {
-        let length = ImplicitLittleEndianByteParser::u32(&bytes[4..8]) as usize;
+        let length = ImplicitLittleEndian::u32(&bytes[4..8]) as usize;
         Ok((None, length, 8))
     }
 }
 
 #[allow(dead_code)]
-pub struct ExplicitBigEndianByteParser {}
+pub struct ExplicitBigEndian {}
 
-impl ByteParser for ExplicitBigEndianByteParser {
+impl Encoding for ExplicitBigEndian {
     fn u16(bytes: &[u8]) -> u16 {
         u16::from_be_bytes([bytes[0], bytes[1]].try_into().unwrap())
     }
@@ -83,7 +83,7 @@ impl ByteParser for ExplicitBigEndianByteParser {
 
             Ok((
                 Some(vr),
-                ExplicitBigEndianByteParser::u32(&bytes[8..12]) as usize,
+                ExplicitBigEndian::u32(&bytes[8..12]) as usize,
                 12,
             ))
         } else {
@@ -92,7 +92,7 @@ impl ByteParser for ExplicitBigEndianByteParser {
             }
             Ok((
                 Some(vr),
-                ExplicitBigEndianByteParser::u16(&bytes[6..8]) as usize,
+                ExplicitBigEndian::u16(&bytes[6..8]) as usize,
                 8,
             ))
         }

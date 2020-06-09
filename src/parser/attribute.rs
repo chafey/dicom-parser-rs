@@ -1,7 +1,7 @@
 use crate::attribute::Attribute;
-use crate::encoding::ByteParser;
-use crate::handler::Control;
-use crate::handler::Handler;
+use crate::encoding::Encoding;
+use crate::parser::handler::Control;
+use crate::parser::handler::Handler;
 use crate::parser::data::DataParser;
 use crate::parser::dataset::Parser;
 use crate::parser::sequence::SequenceParser;
@@ -9,11 +9,11 @@ use crate::tag::Tag;
 use crate::vr::VR;
 use std::marker::PhantomData;
 
-pub struct ExplicitAttributeParser<T: ByteParser> {
+pub struct ExplicitAttributeParser<T: Encoding> {
     pub phantom: PhantomData<T>,
 }
 
-impl<T: 'static + ByteParser> Parser<T> for ExplicitAttributeParser<T> {
+impl<T: 'static + Encoding> Parser<T> for ExplicitAttributeParser<T> {
     fn parse(
         &mut self,
         handler: &mut dyn Handler,
@@ -23,7 +23,7 @@ impl<T: 'static + ByteParser> Parser<T> for ExplicitAttributeParser<T> {
     }
 }
 
-fn parse<T: 'static + ByteParser>(
+fn parse<T: 'static + Encoding>(
     handler: &mut dyn Handler,
     bytes: &[u8],
 ) -> Result<(usize, Box<dyn Parser<T>>), ()> {
@@ -62,7 +62,7 @@ fn parse<T: 'static + ByteParser>(
     }
 }
 
-fn parse_attribute<T: ByteParser>(bytes: &[u8]) -> Result<(usize, Attribute), ()> {
+fn parse_attribute<T: Encoding>(bytes: &[u8]) -> Result<(usize, Attribute), ()> {
     let group = T::u16(&bytes[0..2]);
     let element = T::u16(&bytes[2..4]);
 

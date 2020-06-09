@@ -1,9 +1,9 @@
-use crate::encoding::ByteParser;
-use crate::handler::Handler;
+use crate::encoding::Encoding;
+use crate::parser::handler::Handler;
 use crate::parser::attribute::ExplicitAttributeParser;
 use std::marker::PhantomData;
 
-pub trait Parser<T: ByteParser> {
+pub trait Parser<T: Encoding> {
     // parses bytes and returns the number consumed and the next Parser
     fn parse(
         &mut self,
@@ -12,7 +12,7 @@ pub trait Parser<T: ByteParser> {
     ) -> Result<(usize, Box<dyn Parser<T>>), ()>;
 }
 
-pub fn parse<T: 'static + ByteParser>(
+pub fn parse<T: 'static + Encoding>(
     handler: &mut dyn Handler,
     bytes: &[u8],
     mut parser: Box<dyn Parser<T>>,
@@ -34,7 +34,7 @@ pub fn parse<T: 'static + ByteParser>(
     Ok(())
 }
 
-pub fn parse_full<T: 'static + ByteParser>(
+pub fn parse_full<T: 'static + Encoding>(
     callback: &mut dyn Handler,
     bytes: &[u8],
 ) -> Result<(), usize> {

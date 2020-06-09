@@ -8,5 +8,3 @@ pub struct Attribute {
     pub length: usize,
     pub had_unknown_length: bool,
 }
-
-pub type AttributeFN = fn(&[u8]) -> Attribute;

@@ -1,7 +1,7 @@
-use crate::encoding::{
-    ExplicitBigEndianByteParser, ExplicitLittleEndianByteParser, ImplicitLittleEndianByteParser,
-};
-use crate::handler::Handler;
+use crate::encoding::ImplicitLittleEndian;
+use crate::encoding::ExplicitBigEndian;
+use crate::encoding::ExplicitLittleEndian;
+use crate::parser::handler::Handler;
 use crate::meta_information;
 use crate::meta_information::MetaInformation;
 use crate::parser::dataset::parse_full;
@@ -15,16 +15,16 @@ pub fn parse<'a, T: Handler>(
     let result = match &meta.transfer_syntax_uid[..] {
         "1.2.840.10008.1.2" => {
             // implicit little endian
-            parse_full::<ImplicitLittleEndianByteParser>(callback, remaining_bytes)
+            parse_full::<ImplicitLittleEndian>(callback, remaining_bytes)
         }
         "1.2.840.10008.1.2.2" => {
             // explicit big endian
-            parse_full::<ExplicitBigEndianByteParser>(callback, remaining_bytes)
+            parse_full::<ExplicitBigEndian>(callback, remaining_bytes)
         }
         "1.2.840.10008.1.2.1.99" => panic!("deflated not suported yet"),
         _ => {
             // explicit little endian
-            parse_full::<ExplicitLittleEndianByteParser>(callback, remaining_bytes)
+            parse_full::<ExplicitLittleEndian>(callback, remaining_bytes)
         }
     };
     match result {

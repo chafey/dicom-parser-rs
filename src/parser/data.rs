@@ -1,18 +1,18 @@
 use crate::attribute::Attribute;
-use crate::encoding::ByteParser;
-use crate::handler::Handler;
+use crate::encoding::Encoding;
+use crate::parser::handler::Handler;
 use crate::parser::attribute::ExplicitAttributeParser;
 use crate::parser::dataset::Parser;
 use std::marker::PhantomData;
 
-pub struct DataParser<T: ByteParser> {
+pub struct DataParser<T: Encoding> {
     pub attribute: Attribute,
     pub phantom: PhantomData<T>,
 }
 
-impl<T: ByteParser> DataParser<T> {}
+impl<T: Encoding> DataParser<T> {}
 
-impl<T: 'static + ByteParser> Parser<T> for DataParser<T> {
+impl<T: 'static + Encoding> Parser<T> for DataParser<T> {
     fn parse(
         &mut self,
         handler: &mut dyn Handler,
