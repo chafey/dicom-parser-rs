@@ -39,7 +39,6 @@ pub enum VR {
 
 impl VR {
     pub fn from_bytes(bytes: &[u8]) -> VR {
-        //let vr = le_u16(bytes);
         match bytes {
             b"AE" => VR::AE,
             b"AS" => VR::AS,

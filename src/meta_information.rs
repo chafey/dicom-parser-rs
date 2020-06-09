@@ -1,6 +1,6 @@
 use crate::accumulator::Accumulator;
 use crate::attribute::Attribute;
-use crate::byte_parser::LittleEndianByteParser;
+use crate::byte_parser::ExplicitLittleEndianByteParser;
 use crate::condition;
 use crate::parser::attribute::ExplicitAttributeParser;
 use crate::parser::engine;
@@ -49,14 +49,17 @@ pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
 
     let stop_if_not_group_2 = |x: &Attribute| x.tag.group != 2;
     let mut accumulator = Accumulator::new(condition::none, stop_if_not_group_2);
-    let parser = Box::new(ExplicitAttributeParser::<LittleEndianByteParser> {
+    let parser = Box::new(ExplicitAttributeParser::<ExplicitLittleEndianByteParser> {
         phantom: PhantomData,
     });
-    let end_position =
-        match engine::parse::<LittleEndianByteParser>(&mut accumulator, &bytes[132..], parser) {
-            Err((bytes_remaining, _)) => bytes.len() - bytes_remaining,
-            Ok(()) => bytes.len(),
-        };
+    let end_position = match engine::parse::<ExplicitLittleEndianByteParser>(
+        &mut accumulator,
+        &bytes[132..],
+        parser,
+    ) {
+        Err((bytes_remaining, _)) => bytes.len() - bytes_remaining,
+        Ok(()) => bytes.len(),
+    };
 
     let meta = MetaInformation {
         media_storage_sop_class_uid: get_element(&accumulator, Tag::new(0x02, 0x02))?,
