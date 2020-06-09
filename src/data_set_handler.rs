@@ -2,7 +2,7 @@ use crate::attribute::Attribute;
 use crate::parser::handler::{Control, Handler};
 use crate::vr::VR;
 use crate::condition::ConditionFN;
-use crate::dataset::DataSet;
+use crate::data_set::DataSet;
 
 pub struct DataSetHandler {
     pub filter: ConditionFN,

@@ -1,7 +1,7 @@
 //#![no_std]
 
-pub mod dataset;
-pub mod dataset_handler;
+pub mod data_set;
+pub mod data_set_handler;
 pub mod attribute;
 pub mod condition;
 pub mod encoding;

@@ -1,5 +1,5 @@
-use crate::dataset::DataSet;
-use crate::dataset_handler::DataSetHandler;
+use crate::data_set::DataSet;
+use crate::data_set_handler::DataSetHandler;
 use crate::attribute::Attribute;
 use crate::condition;
 use crate::encoding::ExplicitLittleEndian;
