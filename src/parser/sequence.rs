@@ -1,6 +1,6 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
-use crate::parser::attribute::ExplicitAttributeParser;
+use crate::parser::attribute::AttributeParser;
 use crate::parser::data_set::parse_full;
 use crate::parser::data_set::Parser;
 use crate::parser::handler::Handler;
@@ -38,7 +38,7 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
             handler.start_sequence_item(&self.attribute);
 
             match parse_full::<T>(handler, sequence_item_bytes) {
-                Ok(()) => {}
+                Ok(_) => {}
                 Err(_remaining) => {
                     // TODO: Handle this unrecoverable error more gracefully
                     panic!("unexpected eof parsing sequence item");
@@ -50,7 +50,7 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
             remaining_bytes = &remaining_bytes[(8 + sequence_item_length)..];
         }
 
-        let attribute_parser = Box::new(ExplicitAttributeParser::<T> {
+        let attribute_parser = Box::new(AttributeParser::<T> {
             phantom: PhantomData,
         });
 

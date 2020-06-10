@@ -1,6 +1,6 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
-use crate::parser::attribute::ExplicitAttributeParser;
+use crate::parser::attribute::AttributeParser;
 use crate::parser::data_set::Parser;
 use crate::parser::handler::Handler;
 use std::marker::PhantomData;
@@ -18,13 +18,17 @@ impl<T: 'static + Encoding> Parser<T> for DataParser<T> {
         handler: &mut dyn Handler,
         bytes: &[u8],
     ) -> Result<(usize, Box<dyn Parser<T>>), ()> {
+        
+        // make sure we have enough bytes for this data
         if bytes.len() < self.attribute.length {
             return Err(());
         }
 
+        // notify handler of data
         handler.data(&self.attribute, &bytes[..self.attribute.length]);
 
-        let attribute_parser = Box::new(ExplicitAttributeParser::<T> {
+        // next is attribute parser
+        let attribute_parser = Box::new(AttributeParser::<T> {
             phantom: PhantomData,
         });
         Ok((self.attribute.length, attribute_parser))

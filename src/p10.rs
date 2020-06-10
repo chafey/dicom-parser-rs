@@ -29,7 +29,7 @@ pub fn parse<'a, T: Handler>(
     };
     match result {
         Err(bytes_remaining) => Err(bytes_remaining),
-        Ok(()) => Ok(meta),
+        Ok(_) => Ok(meta),
     }
 }
 
@@ -98,11 +98,24 @@ mod tests {
         //println!("Parsed {:?} attributes", accumulator.attributes.len());
     }
     #[test]
-    fn sequences() {
+    fn ele_sequences_known_lengths() {
         //(0008,9121) @ position 0x376 / 886
         let mut bytes = read_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm");
         let mut handler = DataSetHandler::new(condition::none, condition::none);
         //handler.print = true;
+        match parse(&mut handler, &mut bytes) {
+            Err(remaining) => println!("remaining {}", remaining),
+            Ok(_) => {}
+        }
+        //println!("Parsed {:?} attributes", accumulator.attributes.len());
+    }
+
+    #[test]
+    fn ile_sequences_undefined_lengths() {
+        //(0008,9121) @ position 0x376 / 886
+        let mut bytes = read_file("tests/fixtures/IM00001.implicit_little_endian.dcm");
+        let mut handler = DataSetHandler::new(condition::none, condition::none);
+        handler.print = true;
         match parse(&mut handler, &mut bytes) {
             Err(remaining) => println!("remaining {}", remaining),
             Ok(_) => {}

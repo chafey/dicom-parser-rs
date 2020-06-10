@@ -3,7 +3,7 @@ use crate::condition;
 use crate::data_set::DataSet;
 use crate::data_set_handler::DataSetHandler;
 use crate::encoding::ExplicitLittleEndian;
-use crate::parser::attribute::ExplicitAttributeParser;
+use crate::parser::attribute::AttributeParser;
 use crate::parser::data_set;
 use crate::prefix;
 use crate::tag::Tag;
@@ -49,7 +49,7 @@ pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
 
     let stop_if_not_group_2 = |x: &Attribute| x.tag.group != 2;
     let mut dataset_handler = DataSetHandler::new(condition::none, stop_if_not_group_2);
-    let parser = Box::new(ExplicitAttributeParser::<ExplicitLittleEndian> {
+    let parser = Box::new(AttributeParser::<ExplicitLittleEndian> {
         phantom: PhantomData,
     });
     let end_position = match data_set::parse::<ExplicitLittleEndian>(
@@ -58,7 +58,7 @@ pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
         parser,
     ) {
         Err((bytes_remaining, _)) => bytes.len() - bytes_remaining,
-        Ok(()) => bytes.len(),
+        Ok(_) => bytes.len(),
     };
 
     let data_set = dataset_handler.dataset;

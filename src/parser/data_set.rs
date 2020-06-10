@@ -1,5 +1,5 @@
 use crate::encoding::Encoding;
-use crate::parser::attribute::ExplicitAttributeParser;
+use crate::parser::attribute::AttributeParser;
 use crate::parser::handler::Handler;
 use std::marker::PhantomData;
 
@@ -16,7 +16,7 @@ pub fn parse<T: 'static + Encoding>(
     handler: &mut dyn Handler,
     bytes: &[u8],
     mut parser: Box<dyn Parser<T>>,
-) -> Result<(), (usize, Box<dyn Parser<T>>)> {
+) -> Result<usize, (usize, Box<dyn Parser<T>>)> {
     let mut remaining_bytes = bytes;
 
     while !remaining_bytes.is_empty() {
@@ -31,18 +31,18 @@ pub fn parse<T: 'static + Encoding>(
         }
     }
 
-    Ok(())
+    Ok(0)
 }
 
 pub fn parse_full<T: 'static + Encoding>(
     callback: &mut dyn Handler,
     bytes: &[u8],
-) -> Result<(), usize> {
-    let parser = Box::new(ExplicitAttributeParser::<T> {
+) -> Result<usize, usize> {
+    let parser = Box::new(AttributeParser::<T> {
         phantom: PhantomData,
     });
     match parse(callback, bytes, parser) {
-        Ok(()) => Ok(()),
+        Ok(consumed) => Ok(consumed),
         Err((_bytes_remaining, _parser)) => Err(_bytes_remaining),
     }
 }

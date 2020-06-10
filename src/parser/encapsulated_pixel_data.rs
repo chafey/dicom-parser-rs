@@ -1,6 +1,6 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
-use crate::parser::attribute::ExplicitAttributeParser;
+use crate::parser::attribute::AttributeParser;
 use crate::parser::data_set::Parser;
 use crate::parser::handler::Handler;
 use crate::tag::Tag;
@@ -27,7 +27,7 @@ impl<T: 'static + Encoding> Parser<T> for EncapsulatedPixelDataParser<T> {
 
         // check for sequence delimeter item
         if item_tag.group == 0xFFFE && item_tag.element == 0xE0DD {
-            let attribute_parser = Box::new(ExplicitAttributeParser::<T> {
+            let attribute_parser = Box::new(AttributeParser::<T> {
                 phantom: PhantomData,
             });
             return Ok((4, attribute_parser));
@@ -53,8 +53,7 @@ impl<T: 'static + Encoding> Parser<T> for EncapsulatedPixelDataParser<T> {
         handler.pixel_data_fragment(&self.attribute, &bytes[8..(8 + item_length)]);
 
         // read the encapsulated pixel data
-        let attribute_parser = Box::new(EncapsulatedPixelDataParser::<T> {
-            attribute: self.attribute,
+        let attribute_parser = Box::new(AttributeParser::<T> {
             phantom: PhantomData,
         });
         Ok((item_length + 8, attribute_parser))
