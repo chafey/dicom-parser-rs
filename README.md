@@ -23,7 +23,6 @@ dicom parser written in Rust
 * [X] Encapsulated Pixel Data
 * [X] Sequences with undefined lengths
 * [X] UN with undefined lengths
-* [ ] Character Sets
 * [ ] Deflate Transfer Syntax
 
 ## Status

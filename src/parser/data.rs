@@ -18,7 +18,6 @@ impl<T: 'static + Encoding> Parser<T> for DataParser<T> {
         handler: &mut dyn Handler,
         bytes: &[u8],
     ) -> Result<(usize, Box<dyn Parser<T>>), ()> {
-        
         // make sure we have enough bytes for this data
         if bytes.len() < self.attribute.length {
             return Err(());

@@ -2,15 +2,15 @@ use crate::attribute::Attribute;
 use crate::encoding::Encoding;
 use crate::parser::basic_offset_table::BasicOffsetTableParser;
 use crate::parser::data::DataParser;
-use crate::parser::data_undefined_length::DataUndefinedLengthParser;
 use crate::parser::data_set::Parser;
+use crate::parser::data_undefined_length::DataUndefinedLengthParser;
 use crate::parser::handler::Control;
 use crate::parser::handler::Handler;
 use crate::parser::sequence::SequenceParser;
+use crate::parser::sequence_undefined_length::SequenceUndefinedLengthParser;
 use crate::tag::Tag;
 use crate::vr::VR;
 use std::marker::PhantomData;
-use crate::parser::sequence_undefined_length::SequenceUndefinedLengthParser;
 
 pub struct AttributeParser<T: Encoding> {
     pub phantom: PhantomData<T>,
@@ -61,10 +61,10 @@ fn parse<T: 'static + Encoding>(
     } else if attribute.length == 0xFFFF_FFFF {
         if is_sequence::<T>(&bytes[bytes_consumed..]) {
             let parser = Box::new(SequenceUndefinedLengthParser::<T> {
-                attribute: attribute,
+                attribute,
                 phantom: PhantomData,
             });
-            return Ok((bytes_consumed, parser));
+            Ok((bytes_consumed, parser))
         } else {
             let data_parser = Box::new(DataUndefinedLengthParser::<T> {
                 phantom: PhantomData,
@@ -101,12 +101,12 @@ fn is_encapsulated_pixel_data(attribute: &Attribute) -> bool {
 }
 
 fn is_sequence<T: Encoding>(bytes: &[u8]) -> bool {
-    // peek ahead to see if it looks like a sequence        
+    // peek ahead to see if it looks like a sequence
     if bytes.len() >= 8 {
         let item_tag = Tag::from_bytes::<T>(&bytes[0..4]);
         if item_tag.group == 0xFFFE && item_tag.element == 0xE000 {
             return true;
         }
     }
-    return false;
+    false
 }

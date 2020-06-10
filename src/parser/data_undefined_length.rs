@@ -18,11 +18,9 @@ impl<T: 'static + Encoding> Parser<T> for DataUndefinedLengthParser<T> {
         handler: &mut dyn Handler,
         bytes: &[u8],
     ) -> Result<(usize, Box<dyn Parser<T>>), ()> {
-        
-
         // scan for sequence delimitation item
         let data_length = find_end_of_data::<T>(bytes)?;
-        
+
         // notify handler of data
         handler.data(&self.attribute, &bytes[..data_length]);
 
@@ -34,15 +32,13 @@ impl<T: 'static + Encoding> Parser<T> for DataUndefinedLengthParser<T> {
     }
 }
 
-
-
 fn find_end_of_data<T: Encoding>(bytes: &[u8]) -> Result<usize, ()> {
     let mut position = 0;
-    while position <= bytes.len()-4 {
-        let group = T::u16(&bytes[position..position+2]);
-        position +=2;
+    while position <= bytes.len() - 4 {
+        let group = T::u16(&bytes[position..position + 2]);
+        position += 2;
         if group == 0xFFFE {
-            let element = T::u16(&bytes[position..position+2]);
+            let element = T::u16(&bytes[position..position + 2]);
             if element == 0xE0DD {
                 // TODO: Consider verifying zero length?
 

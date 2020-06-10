@@ -3,10 +3,11 @@ use crate::encoding::Encoding;
 use crate::parser::attribute::AttributeParser;
 use crate::parser::data_set::parse_full;
 use crate::parser::data_set::Parser;
-use crate::parser::handler::Handler;
-use std::marker::PhantomData;
-use crate::tag::Tag;
 use crate::parser::handler::Control;
+use crate::parser::handler::Handler;
+use crate::tag;
+use crate::tag::Tag;
+use std::marker::PhantomData;
 
 pub struct SequenceUndefinedLengthParser<T: Encoding> {
     pub attribute: Attribute,
@@ -21,7 +22,6 @@ impl<T: 'static + Encoding> Parser<T> for SequenceUndefinedLengthParser<T> {
         handler: &mut dyn Handler,
         bytes: &[u8],
     ) -> Result<(usize, Box<dyn Parser<T>>), ()> {
-
         let mut remaining_bytes = bytes;
 
         let mut bytes_consumed = 0;
@@ -32,17 +32,10 @@ impl<T: 'static + Encoding> Parser<T> for SequenceUndefinedLengthParser<T> {
             }
             let item_tag = Tag::from_bytes::<T>(&remaining_bytes[0..4]);
             let item_length = T::u32(&remaining_bytes[4..8]) as usize;
-            if item_tag.group == 0xFFFE && item_tag.element == 0xE0DD {
-                // sequence delimeter
-                bytes_consumed += 8;
-                break;
-            }
-           
-            if item_tag.group != 0xFFFE || item_tag.element != 0xE000 {
-                // expecting sequence item delimeter
-                panic!("expecting sequence item delimeter");
-            }
 
+            if item_tag != tag::ITEM {
+                panic!("expecting item");
+            }
 
             if item_length != 0xFFFF_FFFF {
                 panic!("undefined length expected");
@@ -53,24 +46,29 @@ impl<T: 'static + Encoding> Parser<T> for SequenceUndefinedLengthParser<T> {
 
             handler.start_sequence_item(&self.attribute);
 
-            let mut sequence_item_handler = SequenceItemHandler{
-                handler
-            };
+            let mut sequence_item_handler = SequenceItemHandler { handler };
 
             let consumed = match parse_full::<T>(&mut sequence_item_handler, remaining_bytes) {
-                Ok(consumed) => {
-                    consumed + 8
-                }
-                Err(remaining) => {
-                    remaining_bytes.len() - remaining + 8
-                }
+                Ok(consumed) => consumed,
+                Err(remaining) => remaining_bytes.len() - remaining + 8,
             };
 
             handler.end_sequence_item(&self.attribute);
 
+            remaining_bytes = &remaining_bytes[consumed..];
             bytes_consumed += consumed;
 
-            remaining_bytes = &remaining_bytes[consumed..];
+            // check for end of sequence
+            if remaining_bytes.len() < 8 {
+                return Err(());
+            }
+            let item_tag = Tag::from_bytes::<T>(&remaining_bytes[0..4]);
+            let _item_length = T::u32(&remaining_bytes[4..8]) as usize;
+            if item_tag == tag::SEQUENCEDELIMITATIONITEM {
+                // end of sequence
+                bytes_consumed += 8;
+                break;
+            }
         }
 
         let attribute_parser = Box::new(AttributeParser::<T> {
@@ -92,18 +90,15 @@ pub fn parse_sequence_item<T: Encoding>(bytes: &[u8]) -> Result<usize, ()> {
 }
 
 struct SequenceItemHandler<'t> {
-    handler: &'t mut dyn Handler
+    handler: &'t mut dyn Handler,
 }
 
 impl Handler for SequenceItemHandler<'_> {
     fn element(&mut self, attribute: &Attribute) -> Control {
-        if attribute.tag.group == 0xFFFE && attribute.tag.element == 0xE00D {
+        if attribute.tag == tag::ITEMDELIMITATIONITEM {
             return Control::Stop;
         }
         self.handler.element(&attribute)
-    }
-    fn data(&mut self, attribute: &Attribute, data: &[u8]) {
-        self.handler.data(&attribute, &data)
     }
     fn start_sequence_item(&mut self, attribute: &Attribute) {
         self.handler.start_sequence_item(&attribute)
@@ -118,4 +113,3 @@ impl Handler for SequenceItemHandler<'_> {
         self.handler.pixel_data_fragment(&attribute, data)
     }
 }
-

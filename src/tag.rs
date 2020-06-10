@@ -35,6 +35,19 @@ impl PartialEq for Tag {
     }
 }
 
+pub static ITEM: Tag = Tag {
+    group: 0xFFFE,
+    element: 0xE000,
+};
+pub static ITEMDELIMITATIONITEM: Tag = Tag {
+    group: 0xFFFE,
+    element: 0xE00D,
+};
+pub static SEQUENCEDELIMITATIONITEM: Tag = Tag {
+    group: 0xFFFE,
+    element: 0xE0DD,
+};
+
 #[cfg(test)]
 mod tests {
     use super::Tag;

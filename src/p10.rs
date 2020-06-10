@@ -115,11 +115,12 @@ mod tests {
         //(0008,9121) @ position 0x376 / 886
         let mut bytes = read_file("tests/fixtures/IM00001.implicit_little_endian.dcm");
         let mut handler = DataSetHandler::new(condition::none, condition::none);
-        handler.print = true;
+        //handler.print = true;
         match parse(&mut handler, &mut bytes) {
             Err(remaining) => println!("remaining {}", remaining),
             Ok(_) => {}
         }
-        //println!("Parsed {:?} attributes", accumulator.attributes.len());
+        assert_eq!(94, handler.dataset.attributes.len());
+        //println!("Parsed {:?} attributes", handler.dataset.attributes.len());
     }
 }
