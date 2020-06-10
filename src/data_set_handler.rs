@@ -1,27 +1,13 @@
 use crate::attribute::Attribute;
-use crate::condition::ConditionFN;
 use crate::data_set::DataSet;
 use crate::parser::handler::{Control, Handler};
 use crate::vr::VR;
 
+#[derive(Default)]
 pub struct DataSetHandler {
-    pub filter: ConditionFN,
-    pub stop: ConditionFN,
     pub dataset: DataSet,
     pub depth: usize,
     pub print: bool,
-}
-
-impl DataSetHandler {
-    pub fn new(filter: ConditionFN, stop: ConditionFN) -> DataSetHandler {
-        DataSetHandler {
-            filter,
-            stop,
-            dataset: DataSet::default(),
-            depth: 0,
-            print: false,
-        }
-    }
 }
 
 impl Handler for DataSetHandler {
@@ -33,12 +19,6 @@ impl Handler for DataSetHandler {
                     println!("{: <width$}\\/", "", width = (self.depth * 2));
                 }
             }
-        }
-        if (self.filter)(&attribute) {
-            return Control::Element;
-        }
-        if (self.stop)(&attribute) {
-            return Control::Stop;
         }
         self.dataset.attributes.push(*attribute);
         Control::Data

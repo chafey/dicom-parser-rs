@@ -37,7 +37,6 @@ pub fn parse<'a, T: Handler>(
 mod tests {
 
     use super::parse;
-    use crate::condition;
     use crate::data_set_handler::DataSetHandler;
     use crate::meta_information::tests::make_p10_header;
     use std::fs::File;
@@ -61,7 +60,7 @@ mod tests {
     #[test]
     fn explicit_little_endian_parses() {
         let mut bytes = make_p10_file();
-        let mut handler = DataSetHandler::new(condition::none, condition::none);
+        let mut handler = DataSetHandler::default();
         parse(&mut handler, &mut bytes).unwrap();
         assert_eq!(handler.dataset.attributes.len(), 1);
     }
@@ -69,7 +68,7 @@ mod tests {
     #[test]
     fn explicit_little_endian() {
         let mut bytes = read_file("tests/fixtures/CT1_UNC.explicit_little_endian.dcm");
-        let mut handler = DataSetHandler::new(condition::none, condition::none);
+        let mut handler = DataSetHandler::default();
         //accumulator.print = true;
         parse(&mut handler, &mut bytes).unwrap();
         assert_eq!(257, handler.dataset.attributes.len());
@@ -80,7 +79,7 @@ mod tests {
     #[test]
     fn implicit_little_endian() {
         let mut bytes = read_file("tests/fixtures/CT1_UNC.implicit_little_endian.dcm");
-        let mut handler = DataSetHandler::new(condition::none, condition::none);
+        let mut handler = DataSetHandler::default();
         //accumulator.print = true;
         parse(&mut handler, &mut bytes).unwrap();
         assert_eq!(257, handler.dataset.attributes.len());
@@ -91,7 +90,7 @@ mod tests {
     #[test]
     fn explicit_big_endian() {
         let mut bytes = read_file("tests/fixtures/CT1_UNC.explicit_big_endian.dcm");
-        let mut handler = DataSetHandler::new(condition::none, condition::none);
+        let mut handler = DataSetHandler::default();
         //accumulator.print = true;
         parse(&mut handler, &mut bytes).unwrap();
         assert_eq!(257, handler.dataset.attributes.len());
@@ -101,7 +100,7 @@ mod tests {
     fn ele_sequences_known_lengths() {
         //(0008,9121) @ position 0x376 / 886
         let mut bytes = read_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm");
-        let mut handler = DataSetHandler::new(condition::none, condition::none);
+        let mut handler = DataSetHandler::default();
         //handler.print = true;
         match parse(&mut handler, &mut bytes) {
             Err(remaining) => println!("remaining {}", remaining),
@@ -114,7 +113,7 @@ mod tests {
     fn ile_sequences_undefined_lengths() {
         //(0008,9121) @ position 0x376 / 886
         let mut bytes = read_file("tests/fixtures/IM00001.implicit_little_endian.dcm");
-        let mut handler = DataSetHandler::new(condition::none, condition::none);
+        let mut handler = DataSetHandler::default();
         //handler.print = true;
         match parse(&mut handler, &mut bytes) {
             Err(remaining) => println!("remaining {}", remaining),

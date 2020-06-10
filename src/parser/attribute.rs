@@ -7,7 +7,6 @@ use crate::parser::data_undefined_length::DataUndefinedLengthParser;
 use crate::parser::handler::Control;
 use crate::parser::handler::Handler;
 use crate::parser::sequence::SequenceParser;
-use crate::parser::sequence_undefined_length::SequenceUndefinedLengthParser;
 use crate::tag::Tag;
 use crate::vr::VR;
 use std::marker::PhantomData;
@@ -60,7 +59,7 @@ fn parse<T: 'static + Encoding>(
         Ok((bytes_consumed, data_parser))
     } else if attribute.length == 0xFFFF_FFFF {
         if is_sequence::<T>(&bytes[bytes_consumed..]) {
-            let parser = Box::new(SequenceUndefinedLengthParser::<T> {
+            let parser = Box::new(SequenceParser::<T> {
                 attribute,
                 phantom: PhantomData,
             });

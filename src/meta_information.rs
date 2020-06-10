@@ -1,11 +1,11 @@
 use crate::attribute::Attribute;
-use crate::condition;
 use crate::data_set::DataSet;
 use crate::data_set_handler::DataSetHandler;
 use crate::encoding::ExplicitLittleEndian;
 use crate::parser::attribute::AttributeParser;
 use crate::parser::data_set;
 use crate::prefix;
+use crate::stop_handler::StopHandler;
 use crate::tag::Tag;
 use std::marker::PhantomData;
 use std::str;
@@ -47,21 +47,23 @@ pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
         return Err(());
     }
 
-    let stop_if_not_group_2 = |x: &Attribute| x.tag.group != 2;
-    let mut dataset_handler = DataSetHandler::new(condition::none, stop_if_not_group_2);
+    let mut data_set_handler = DataSetHandler::default();
+
+    let mut handler = StopHandler {
+        stop_fn: |x: &Attribute| x.tag.group != 2,
+        handler: &mut data_set_handler,
+    };
+
     let parser = Box::new(AttributeParser::<ExplicitLittleEndian> {
         phantom: PhantomData,
     });
-    let end_position = match data_set::parse::<ExplicitLittleEndian>(
-        &mut dataset_handler,
-        &bytes[132..],
-        parser,
-    ) {
-        Err((bytes_remaining, _)) => bytes.len() - bytes_remaining,
-        Ok(_) => bytes.len(),
-    };
+    let end_position =
+        match data_set::parse::<ExplicitLittleEndian>(&mut handler, &bytes[132..], parser) {
+            Err((bytes_remaining, _)) => bytes.len() - bytes_remaining,
+            Ok(_) => bytes.len(),
+        };
 
-    let data_set = dataset_handler.dataset;
+    let data_set = data_set_handler.dataset;
 
     let meta = MetaInformation {
         media_storage_sop_class_uid: get_element(&data_set, Tag::new(0x02, 0x02))?,
