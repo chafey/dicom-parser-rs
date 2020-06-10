@@ -18,10 +18,10 @@ dicom parser written in Rust
 * [X] Explicit Little Endian Transfer Syntax
 * [X] Streaming Parser
 * [X] Implicit Little Endian Transfer Syntax
-* [X] Sequences
+* [X] Sequences with known lengths
 * [X] Explicit Big Endian Transfer Syntax
-* [ ] Undefined Lengths
-* [ ] Encapsulated Pixel Data
+* [X] Encapsulated Pixel Data
+* [ ] Sequences with undefined lengths
 * [ ] Character Sets
 * [ ] Deflate Transfer Syntax
 

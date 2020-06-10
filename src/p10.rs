@@ -37,8 +37,8 @@ pub fn parse<'a, T: Handler>(
 mod tests {
 
     use super::parse;
-    use crate::data_set_handler::DataSetHandler;
     use crate::condition;
+    use crate::data_set_handler::DataSetHandler;
     use crate::meta_information::tests::make_p10_header;
     use std::fs::File;
     use std::io::Read;
@@ -102,7 +102,7 @@ mod tests {
         //(0008,9121) @ position 0x376 / 886
         let mut bytes = read_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm");
         let mut handler = DataSetHandler::new(condition::none, condition::none);
-        //accumulator.print = true;
+        //handler.print = true;
         match parse(&mut handler, &mut bytes) {
             Err(remaining) => println!("remaining {}", remaining),
             Ok(_) => {}

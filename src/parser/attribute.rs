@@ -1,5 +1,6 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
+use crate::parser::basic_offset_table::BasicOffsetTableParser;
 use crate::parser::data::DataParser;
 use crate::parser::data_set::Parser;
 use crate::parser::handler::Control;
@@ -31,13 +32,7 @@ fn parse<T: 'static + Encoding>(
         return Err(());
     }
 
-    let (bytes_consumed, mut attribute) = parse_attribute::<T>(bytes)?;
-
-    if attribute.length == 0xffff_ffff {
-        // HACK: update attribute length to the remaining bytes
-        attribute.length = bytes.len() - bytes_consumed;
-        attribute.had_unknown_length = true;
-    }
+    let (bytes_consumed, attribute) = parse_attribute::<T>(bytes)?;
 
     match handler.element(&attribute) {
         Control::Element => {
@@ -51,6 +46,12 @@ fn parse<T: 'static + Encoding>(
 
     if attribute.vr == Some(VR::SQ) {
         let data_parser = Box::new(SequenceParser::<T> {
+            phantom: PhantomData,
+            attribute,
+        });
+        Ok((bytes_consumed, data_parser))
+    } else if is_encapsulated_pixel_data(&attribute) {
+        let data_parser = Box::new(BasicOffsetTableParser::<T> {
             phantom: PhantomData,
             attribute,
         });
@@ -77,4 +78,8 @@ fn parse_attribute<T: Encoding>(bytes: &[u8]) -> Result<(usize, Attribute), ()> 
         had_unknown_length: false,
     };
     Ok((bytes_consumed, attribute))
+}
+
+fn is_encapsulated_pixel_data(attribute: &Attribute) -> bool {
+    attribute.tag == Tag::new(0x7fe0, 0x0010) && attribute.length == 0xffff_ffff
 }

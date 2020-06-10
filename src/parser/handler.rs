@@ -12,4 +12,6 @@ pub trait Handler {
     fn data(&mut self, attribute: &Attribute, data: &[u8]);
     fn start_sequence_item(&mut self, attribute: &Attribute);
     fn end_sequence_item(&mut self, attribute: &Attribute);
+    fn basic_offset_table(&mut self, attribute: &Attribute, data: &[u8]) -> Control;
+    fn pixel_data_fragment(&mut self, attribute: &Attribute, data: &[u8]) -> Control;
 }

@@ -1,7 +1,7 @@
-use crate::data_set::DataSet;
-use crate::data_set_handler::DataSetHandler;
 use crate::attribute::Attribute;
 use crate::condition;
+use crate::data_set::DataSet;
+use crate::data_set_handler::DataSetHandler;
 use crate::encoding::ExplicitLittleEndian;
 use crate::parser::attribute::ExplicitAttributeParser;
 use crate::parser::data_set;
@@ -17,7 +17,7 @@ pub struct MetaInformation {
     pub transfer_syntax_uid: String,
     pub implementation_class_uid: String,
     pub end_position: usize,
-    pub data_set: DataSet
+    pub data_set: DataSet,
 }
 
 fn find_element_index(attributes: &[Attribute], tag: Tag) -> Result<usize, ()> {
@@ -52,11 +52,14 @@ pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
     let parser = Box::new(ExplicitAttributeParser::<ExplicitLittleEndian> {
         phantom: PhantomData,
     });
-    let end_position =
-        match data_set::parse::<ExplicitLittleEndian>(&mut dataset_handler, &bytes[132..], parser) {
-            Err((bytes_remaining, _)) => bytes.len() - bytes_remaining,
-            Ok(()) => bytes.len(),
-        };
+    let end_position = match data_set::parse::<ExplicitLittleEndian>(
+        &mut dataset_handler,
+        &bytes[132..],
+        parser,
+    ) {
+        Err((bytes_remaining, _)) => bytes.len() - bytes_remaining,
+        Ok(()) => bytes.len(),
+    };
 
     let data_set = dataset_handler.dataset;
 
@@ -66,7 +69,7 @@ pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
         transfer_syntax_uid: get_element(&data_set, Tag::new(0x0002, 0x0010))?,
         implementation_class_uid: get_element(&data_set, Tag::new(0x0002, 0x0012))?,
         end_position,
-        data_set
+        data_set,
     };
 
     Ok(meta)

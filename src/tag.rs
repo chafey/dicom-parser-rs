@@ -1,3 +1,4 @@
+use crate::encoding::Encoding;
 use std::fmt;
 
 #[derive(Eq, Clone, Copy)]
@@ -7,6 +8,12 @@ pub struct Tag {
 }
 impl Tag {
     pub fn new(group: u16, element: u16) -> Tag {
+        Tag { group, element }
+    }
+
+    pub fn from_bytes<T: Encoding>(bytes: &[u8]) -> Tag {
+        let group = T::u16(&bytes[0..2]);
+        let element = T::u16(&bytes[2..4]);
         Tag { group, element }
     }
 
@@ -45,12 +52,9 @@ mod tests {
         assert_eq!(tag.is_private(), false);
     }
 
-
     #[test]
     fn tag_is_private_returns_true() {
         let tag = Tag::new(9, 10);
         assert_eq!(tag.is_private(), true);
     }
-
-
 }

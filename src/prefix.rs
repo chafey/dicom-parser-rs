@@ -5,7 +5,7 @@ pub fn detect(bytes: &[u8]) -> bool {
     }
 
     // check for DICM
-    &bytes[128..132] == b"DICM" 
+    &bytes[128..132] == b"DICM"
 }
 
 #[cfg(test)]

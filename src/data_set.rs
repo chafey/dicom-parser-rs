@@ -5,4 +5,3 @@ pub struct DataSet {
     pub attributes: Vec<Attribute>,
     pub data: Vec<Vec<u8>>,
 }
-

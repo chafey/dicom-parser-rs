@@ -1,8 +1,8 @@
 use crate::attribute::Attribute;
-use crate::parser::handler::{Control, Handler};
-use crate::vr::VR;
 use crate::condition::ConditionFN;
 use crate::data_set::DataSet;
+use crate::parser::handler::{Control, Handler};
+use crate::vr::VR;
 
 pub struct DataSetHandler {
     pub filter: ConditionFN,
@@ -68,5 +68,31 @@ impl Handler for DataSetHandler {
         if self.print {
             println!("{: <width$} }}", "", width = (self.depth * 2));
         }
+    }
+
+    fn basic_offset_table(&mut self, _attribute: &Attribute, data: &[u8]) -> Control {
+        if self.print {
+            println!(
+                "{: <width$}  \\ basic offsett table of len {:?}",
+                " ",
+                data.len(),
+                width = (self.depth * 2)
+            );
+        }
+        //self.dataset.data.push(data.to_vec());
+        Control::Data
+    }
+
+    fn pixel_data_fragment(&mut self, _attribute: &Attribute, data: &[u8]) -> Control {
+        if self.print {
+            println!(
+                "{: <width$}  \\ pixel data fragment of len {:?}",
+                " ",
+                data.len(),
+                width = (self.depth * 2)
+            );
+        }
+        self.dataset.data.push(data.to_vec());
+        Control::Data
     }
 }
