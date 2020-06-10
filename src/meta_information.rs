@@ -1,11 +1,11 @@
 use crate::attribute::Attribute;
 use crate::data_set::DataSet;
-use crate::data_set_handler::DataSetHandler;
 use crate::encoding::ExplicitLittleEndian;
+use crate::handler::data_set::DataSetHandler;
+use crate::handler::stop::StopHandler;
 use crate::parser::attribute::AttributeParser;
 use crate::parser::data_set;
 use crate::prefix;
-use crate::stop_handler::StopHandler;
 use crate::tag::Tag;
 use std::marker::PhantomData;
 use std::str;

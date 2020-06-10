@@ -36,10 +36,10 @@ fn parse<T: 'static + Encoding>(
     let (bytes_consumed, attribute) = parse_attribute::<T>(bytes)?;
 
     match handler.element(&attribute) {
-        Control::Element => {
+        Control::Continue => {}
+        Control::Filter => {
             // TODO: Skip data
         }
-        Control::Data => {}
         Control::Stop => {
             return Err(());
         }

@@ -1,10 +1,10 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
+use crate::handler::stop::StopHandler;
 use crate::parser::attribute::AttributeParser;
 use crate::parser::data_set::parse_full;
 use crate::parser::data_set::Parser;
 use crate::parser::handler::Handler;
-use crate::stop_handler::StopHandler;
 use crate::tag;
 use crate::tag::Tag;
 use std::marker::PhantomData;

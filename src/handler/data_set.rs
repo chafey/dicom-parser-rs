@@ -21,7 +21,7 @@ impl Handler for DataSetHandler {
             }
         }
         self.dataset.attributes.push(*attribute);
-        Control::Data
+        Control::Continue
     }
 
     fn data(&mut self, _attribute: &Attribute, data: &[u8]) {
@@ -60,7 +60,7 @@ impl Handler for DataSetHandler {
             );
         }
         //self.dataset.data.push(data.to_vec());
-        Control::Data
+        Control::Continue
     }
 
     fn pixel_data_fragment(&mut self, _attribute: &Attribute, data: &[u8]) -> Control {
@@ -73,6 +73,6 @@ impl Handler for DataSetHandler {
             );
         }
         self.dataset.data.push(data.to_vec());
-        Control::Data
+        Control::Continue
     }
 }

@@ -11,7 +11,7 @@ pub struct FilterHandler<'t> {
 impl Handler for FilterHandler<'_> {
     fn element(&mut self, attribute: &Attribute) -> Control {
         if (self.filter_fn)(&attribute) {
-            return Control::Element;
+            return Control::Filter;
         }
         self.handler.element(&attribute)
     }

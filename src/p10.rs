@@ -37,7 +37,7 @@ pub fn parse<'a, T: Handler>(
 mod tests {
 
     use super::parse;
-    use crate::data_set_handler::DataSetHandler;
+    use crate::handler::data_set::DataSetHandler;
     use crate::meta_information::tests::make_p10_header;
     use std::fs::File;
     use std::io::Read;
