@@ -2,6 +2,7 @@ use crate::attribute::Attribute;
 use crate::encoding::Encoding;
 use crate::parser::basic_offset_table::BasicOffsetTableParser;
 use crate::parser::data::DataParser;
+use crate::parser::data_set::ParseResult;
 use crate::parser::data_set::Parser;
 use crate::parser::data_undefined_length::DataUndefinedLengthParser;
 use crate::parser::handler::Control;
@@ -16,11 +17,7 @@ pub struct AttributeParser<T: Encoding> {
 }
 
 impl<T: 'static + Encoding> Parser<T> for AttributeParser<T> {
-    fn parse(
-        &mut self,
-        handler: &mut dyn Handler,
-        bytes: &[u8],
-    ) -> Result<(usize, Box<dyn Parser<T>>), ()> {
+    fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
         parse(handler, bytes)
     }
 }
@@ -28,7 +25,7 @@ impl<T: 'static + Encoding> Parser<T> for AttributeParser<T> {
 fn parse<T: 'static + Encoding>(
     handler: &mut dyn Handler,
     bytes: &[u8],
-) -> Result<(usize, Box<dyn Parser<T>>), ()> {
+) -> Result<ParseResult<T>, ()> {
     if bytes.len() < 6 {
         return Err(());
     }
@@ -46,37 +43,52 @@ fn parse<T: 'static + Encoding>(
     }
 
     if attribute.vr == Some(VR::SQ) {
-        let data_parser = Box::new(SequenceParser::<T> {
+        let parser = Box::new(SequenceParser::<T> {
             phantom: PhantomData,
             attribute,
         });
-        Ok((bytes_consumed, data_parser))
+        Ok(ParseResult {
+            bytes_consumed,
+            parser,
+        })
     } else if is_encapsulated_pixel_data(&attribute) {
-        let data_parser = Box::new(BasicOffsetTableParser::<T> {
+        let parser = Box::new(BasicOffsetTableParser::<T> {
             phantom: PhantomData,
             attribute,
         });
-        Ok((bytes_consumed, data_parser))
+        Ok(ParseResult {
+            bytes_consumed,
+            parser,
+        })
     } else if attribute.length == 0xFFFF_FFFF {
         if is_sequence::<T>(&bytes[bytes_consumed..]) {
             let parser = Box::new(SequenceParser::<T> {
                 attribute,
                 phantom: PhantomData,
             });
-            Ok((bytes_consumed, parser))
+            Ok(ParseResult {
+                bytes_consumed,
+                parser,
+            })
         } else {
-            let data_parser = Box::new(DataUndefinedLengthParser::<T> {
+            let parser = Box::new(DataUndefinedLengthParser::<T> {
                 phantom: PhantomData,
                 attribute,
             });
-            Ok((bytes_consumed, data_parser))
+            Ok(ParseResult {
+                bytes_consumed,
+                parser,
+            })
         }
     } else {
-        let data_parser = Box::new(DataParser::<T> {
+        let parser = Box::new(DataParser::<T> {
             phantom: PhantomData,
             attribute,
         });
-        Ok((bytes_consumed, data_parser))
+        Ok(ParseResult {
+            bytes_consumed,
+            parser,
+        })
     }
 }
 

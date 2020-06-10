@@ -1,5 +1,6 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
+use crate::parser::data_set::ParseResult;
 use crate::parser::data_set::Parser;
 use crate::parser::encapsulated_pixel_data::EncapsulatedPixelDataParser;
 use crate::parser::handler::Handler;
@@ -14,11 +15,7 @@ pub struct BasicOffsetTableParser<T: Encoding> {
 impl<T: Encoding> BasicOffsetTableParser<T> {}
 
 impl<T: 'static + Encoding> Parser<T> for BasicOffsetTableParser<T> {
-    fn parse(
-        &mut self,
-        handler: &mut dyn Handler,
-        bytes: &[u8],
-    ) -> Result<(usize, Box<dyn Parser<T>>), ()> {
+    fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
         // make sure we have enough length to read item and length
         if bytes.len() < 8 {
             return Err(());
@@ -40,10 +37,14 @@ impl<T: 'static + Encoding> Parser<T> for BasicOffsetTableParser<T> {
         handler.basic_offset_table(&self.attribute, &bytes[8..(8 + item_length)]);
 
         // read the encapsulated pixel data
-        let attribute_parser = Box::new(EncapsulatedPixelDataParser::<T> {
+        let parser = Box::new(EncapsulatedPixelDataParser::<T> {
             attribute: self.attribute,
             phantom: PhantomData,
         });
-        Ok((item_length + 8, attribute_parser))
+        let bytes_consumed = item_length + 8;
+        Ok(ParseResult {
+            bytes_consumed,
+            parser,
+        })
     }
 }

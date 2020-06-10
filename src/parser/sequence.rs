@@ -3,6 +3,7 @@ use crate::encoding::Encoding;
 use crate::handler::stop::StopHandler;
 use crate::parser::attribute::AttributeParser;
 use crate::parser::data_set::parse_full;
+use crate::parser::data_set::ParseResult;
 use crate::parser::data_set::Parser;
 use crate::parser::handler::Handler;
 use crate::tag;
@@ -17,11 +18,7 @@ pub struct SequenceParser<T: Encoding> {
 impl<T: Encoding> SequenceParser<T> {}
 
 impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
-    fn parse(
-        &mut self,
-        handler: &mut dyn Handler,
-        bytes: &[u8],
-    ) -> Result<(usize, Box<dyn Parser<T>>), ()> {
+    fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
         let mut remaining_bytes = bytes;
 
         let mut bytes_consumed = 0;
@@ -67,11 +64,14 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
             }
         }
 
-        let attribute_parser = Box::new(AttributeParser::<T> {
+        let parser = Box::new(AttributeParser::<T> {
             phantom: PhantomData,
         });
 
-        Ok((bytes_consumed, attribute_parser))
+        Ok(ParseResult {
+            bytes_consumed,
+            parser,
+        })
     }
 }
 

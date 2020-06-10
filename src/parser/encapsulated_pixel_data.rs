@@ -1,6 +1,7 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
 use crate::parser::attribute::AttributeParser;
+use crate::parser::data_set::ParseResult;
 use crate::parser::data_set::Parser;
 use crate::parser::handler::Handler;
 use crate::tag::Tag;
@@ -14,11 +15,7 @@ pub struct EncapsulatedPixelDataParser<T: Encoding> {
 impl<T: Encoding> EncapsulatedPixelDataParser<T> {}
 
 impl<T: 'static + Encoding> Parser<T> for EncapsulatedPixelDataParser<T> {
-    fn parse(
-        &mut self,
-        handler: &mut dyn Handler,
-        bytes: &[u8],
-    ) -> Result<(usize, Box<dyn Parser<T>>), ()> {
+    fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
         // read item tag
         if bytes.len() < 4 {
             return Err(());
@@ -27,10 +24,13 @@ impl<T: 'static + Encoding> Parser<T> for EncapsulatedPixelDataParser<T> {
 
         // check for sequence delimeter item
         if item_tag.group == 0xFFFE && item_tag.element == 0xE0DD {
-            let attribute_parser = Box::new(AttributeParser::<T> {
+            let parser = Box::new(AttributeParser::<T> {
                 phantom: PhantomData,
             });
-            return Ok((4, attribute_parser));
+            return Ok(ParseResult {
+                bytes_consumed: 4,
+                parser,
+            });
         }
 
         // check for sequence item
@@ -53,9 +53,12 @@ impl<T: 'static + Encoding> Parser<T> for EncapsulatedPixelDataParser<T> {
         handler.pixel_data_fragment(&self.attribute, &bytes[8..(8 + item_length)]);
 
         // read the encapsulated pixel data
-        let attribute_parser = Box::new(AttributeParser::<T> {
+        let parser = Box::new(AttributeParser::<T> {
             phantom: PhantomData,
         });
-        Ok((item_length + 8, attribute_parser))
+        Ok(ParseResult {
+            bytes_consumed: item_length + 8,
+            parser,
+        })
     }
 }

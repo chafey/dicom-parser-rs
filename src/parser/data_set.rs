@@ -3,13 +3,17 @@ use crate::parser::attribute::AttributeParser;
 use crate::parser::handler::Handler;
 use std::marker::PhantomData;
 
+pub struct ParseError {}
+
+pub struct ParseResult<T: Encoding> {
+    pub bytes_consumed: usize,
+    pub parser: Box<dyn Parser<T>>,
+}
+
 pub trait Parser<T: Encoding> {
     // parses bytes and returns the number consumed and the next Parser
-    fn parse(
-        &mut self,
-        handler: &mut dyn Handler,
-        bytes: &[u8],
-    ) -> Result<(usize, Box<dyn Parser<T>>), ()>;
+    // or returns an error with the number of bytes consumed
+    fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()>;
 }
 
 pub fn parse<T: 'static + Encoding>(
@@ -21,9 +25,9 @@ pub fn parse<T: 'static + Encoding>(
 
     while !remaining_bytes.is_empty() {
         match parser.parse(handler, remaining_bytes) {
-            Ok((bytes_consumed, next_parser)) => {
-                parser = next_parser;
-                remaining_bytes = &remaining_bytes[bytes_consumed..];
+            Ok(parse_result) => {
+                remaining_bytes = &remaining_bytes[parse_result.bytes_consumed..];
+                parser = parse_result.parser;
             }
             Err(()) => {
                 return Err((remaining_bytes.len(), parser));
