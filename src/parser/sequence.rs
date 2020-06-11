@@ -62,17 +62,23 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
             bytes_consumed += consumed;
 
             // check for end of sequence
-            if remaining_bytes.len() < 8 {
-                // FIXME: we fail here because it will currently result in multiple
-                // calls to the handler for the same data when the parse is resumed.
-                return Err(());
-            }
-            let item_tag = Tag::from_bytes::<T>(&remaining_bytes[0..4]);
-            let _item_length = T::u32(&remaining_bytes[4..8]) as usize;
-            if item_tag == tag::SEQUENCEDELIMITATIONITEM {
-                // end of sequence
+            if self.attribute.length == 0xFFFF_FFFF {
+                // TODO: Skip over item delimeter item
+                remaining_bytes = &remaining_bytes[8..];
                 bytes_consumed += 8;
-                break;
+
+                if remaining_bytes.len() < 8 {
+                    // FIXME: we fail here because it will currently result in multiple
+                    // calls to the handler for the same data when the parse is resumed.
+                    return Err(());
+                }
+                let item_tag = Tag::from_bytes::<T>(&remaining_bytes[0..4]);
+                let _item_length = T::u32(&remaining_bytes[4..8]) as usize;
+                if item_tag == tag::SEQUENCEDELIMITATIONITEM {
+                    // end of sequence
+                    bytes_consumed += 8;
+                    break;
+                }
             }
         }
 

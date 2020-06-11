@@ -27,7 +27,7 @@ impl<T: 'static + Encoding> Parser<T> for EncapsulatedPixelDataParser<T> {
             let parser = Box::new(AttributeParser::<T> {
                 phantom: PhantomData,
             });
-            return Ok(ParseResult::partial(4, parser));
+            return Ok(ParseResult::partial(8, parser));
         }
 
         // check for sequence item
@@ -49,10 +49,18 @@ impl<T: 'static + Encoding> Parser<T> for EncapsulatedPixelDataParser<T> {
         // notify handler of data
         handler.pixel_data_fragment(&self.attribute, &bytes[8..(8 + item_length)]);
 
+        /*if bytes.len() == 8 + item_length {
+            return Ok(ParseResult::completed(8 + item_length, Box::new(AttributeParser::<T> {
+                phantom: PhantomData,
+            })));
+        }*/
+
         // read the encapsulated pixel data
-        let parser = Box::new(AttributeParser::<T> {
+        let parser = Box::new(EncapsulatedPixelDataParser::<T> {
+            attribute: self.attribute,
             phantom: PhantomData,
         });
-        Ok(ParseResult::partial(item_length + 8, parser))
+
+        Ok(ParseResult::partial(8 + item_length, parser))
     }
 }
