@@ -1,9 +1,9 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
 use crate::parser::attribute::AttributeParser;
-use crate::parser::data_set::ParseResult;
-use crate::parser::data_set::Parser;
 use crate::parser::handler::Handler;
+use crate::parser::ParseResult;
+use crate::parser::Parser;
 use std::marker::PhantomData;
 
 pub struct DataUndefinedLengthParser<T: Encoding> {
@@ -16,7 +16,12 @@ impl<T: Encoding> DataUndefinedLengthParser<T> {}
 impl<T: 'static + Encoding> Parser<T> for DataUndefinedLengthParser<T> {
     fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
         // scan for sequence delimitation item
-        let data_length = find_end_of_data::<T>(bytes)?;
+        let data_length = match find_end_of_data::<T>(bytes) {
+            Err(()) => {
+                return Ok(ParseResult::incomplete());
+            }
+            Ok(data_length) => data_length,
+        };
 
         // notify handler of data
         handler.data(&self.attribute, &bytes[..data_length]);
@@ -25,10 +30,7 @@ impl<T: 'static + Encoding> Parser<T> for DataUndefinedLengthParser<T> {
         let parser = Box::new(AttributeParser::<T> {
             phantom: PhantomData,
         });
-        Ok(ParseResult {
-            bytes_consumed: data_length + 8,
-            parser,
-        })
+        Ok(ParseResult::partial(data_length + 8, parser))
     }
 }
 

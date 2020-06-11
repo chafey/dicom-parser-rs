@@ -1,14 +1,21 @@
 use crate::vr::VR;
 use std::convert::TryInto;
+use std::fmt;
 
-pub trait Encoding {
+pub trait Encoding: fmt::Debug {
     fn u16(bytes: &[u8]) -> u16;
     fn u32(bytes: &[u8]) -> u32;
     fn vr_and_length(bytes: &[u8]) -> Result<(Option<VR>, usize, usize), ()>;
 }
 
-#[allow(dead_code)]
+//#[allow(dead_code)]
 pub struct ExplicitLittleEndian {}
+
+impl fmt::Debug for ExplicitLittleEndian {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ExplicitLittleEndian").finish()
+    }
+}
 
 impl Encoding for ExplicitLittleEndian {
     fn u16(bytes: &[u8]) -> u16 {
@@ -47,6 +54,12 @@ impl Encoding for ExplicitLittleEndian {
 #[allow(dead_code)]
 pub struct ImplicitLittleEndian {}
 
+impl fmt::Debug for ImplicitLittleEndian {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ImplicitLittleEndian").finish()
+    }
+}
+
 impl Encoding for ImplicitLittleEndian {
     fn u16(bytes: &[u8]) -> u16 {
         u16::from_le_bytes([bytes[0], bytes[1]].try_into().unwrap())
@@ -64,6 +77,12 @@ impl Encoding for ImplicitLittleEndian {
 
 #[allow(dead_code)]
 pub struct ExplicitBigEndian {}
+
+impl fmt::Debug for ExplicitBigEndian {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ExplicitBigEndian").finish()
+    }
+}
 
 impl Encoding for ExplicitBigEndian {
     fn u16(bytes: &[u8]) -> u16 {

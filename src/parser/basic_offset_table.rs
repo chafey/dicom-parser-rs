@@ -1,9 +1,9 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
-use crate::parser::data_set::ParseResult;
-use crate::parser::data_set::Parser;
 use crate::parser::encapsulated_pixel_data::EncapsulatedPixelDataParser;
 use crate::parser::handler::Handler;
+use crate::parser::ParseResult;
+use crate::parser::Parser;
 use crate::tag::Tag;
 use std::marker::PhantomData;
 
@@ -18,7 +18,7 @@ impl<T: 'static + Encoding> Parser<T> for BasicOffsetTableParser<T> {
     fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
         // make sure we have enough length to read item and length
         if bytes.len() < 8 {
-            return Err(());
+            return Ok(ParseResult::incomplete());
         }
 
         // Validate the item tag
@@ -30,7 +30,7 @@ impl<T: 'static + Encoding> Parser<T> for BasicOffsetTableParser<T> {
         // Read the item length and make sure we have enough bytes for it
         let item_length = T::u32(&bytes[4..8]) as usize;
         if bytes.len() < item_length + 8 {
-            return Err(());
+            return Ok(ParseResult::incomplete());
         }
 
         // notify handler of data
@@ -42,9 +42,6 @@ impl<T: 'static + Encoding> Parser<T> for BasicOffsetTableParser<T> {
             phantom: PhantomData,
         });
         let bytes_consumed = item_length + 8;
-        Ok(ParseResult {
-            bytes_consumed,
-            parser,
-        })
+        Ok(ParseResult::partial(bytes_consumed, parser))
     }
 }

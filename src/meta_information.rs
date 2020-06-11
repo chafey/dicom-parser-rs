@@ -3,11 +3,9 @@ use crate::data_set::DataSet;
 use crate::encoding::ExplicitLittleEndian;
 use crate::handler::data_set::DataSetHandler;
 use crate::handler::stop::StopHandler;
-use crate::parser::attribute::AttributeParser;
 use crate::parser::data_set;
 use crate::prefix;
 use crate::tag::Tag;
-use std::marker::PhantomData;
 use std::str;
 
 #[derive(Debug)]
@@ -54,13 +52,14 @@ pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
         handler: &mut data_set_handler,
     };
 
-    let parser = Box::new(AttributeParser::<ExplicitLittleEndian> {
-        phantom: PhantomData,
-    });
     let end_position =
-        match data_set::parse::<ExplicitLittleEndian>(&mut handler, &bytes[132..], parser) {
-            Err((bytes_remaining, _)) => bytes.len() - bytes_remaining,
-            Ok(_) => bytes.len(),
+        match data_set::parse_full::<ExplicitLittleEndian>(&mut handler, &bytes[132..]) {
+            Ok((bytes_consumed, _cancelled)) => {
+                // note, we expect to be cancelled, but don't check for it as it is possible
+                // that the caller is only passing in the header
+                bytes_consumed + 132
+            }
+            Err(_parse_error) => return Err(()),
         };
 
     let data_set = data_set_handler.dataset;
