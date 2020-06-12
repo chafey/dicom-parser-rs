@@ -43,7 +43,7 @@ impl<T: 'static + Encoding> Parser<T> for DataSetParser<T> {
                             return Ok(ParseResult::cancelled(bytes_consumed));
                         }
                         ParseState::Incomplete => {
-                            self.parser = result.parser;
+                            //self.parser = result.parser;
                             return Ok(ParseResult::incomplete(bytes_consumed));
                         }
                         ParseState::Partial => {
@@ -109,29 +109,42 @@ mod tests {
         assert!(result.is_ok());
     }
 
-    /*
-        fn split_parse(bytes: &[u8], split_position: usize) -> Result<(), ()> {
-            let parser = Box::new(AttributeParser::<ExplicitLittleEndian> {
-                phantom: PhantomData,
-            });
-            let mut handler = DataSetHandler::default();
-            //handler.print = true;
-            let result = parse_partial::<ExplicitLittleEndian>(&mut handler, &bytes[0..split_position], parser)?;
-            println!("bytes_consumed: {:?}", result.bytes_consumed);
-            println!("state: {:?}", result.state);
-            let result2 = parse_partial::<ExplicitLittleEndian>(&mut handler, &bytes[result.bytes_consumed..], result.parser)?;
-            println!("bytes_consumed: {:?}", result2.bytes_consumed);
-            println!("state: {:?}", result2.state);
-            assert_eq!(result2.bytes_consumed, bytes.len() - result.bytes_consumed);
-            Ok(())
-        }
-    */
+    fn split_parse(bytes: &[u8], split_position: usize) -> Result<(), ()> {
+        println!("split_parse @ {}", split_position);
+        let mut handler = DataSetHandler::default();
+        //handler.print = true;
+        let mut parser = DataSetParser::<ExplicitLittleEndian>::default();
+        let result = parser.parse(&mut handler, &bytes[0..split_position])?;
+        println!("bytes_consumed: {:?}", result.bytes_consumed);
+        //println!("state: {:?}", result.state);
+        let result2 = parser.parse(&mut handler, &bytes[result.bytes_consumed..])?;
+        println!("bytes_consumed: {:?}", result2.bytes_consumed);
+        //println!("state: {:?}", result2.state);
+        assert_eq!(result2.bytes_consumed, bytes.len() - result.bytes_consumed);
+        Ok(())
+    }
+
+    #[test]
+    fn parse_partial_debug() {
+        let bytes =
+            read_data_set_bytes_from_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm"); // meta ends at 352
+                                                                                                     //let bytes = read_data_set_bytes_from_file("tests/fixtures/CT1_UNC.explicit_little_endian.dcm");
+                                                                                                     // 555 is failing at end of last sequence (shows 0008,9205 as part of seq but it should be at root)
+                                                                                                     // 555 + 352 = 907 x38b (in the tag part of 0008,1115)
+        let result = split_parse(&bytes, 555);
+        assert!(result.is_ok());
+        //println!("{:?}", result);
+    }
 
     /*
     #[test]
     fn parse_partial_ok() {
-        let bytes = read_data_set_bytes_from_file("tests/fixtures/CT1_UNC.explicit_little_endian.dcm");
-        let result = split_parse(&bytes, 200000);
-        println!("{:?}", result);
+        let bytes = read_data_set_bytes_from_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm");
+        //let bytes = read_data_set_bytes_from_file("tests/fixtures/CT1_UNC.explicit_little_endian.dcm");
+        for i in 0..bytes.len() {
+            let result = split_parse(&bytes, i);
+            assert!(result.is_ok());
+        }
+        //println!("{:?}", result);
     }*/
 }

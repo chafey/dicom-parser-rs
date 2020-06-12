@@ -15,6 +15,7 @@ pub mod tests {
     pub fn read_data_set_bytes_from_file(filepath: &str) -> Vec<u8> {
         let bytes = read_file(&filepath);
         let meta = meta_information::parse(&bytes).unwrap();
+        println!("meta.end_position={}", meta.end_position);
         (&bytes[meta.end_position..]).to_vec()
     }
 }

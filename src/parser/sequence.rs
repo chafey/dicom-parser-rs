@@ -31,39 +31,48 @@ impl<T: Encoding> SequenceParser<T> {
 
 impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
     fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
-        let mut remaining_bytes = if self.attribute.length == 0xFFFF_FFFF {
-            bytes
-        } else {
-            &bytes[0..self.attribute.length]
-        };
+        let mut remaining_bytes =
+            if self.attribute.length == 0xFFFF_FFFF || bytes.len() < self.attribute.length {
+                bytes
+            } else {
+                &bytes[0..(self.attribute.length - self.total_bytes_consumed)]
+            };
 
         let mut bytes_consumed = 0;
 
+        // create a stop handler for the Item Delimitation Item tag so we
+        // stop parsing at the end of this sequence item
+        let mut sequence_item_handler = StopHandler {
+            stop_fn: |x: &Attribute| x.tag == tag::ITEMDELIMITATIONITEM,
+            handler,
+        };
+
         while !remaining_bytes.is_empty() {
-            if bytes.len() < 8 {
-                return Ok(ParseResult::incomplete(0));
+            if self.parser.is_none() {
+                if remaining_bytes.len() < 8 {
+                    return Ok(ParseResult::incomplete(0));
+                }
+
+                let _sequence_item_length = parse_sequence_item::<T>(remaining_bytes)?;
+
+                remaining_bytes = &remaining_bytes[8..];
+                bytes_consumed += 8;
+                self.total_bytes_consumed += 8;
+
+                sequence_item_handler
+                    .handler
+                    .start_sequence_item(&self.attribute);
+
+                // if we don't have a parser already create one.  we will have one already
+                // if we are resuming..
+                self.parser = Some(Box::new(DataSetParser::<T>::default()));
             }
 
-            let _sequence_item_length = parse_sequence_item::<T>(remaining_bytes)?;
-
-            remaining_bytes = &remaining_bytes[8..];
-            bytes_consumed += 8;
-            self.total_bytes_consumed += 8;
-
-            handler.start_sequence_item(&self.attribute);
-
-            // create a stop handler for the Item Delimitation Item tag so we
-            // stop parsing at the end of this sequence item
-            let mut sequence_item_handler = StopHandler {
-                stop_fn: |x: &Attribute| x.tag == tag::ITEMDELIMITATIONITEM,
-                handler,
-            };
-
-            self.parser = Some(Box::new(DataSetParser::<T>::default()));
             let result = match &mut self.parser {
                 Some(parser) => parser.parse(&mut sequence_item_handler, remaining_bytes)?,
                 None => {
-                    return Err(()); // not possible...
+                    return Err(());
+                    //panic!("impossible")
                 }
             };
 
@@ -75,7 +84,9 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
                 return Ok(ParseResult::incomplete(bytes_consumed));
             }
 
-            handler.end_sequence_item(&self.attribute);
+            sequence_item_handler
+                .handler
+                .end_sequence_item(&self.attribute);
 
             remaining_bytes = &remaining_bytes[result.bytes_consumed..];
 
@@ -97,6 +108,7 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
                     bytes_consumed += 8;
                     break;
                 }
+                self.parser = None;
             }
         }
 

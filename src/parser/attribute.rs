@@ -18,56 +18,54 @@ pub struct AttributeParser<T: Encoding> {
 
 impl<T: 'static + Encoding> Parser<T> for AttributeParser<T> {
     fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
-        parse(handler, bytes)
-    }
-}
-
-fn parse<T: 'static + Encoding>(
-    handler: &mut dyn Handler,
-    bytes: &[u8],
-) -> Result<ParseResult<T>, ()> {
-    if bytes.len() < 6 {
-        return Ok(ParseResult::incomplete(0));
-    }
-
-    let (bytes_consumed, attribute) = parse_attribute::<T>(bytes)?;
-
-    match handler.element(&attribute) {
-        Control::Continue => {}
-        Control::Filter => {
-            // TODO: Skip data
+        if bytes.len() < 6 {
+            return Ok(ParseResult::incomplete(0));
         }
-        Control::Stop => {
-            return Ok(ParseResult::cancelled(0));
-        }
-    }
 
-    if attribute.vr == Some(VR::SQ) {
-        let parser = Box::new(SequenceParser::<T>::new(attribute));
-        Ok(ParseResult::partial(bytes_consumed, parser))
-    } else if is_encapsulated_pixel_data(&attribute) {
-        let parser = Box::new(BasicOffsetTableParser::<T> {
-            phantom: PhantomData,
-            attribute,
-        });
-        Ok(ParseResult::partial(bytes_consumed, parser))
-    } else if attribute.length == 0xFFFF_FFFF {
-        if is_sequence::<T>(&bytes[bytes_consumed..]) {
+        let (bytes_consumed, attribute) = match parse_attribute::<T>(bytes) {
+            Ok((bytes_consumed, attribute)) => (bytes_consumed, attribute),
+            Err(()) => {
+                return Ok(ParseResult::incomplete(0));
+            }
+        };
+
+        match handler.element(&attribute) {
+            Control::Continue => {}
+            Control::Filter => {
+                // TODO: Skip data
+            }
+            Control::Stop => {
+                return Ok(ParseResult::cancelled(0));
+            }
+        }
+
+        if attribute.vr == Some(VR::SQ) {
             let parser = Box::new(SequenceParser::<T>::new(attribute));
             Ok(ParseResult::partial(bytes_consumed, parser))
+        } else if is_encapsulated_pixel_data(&attribute) {
+            let parser = Box::new(BasicOffsetTableParser::<T> {
+                phantom: PhantomData,
+                attribute,
+            });
+            Ok(ParseResult::partial(bytes_consumed, parser))
+        } else if attribute.length == 0xFFFF_FFFF {
+            if is_sequence::<T>(&bytes[bytes_consumed..]) {
+                let parser = Box::new(SequenceParser::<T>::new(attribute));
+                Ok(ParseResult::partial(bytes_consumed, parser))
+            } else {
+                let parser = Box::new(DataUndefinedLengthParser::<T> {
+                    phantom: PhantomData,
+                    attribute,
+                });
+                Ok(ParseResult::partial(bytes_consumed, parser))
+            }
         } else {
-            let parser = Box::new(DataUndefinedLengthParser::<T> {
+            let parser = Box::new(DataParser::<T> {
                 phantom: PhantomData,
                 attribute,
             });
             Ok(ParseResult::partial(bytes_consumed, parser))
         }
-    } else {
-        let parser = Box::new(DataParser::<T> {
-            phantom: PhantomData,
-            attribute,
-        });
-        Ok(ParseResult::partial(bytes_consumed, parser))
     }
 }
 
@@ -81,7 +79,6 @@ fn parse_attribute<T: Encoding>(bytes: &[u8]) -> Result<(usize, Attribute), ()> 
         tag: Tag::new(group, element),
         vr,
         length,
-        had_unknown_length: false,
     };
     Ok((bytes_consumed, attribute))
 }
