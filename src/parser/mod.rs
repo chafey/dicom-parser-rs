@@ -27,9 +27,9 @@ impl<T: Encoding> ParseResult<T> {
         }
     }
 
-    pub fn incomplete() -> ParseResult<T> {
+    pub fn incomplete(bytes_consumed: usize) -> ParseResult<T> {
         ParseResult::<T> {
-            bytes_consumed: 0,
+            bytes_consumed,
             parser: None,
             state: ParseState::Incomplete,
         }
@@ -43,10 +43,10 @@ impl<T: Encoding> ParseResult<T> {
         }
     }
 
-    pub fn completed(bytes_consumed: usize, parser: Box<dyn Parser<T>>) -> ParseResult<T> {
+    pub fn completed(bytes_consumed: usize) -> ParseResult<T> {
         ParseResult::<T> {
             bytes_consumed,
-            parser: Some(parser),
+            parser: None,
             state: ParseState::Completed,
         }
     }

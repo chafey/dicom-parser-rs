@@ -1,10 +1,10 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
+use crate::handler::Control;
+use crate::handler::Handler;
 use crate::parser::basic_offset_table::BasicOffsetTableParser;
 use crate::parser::data::DataParser;
 use crate::parser::data_undefined_length::DataUndefinedLengthParser;
-use crate::handler::Control;
-use crate::handler::Handler;
 use crate::parser::sequence::SequenceParser;
 use crate::parser::ParseResult;
 use crate::parser::Parser;
@@ -27,7 +27,7 @@ fn parse<T: 'static + Encoding>(
     bytes: &[u8],
 ) -> Result<ParseResult<T>, ()> {
     if bytes.len() < 6 {
-        return Ok(ParseResult::incomplete());
+        return Ok(ParseResult::incomplete(0));
     }
 
     let (bytes_consumed, attribute) = parse_attribute::<T>(bytes)?;

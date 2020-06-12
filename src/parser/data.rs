@@ -1,7 +1,7 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
-use crate::parser::attribute::AttributeParser;
 use crate::handler::Handler;
+use crate::parser::attribute::AttributeParser;
 use crate::parser::ParseResult;
 use crate::parser::Parser;
 use std::marker::PhantomData;
@@ -17,7 +17,7 @@ impl<T: 'static + Encoding> Parser<T> for DataParser<T> {
     fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
         // make sure we have enough bytes for this data
         if bytes.len() < self.attribute.length {
-            return Ok(ParseResult::incomplete());
+            return Ok(ParseResult::incomplete(0));
         }
 
         // notify handler of data

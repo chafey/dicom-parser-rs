@@ -1,9 +1,9 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
 use crate::handler::stop::StopHandler;
+use crate::handler::Handler;
 use crate::parser::attribute::AttributeParser;
 use crate::parser::data_set::DataSetParser;
-use crate::handler::Handler;
 use crate::parser::ParseResult;
 use crate::parser::ParseState;
 use crate::parser::Parser;
@@ -13,24 +13,23 @@ use std::marker::PhantomData;
 
 pub struct SequenceParser<T: Encoding> {
     pub attribute: Attribute,
-    //parser: Option<Box<dyn Parser<T>>>,
+    parser: Option<Box<dyn Parser<T>>>,
     total_bytes_consumed: usize,
-    phantom: PhantomData<T>
+    phantom: PhantomData<T>,
 }
 
 impl<T: Encoding> SequenceParser<T> {
     pub fn new(attribute: Attribute) -> SequenceParser<T> {
         SequenceParser::<T> {
             attribute,
-            //parser: None,
+            parser: None,
             phantom: PhantomData,
-            total_bytes_consumed: 0
+            total_bytes_consumed: 0,
         }
     }
 }
 
 impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
-
     fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
         let mut remaining_bytes = if self.attribute.length == 0xFFFF_FFFF {
             bytes
@@ -42,7 +41,7 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
 
         while !remaining_bytes.is_empty() {
             if bytes.len() < 8 {
-                return Ok(ParseResult::incomplete());
+                return Ok(ParseResult::incomplete(0));
             }
 
             let _sequence_item_length = parse_sequence_item::<T>(remaining_bytes)?;
@@ -60,21 +59,25 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
                 handler,
             };
 
-            //self.parser = Some(Box::new(DataSetParser::<T>::new(&mut sequence_item_handler)));
-            //let mut parser = self.parser;
-            let mut parser = DataSetParser::<T>::new(&mut sequence_item_handler);
-            let (parse_state, consumed) = parser.parse(remaining_bytes)?;
+            self.parser = Some(Box::new(DataSetParser::<T>::default()));
+            let result = match &mut self.parser {
+                Some(parser) => parser.parse(&mut sequence_item_handler, remaining_bytes)?,
+                None => {
+                    return Err(()); // not possible...
+                }
+            };
 
-            if parse_state == ParseState::Incomplete {
+            bytes_consumed += result.bytes_consumed;
+
+            if result.state == ParseState::Incomplete {
                 // FIXME: we fail here because it will currently result in multiple
                 // calls to the handler for the same data when the parse is resumed.
-                return Err(());
+                return Ok(ParseResult::incomplete(bytes_consumed));
             }
 
             handler.end_sequence_item(&self.attribute);
 
-            remaining_bytes = &remaining_bytes[consumed..];
-            bytes_consumed += consumed;
+            remaining_bytes = &remaining_bytes[result.bytes_consumed..];
 
             // check for end of sequence
             if self.attribute.length == 0xFFFF_FFFF {
@@ -103,9 +106,6 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
         Ok(ParseResult::partial(bytes_consumed, parser))
     }
 }
-
-
-
 
 pub fn parse_sequence_item<T: Encoding>(bytes: &[u8]) -> Result<usize, ()> {
     let item_tag = Tag::from_bytes::<T>(&bytes[0..4]);

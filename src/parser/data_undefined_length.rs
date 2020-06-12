@@ -1,7 +1,7 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
-use crate::parser::attribute::AttributeParser;
 use crate::handler::Handler;
+use crate::parser::attribute::AttributeParser;
 use crate::parser::ParseResult;
 use crate::parser::Parser;
 use std::marker::PhantomData;
@@ -18,7 +18,7 @@ impl<T: 'static + Encoding> Parser<T> for DataUndefinedLengthParser<T> {
         // scan for sequence delimitation item
         let data_length = match find_end_of_data::<T>(bytes) {
             Err(()) => {
-                return Ok(ParseResult::incomplete());
+                return Ok(ParseResult::incomplete(0));
             }
             Ok(data_length) => data_length,
         };

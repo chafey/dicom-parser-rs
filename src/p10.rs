@@ -1,10 +1,10 @@
 use crate::encoding::ExplicitBigEndian;
 use crate::encoding::ExplicitLittleEndian;
 use crate::encoding::ImplicitLittleEndian;
+use crate::handler::Handler;
 use crate::meta_information;
 use crate::meta_information::MetaInformation;
 use crate::parser::data_set::parse_full;
-use crate::handler::Handler;
 use crate::parser::ParseError;
 
 pub fn parse<'a, T: Handler>(

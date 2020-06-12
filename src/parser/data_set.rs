@@ -1,62 +1,65 @@
 use crate::encoding::Encoding;
-use crate::parser::attribute::AttributeParser;
 use crate::handler::Handler;
+use crate::parser::attribute::AttributeParser;
 use crate::parser::ParseError;
+use crate::parser::ParseResult;
 use crate::parser::ParseState;
 use crate::parser::Parser;
 use std::marker::PhantomData;
 
-pub struct DataSetParser<'t, T: Encoding> {
-    handler: &'t mut dyn Handler,
+pub struct DataSetParser<T: Encoding> {
     parser: Option<Box<dyn Parser<T>>>,
     total_bytes_consumed: usize,
 }
 
-impl<'t, T: 'static + Encoding> DataSetParser<'t, T> {
-    pub fn new(handler: &'t mut dyn Handler) -> DataSetParser<'t, T> {
+impl<T: 'static + Encoding> DataSetParser<T> {
+    pub fn default() -> DataSetParser<T> {
         let parser = Box::new(AttributeParser::<T> {
             phantom: PhantomData,
         });
 
         DataSetParser {
-            handler,
             parser: Some(parser),
             total_bytes_consumed: 0,
         }
     }
+}
 
-    pub fn parse(&mut self, bytes: &[u8]) -> Result<(ParseState, usize), ()> {
+impl<T: 'static + Encoding> Parser<T> for DataSetParser<T> {
+    fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
         let mut remaining_bytes = bytes;
         let mut bytes_consumed = 0;
 
         while !remaining_bytes.is_empty() {
             match &mut self.parser {
                 Some(parser) => {
-                    let result = parser.parse(self.handler, remaining_bytes)?;
+                    let result = parser.parse(handler, remaining_bytes)?;
                     bytes_consumed += result.bytes_consumed;
                     self.total_bytes_consumed += result.bytes_consumed;
                     remaining_bytes = &remaining_bytes[result.bytes_consumed..];
                     match result.state {
                         ParseState::Cancelled => {
                             self.parser = None;
-                            return Ok((ParseState::Cancelled, bytes_consumed));
+                            return Ok(ParseResult::cancelled(bytes_consumed));
                         }
                         ParseState::Incomplete => {
-                            return Ok((ParseState::Incomplete, bytes_consumed));
+                            self.parser = result.parser;
+                            return Ok(ParseResult::incomplete(bytes_consumed));
                         }
                         ParseState::Partial => {
                             self.parser = result.parser;
+                            continue;
                         }
                         ParseState::Completed => {
                             self.parser = None;
-                            return Ok((ParseState::Completed, bytes_consumed));
+                            return Ok(ParseResult::completed(bytes_consumed));
                         }
                     }
                 }
                 None => return Err(()), // parsing cannot continue - either cancelled or completed
             };
         }
-        Ok((ParseState::Completed, bytes.len()))
+        Ok(ParseResult::completed(bytes_consumed))
     }
 }
 
@@ -67,13 +70,13 @@ pub fn parse_full<T: 'static + Encoding>(
     handler: &mut dyn Handler,
     bytes: &[u8],
 ) -> Result<(usize, bool), ParseError> {
-    let mut parser = DataSetParser::<T>::new(handler);
-    match parser.parse(bytes) {
-        Ok((parse_state, bytes_consumed)) => match parse_state {
-            ParseState::Cancelled => Ok((bytes_consumed, true)),
+    let mut parser = DataSetParser::<T>::default();
+    match parser.parse(handler, bytes) {
+        Ok(parse_result) => match parse_result.state {
+            ParseState::Cancelled => Ok((parse_result.bytes_consumed, true)),
             ParseState::Incomplete => Err(ParseError {}),
             ParseState::Partial => Err(ParseError {}),
-            ParseState::Completed => Ok((bytes_consumed, false)),
+            ParseState::Completed => Ok((parse_result.bytes_consumed, false)),
         },
         Err(()) => Err(ParseError {}),
     }
@@ -84,6 +87,7 @@ mod tests {
 
     use super::DataSetParser;
     use crate::parser::ParseState;
+    use crate::parser::Parser;
     //use crate::parser::ParseResult;
     use crate::test::tests::read_data_set_bytes_from_file;
     //use crate::parser::attribute::AttributeParser;
@@ -93,8 +97,9 @@ mod tests {
 
     fn parse_ele_data_set(bytes: &[u8]) -> Result<(ParseState, usize), ()> {
         let mut handler = DataSetHandler::default();
-        let mut parser = DataSetParser::<ExplicitLittleEndian>::new(&mut handler);
-        parser.parse(bytes)
+        let mut parser = DataSetParser::<ExplicitLittleEndian>::default();
+        let result = parser.parse(&mut handler, bytes).unwrap();
+        Ok((result.state, result.bytes_consumed))
     }
     #[test]
     fn parse_full_ok() {
