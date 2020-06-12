@@ -1,6 +1,6 @@
 use crate::attribute::Attribute;
 use crate::data_set::DataSet;
-use crate::parser::handler::{Control, Handler};
+use crate::handler::{Control, Handler};
 use crate::vr::VR;
 
 #[derive(Default)]

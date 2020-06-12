@@ -3,8 +3,8 @@ use crate::encoding::Encoding;
 use crate::parser::basic_offset_table::BasicOffsetTableParser;
 use crate::parser::data::DataParser;
 use crate::parser::data_undefined_length::DataUndefinedLengthParser;
-use crate::parser::handler::Control;
-use crate::parser::handler::Handler;
+use crate::handler::Control;
+use crate::handler::Handler;
 use crate::parser::sequence::SequenceParser;
 use crate::parser::ParseResult;
 use crate::parser::Parser;
@@ -43,10 +43,7 @@ fn parse<T: 'static + Encoding>(
     }
 
     if attribute.vr == Some(VR::SQ) {
-        let parser = Box::new(SequenceParser::<T> {
-            phantom: PhantomData,
-            attribute,
-        });
+        let parser = Box::new(SequenceParser::<T>::new(attribute));
         Ok(ParseResult::partial(bytes_consumed, parser))
     } else if is_encapsulated_pixel_data(&attribute) {
         let parser = Box::new(BasicOffsetTableParser::<T> {
@@ -56,10 +53,7 @@ fn parse<T: 'static + Encoding>(
         Ok(ParseResult::partial(bytes_consumed, parser))
     } else if attribute.length == 0xFFFF_FFFF {
         if is_sequence::<T>(&bytes[bytes_consumed..]) {
-            let parser = Box::new(SequenceParser::<T> {
-                attribute,
-                phantom: PhantomData,
-            });
+            let parser = Box::new(SequenceParser::<T>::new(attribute));
             Ok(ParseResult::partial(bytes_consumed, parser))
         } else {
             let parser = Box::new(DataUndefinedLengthParser::<T> {

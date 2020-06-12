@@ -4,7 +4,7 @@ use crate::encoding::ImplicitLittleEndian;
 use crate::meta_information;
 use crate::meta_information::MetaInformation;
 use crate::parser::data_set::parse_full;
-use crate::parser::handler::Handler;
+use crate::handler::Handler;
 use crate::parser::ParseError;
 
 pub fn parse<'a, T: Handler>(
@@ -97,7 +97,7 @@ mod tests {
         //(0008,9121) @ position 0x376 / 886
         let mut bytes = read_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm");
         let mut handler = DataSetHandler::default();
-        handler.print = true;
+        //handler.print = true;
         let result = parse(&mut handler, &mut bytes);
         assert!(result.is_ok());
         //println!("Parsed {:?} attributes", accumulator.attributes.len());
@@ -108,7 +108,7 @@ mod tests {
         //(0008,9121) @ position 0x376 / 886
         let mut bytes = read_file("tests/fixtures/IM00001.implicit_little_endian.dcm");
         let mut handler = DataSetHandler::default();
-        handler.print = true;
+        //handler.print = true;
         let result = parse(&mut handler, &mut bytes);
         assert!(result.is_ok());
         assert_eq!(94, handler.dataset.attributes.len());

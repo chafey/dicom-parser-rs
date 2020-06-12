@@ -3,7 +3,7 @@ use crate::encoding::Encoding;
 use crate::handler::stop::StopHandler;
 use crate::parser::attribute::AttributeParser;
 use crate::parser::data_set::DataSetParser;
-use crate::parser::handler::Handler;
+use crate::handler::Handler;
 use crate::parser::ParseResult;
 use crate::parser::ParseState;
 use crate::parser::Parser;
@@ -13,12 +13,24 @@ use std::marker::PhantomData;
 
 pub struct SequenceParser<T: Encoding> {
     pub attribute: Attribute,
-    pub phantom: PhantomData<T>,
+    //parser: Option<Box<dyn Parser<T>>>,
+    total_bytes_consumed: usize,
+    phantom: PhantomData<T>
 }
 
-impl<T: Encoding> SequenceParser<T> {}
+impl<T: Encoding> SequenceParser<T> {
+    pub fn new(attribute: Attribute) -> SequenceParser<T> {
+        SequenceParser::<T> {
+            attribute,
+            //parser: None,
+            phantom: PhantomData,
+            total_bytes_consumed: 0
+        }
+    }
+}
 
 impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
+
     fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
         let mut remaining_bytes = if self.attribute.length == 0xFFFF_FFFF {
             bytes
@@ -37,6 +49,7 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
 
             remaining_bytes = &remaining_bytes[8..];
             bytes_consumed += 8;
+            self.total_bytes_consumed += 8;
 
             handler.start_sequence_item(&self.attribute);
 
@@ -47,6 +60,8 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
                 handler,
             };
 
+            //self.parser = Some(Box::new(DataSetParser::<T>::new(&mut sequence_item_handler)));
+            //let mut parser = self.parser;
             let mut parser = DataSetParser::<T>::new(&mut sequence_item_handler);
             let (parse_state, consumed) = parser.parse(remaining_bytes)?;
 
@@ -88,6 +103,9 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
         Ok(ParseResult::partial(bytes_consumed, parser))
     }
 }
+
+
+
 
 pub fn parse_sequence_item<T: Encoding>(bytes: &[u8]) -> Result<usize, ()> {
     let item_tag = Tag::from_bytes::<T>(&bytes[0..4]);

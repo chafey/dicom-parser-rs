@@ -1,5 +1,5 @@
 use crate::attribute::Attribute;
-use crate::parser::handler::{Control, Handler};
+use crate::handler::{Control, Handler};
 
 pub type FilterFN = fn(&Attribute) -> bool;
 
