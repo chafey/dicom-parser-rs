@@ -50,7 +50,7 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
         while !remaining_bytes.is_empty() {
             if self.parser.is_none() {
                 if remaining_bytes.len() < 8 {
-                    return Ok(ParseResult::incomplete(0));
+                    return Ok(ParseResult::incomplete(bytes_consumed));
                 }
 
                 let _sequence_item_length = parse_sequence_item::<T>(remaining_bytes)?;
@@ -77,6 +77,7 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
             };
 
             bytes_consumed += result.bytes_consumed;
+            self.total_bytes_consumed += result.bytes_consumed;
 
             if result.state == ParseState::Incomplete {
                 // FIXME: we fail here because it will currently result in multiple

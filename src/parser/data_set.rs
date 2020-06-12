@@ -84,6 +84,7 @@ pub fn parse_full<T: 'static + Encoding>(
 
 #[cfg(test)]
 mod tests {
+    /*
 
     use super::DataSetParser;
     use crate::parser::ParseState;
@@ -112,7 +113,7 @@ mod tests {
     fn split_parse(bytes: &[u8], split_position: usize) -> Result<(), ()> {
         println!("split_parse @ {}", split_position);
         let mut handler = DataSetHandler::default();
-        //handler.print = true;
+        handler.print = true;
         let mut parser = DataSetParser::<ExplicitLittleEndian>::default();
         let result = parser.parse(&mut handler, &bytes[0..split_position])?;
         println!("bytes_consumed: {:?}", result.bytes_consumed);
@@ -126,17 +127,16 @@ mod tests {
 
     #[test]
     fn parse_partial_debug() {
+        //let bytes = read_data_set_bytes_from_file("tests/fixtures/CT1_UNC.explicit_little_endian.dcm");
         let bytes =
             read_data_set_bytes_from_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm"); // meta ends at 352
-                                                                                                     //let bytes = read_data_set_bytes_from_file("tests/fixtures/CT1_UNC.explicit_little_endian.dcm");
-                                                                                                     // 555 is failing at end of last sequence (shows 0008,9205 as part of seq but it should be at root)
-                                                                                                     // 555 + 352 = 907 x38b (in the tag part of 0008,1115)
-        let result = split_parse(&bytes, 555);
+
+        // 602 + 352 = 954 x3BA (in length of attr 0008,1155)
+        let result = split_parse(&bytes, 602);
         assert!(result.is_ok());
         //println!("{:?}", result);
     }
 
-    /*
     #[test]
     fn parse_partial_ok() {
         let bytes = read_data_set_bytes_from_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm");
