@@ -4,13 +4,25 @@ use crate::handler::{Control, Handler};
 pub type StopFN = fn(&Attribute) -> bool;
 
 pub struct StopHandler<'t> {
-    pub stop_fn: StopFN,
+    pub stopped: bool,
     pub handler: &'t mut dyn Handler,
+    pub stop_fn: StopFN,
+}
+
+impl<'t> StopHandler<'t> {
+    pub fn new(handler: &'t mut dyn Handler, stop_fn: StopFN) -> StopHandler<'t> {
+        StopHandler {
+            stopped: false,
+            handler,
+            stop_fn,
+        }
+    }
 }
 
 impl Handler for StopHandler<'_> {
     fn element(&mut self, attribute: &Attribute) -> Control {
         if (self.stop_fn)(&attribute) {
+            self.stopped = true;
             return Control::Stop;
         }
         self.handler.element(&attribute)

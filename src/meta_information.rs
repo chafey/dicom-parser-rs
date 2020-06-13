@@ -47,10 +47,7 @@ pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
 
     let mut data_set_handler = DataSetHandler::default();
 
-    let mut handler = StopHandler {
-        stop_fn: |x: &Attribute| x.tag.group != 2,
-        handler: &mut data_set_handler,
-    };
+    let mut handler = StopHandler::new(&mut data_set_handler, |x: &Attribute| x.tag.group != 2);
 
     let end_position =
         match data_set::parse_full::<ExplicitLittleEndian>(&mut handler, &bytes[132..]) {

@@ -43,7 +43,6 @@ impl<T: 'static + Encoding> Parser<T> for DataSetParser<T> {
                             return Ok(ParseResult::cancelled(bytes_consumed));
                         }
                         ParseState::Incomplete => {
-                            //self.parser = result.parser;
                             return Ok(ParseResult::incomplete(bytes_consumed));
                         }
                         ParseState::Partial => {
@@ -60,6 +59,12 @@ impl<T: 'static + Encoding> Parser<T> for DataSetParser<T> {
             };
         }
         Ok(ParseResult::completed(bytes_consumed))
+
+        /*        if last_parse_state == ParseState::Completed {
+            Ok(ParseResult::completed(bytes_consumed))
+        } else {
+            Ok(ParseResult::completed(bytes_consumed))
+        }*/
     }
 }
 
@@ -131,8 +136,8 @@ mod tests {
         let bytes =
             read_data_set_bytes_from_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm"); // meta ends at 352
 
-        // 602 + 352 = 954 x3BA (in length of attr 0008,1155)
-        let result = split_parse(&bytes, 602);
+        // 628 + 352 = 980 x3D4 (in tag of attr 0008,1155)
+        let result = split_parse(&bytes, 628);
         assert!(result.is_ok());
         //println!("{:?}", result);
     }
