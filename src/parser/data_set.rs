@@ -50,8 +50,10 @@ impl<T: 'static + Encoding> Parser<T> for DataSetParser<T> {
                             continue;
                         }
                         ParseState::Completed => {
-                            self.parser = None;
-                            return Ok(ParseResult::completed(bytes_consumed));
+                            self.parser = Some(Box::new(AttributeParser::<T> {
+                                phantom: PhantomData,
+                            }));
+                            continue;
                         }
                     }
                 }
@@ -89,7 +91,6 @@ pub fn parse_full<T: 'static + Encoding>(
 
 #[cfg(test)]
 mod tests {
-    /*
 
     use super::DataSetParser;
     use crate::parser::ParseState;
@@ -118,7 +119,7 @@ mod tests {
     fn split_parse(bytes: &[u8], split_position: usize) -> Result<(), ()> {
         println!("split_parse @ {}", split_position);
         let mut handler = DataSetHandler::default();
-        handler.print = true;
+        //handler.print = true;
         let mut parser = DataSetParser::<ExplicitLittleEndian>::default();
         let result = parser.parse(&mut handler, &bytes[0..split_position])?;
         println!("bytes_consumed: {:?}", result.bytes_consumed);
@@ -137,11 +138,12 @@ mod tests {
             read_data_set_bytes_from_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm"); // meta ends at 352
 
         // 628 + 352 = 980 x3D4 (in tag of attr 0008,1155)
-        let result = split_parse(&bytes, 628);
+        let result = split_parse(&bytes, 566);
         assert!(result.is_ok());
         //println!("{:?}", result);
     }
 
+    /*
     #[test]
     fn parse_partial_ok() {
         let bytes = read_data_set_bytes_from_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm");
@@ -151,5 +153,6 @@ mod tests {
             assert!(result.is_ok());
         }
         //println!("{:?}", result);
-    }*/
+    }
+    */
 }

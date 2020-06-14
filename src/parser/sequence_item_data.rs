@@ -43,7 +43,13 @@ impl<T: 'static + Encoding> Parser<T> for SequenceItemDataParser<T> {
 
         self.total_bytes_consumed += parse_result.bytes_consumed;
 
-        if sequence_item_handler.stopped || self.total_bytes_consumed == self.item_length {
+        if sequence_item_handler.stopped {
+            self.total_bytes_consumed += 8;
+        }
+
+        if sequence_item_handler.stopped {
+            Ok(ParseResult::completed(parse_result.bytes_consumed + 8))
+        } else if self.total_bytes_consumed == self.item_length {
             Ok(ParseResult::completed(parse_result.bytes_consumed))
         } else {
             Ok(parse_result)
@@ -85,7 +91,7 @@ mod tests {
             print: false,
         };
         let result = parser.parse(&mut handler, &bytes[..]).unwrap();
-        assert_eq!(result.bytes_consumed, 12);
+        assert_eq!(result.bytes_consumed, 20);
         assert_eq!(result.state, ParseState::Completed);
     }
 
