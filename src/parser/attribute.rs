@@ -76,8 +76,14 @@ impl<T: 'static + Encoding> Parser<T> for AttributeParser<T> {
 fn parse_attribute<T: Encoding>(bytes: &[u8]) -> Result<(usize, Attribute), ()> {
     let group = T::u16(&bytes[0..2]);
     let element = T::u16(&bytes[2..4]);
+    let tag = Tag::new(group, element);
 
-    let (vr, length, bytes_consumed) = T::vr_and_length(&bytes)?;
+    let (vr, length, bytes_consumed) = if is_sequence_tag(tag) {
+        let length = T::u32(&bytes[4..8]) as usize;
+        (None, length, 4)
+    } else {
+        T::vr_and_length(&bytes)?
+    };
 
     let attribute = Attribute {
         tag: Tag::new(group, element),
@@ -85,6 +91,10 @@ fn parse_attribute<T: Encoding>(bytes: &[u8]) -> Result<(usize, Attribute), ()> 
         length,
     };
     Ok((bytes_consumed, attribute))
+}
+
+fn is_sequence_tag(tag: Tag) -> bool {
+    tag.group == 0xFFFE && (tag.element == 0xE000 || tag.element == 0xE00D || tag.element == 0xE0DD)
 }
 
 fn is_encapsulated_pixel_data(attribute: &Attribute) -> bool {
