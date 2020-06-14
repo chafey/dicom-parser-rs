@@ -46,7 +46,9 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
                     if remaining_bytes.len() < 8 {
                         return Ok(ParseResult::incomplete(0));
                     }
-                    let (tag, length) = parse_tag_and_length::<T>(bytes);
+                    let (tag, length) = parse_tag_and_length::<T>(remaining_bytes);
+
+                    //println!("Parser Tag {:?} with length {}", tag, length);
 
                     // if we have undefined length, check for sequence delimitation item
                     if self.attribute.length == 0xFFFF_FFFF && tag == tag::SEQUENCEDELIMITATIONITEM
@@ -98,7 +100,12 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
             }
         }
 
-        Ok(ParseResult::completed(bytes_consumed))
+        if self.attribute.length == 0xFFFF_FFFF || self.total_bytes_consumed < self.attribute.length
+        {
+            Ok(ParseResult::incomplete(bytes_consumed))
+        } else {
+            Ok(ParseResult::completed(bytes_consumed))
+        }
     }
 }
 

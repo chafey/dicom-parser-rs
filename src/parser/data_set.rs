@@ -119,7 +119,7 @@ mod tests {
     fn split_parse(bytes: &[u8], split_position: usize) -> Result<(), ()> {
         println!("split_parse @ {}", split_position);
         let mut handler = DataSetHandler::default();
-        //handler.print = true;
+        handler.print = true;
         let mut parser = DataSetParser::<ExplicitLittleEndian>::default();
         let result = parser.parse(&mut handler, &bytes[0..split_position])?;
         println!("bytes_consumed: {:?}", result.bytes_consumed);
@@ -137,12 +137,11 @@ mod tests {
         let bytes =
             read_data_set_bytes_from_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm"); // meta ends at 352
 
-        // 628 + 352 = 980 x3D4 (in tag of attr 0008,1155)
-        let result = split_parse(&bytes, 566);
+        // 1569 + 352 = 1921 x781 (in tag of seq item )
+        let result = split_parse(&bytes, 1569);
         assert!(result.is_ok());
         //println!("{:?}", result);
     }
-
     /*
     #[test]
     fn parse_partial_ok() {

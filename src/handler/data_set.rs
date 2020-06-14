@@ -16,7 +16,7 @@ impl Handler for DataSetHandler {
             println!("{: <width$}{:?}", "", attribute, width = (self.depth * 2));
             if let Some(vr) = attribute.vr {
                 if vr == VR::SQ {
-                    println!("{: <width$}\\/", "", width = (self.depth * 2));
+                    println!("{: <width$}\\ begin_sequence", "", width = (self.depth * 2));
                 }
             }
         }
@@ -27,7 +27,7 @@ impl Handler for DataSetHandler {
     fn data(&mut self, _attribute: &Attribute, data: &[u8]) {
         if self.print {
             println!(
-                "{: <width$}  \\ data of len {:?}",
+                "{: <width$}+ data of len {:?}",
                 " ",
                 data.len(),
                 width = (self.depth * 2)
@@ -38,7 +38,12 @@ impl Handler for DataSetHandler {
 
     fn start_sequence_item(&mut self, _attribute: &Attribute) {
         if self.print {
-            println!("{: <width$} {{", "", width = (self.depth * 2));
+            //println!("start_sequence_item {:?}", _attribute.tag);
+            println!(
+                "{: <width$} {{ start_sequence_item",
+                "",
+                width = (self.depth * 2)
+            );
         }
         self.depth += 1;
     }
@@ -46,7 +51,12 @@ impl Handler for DataSetHandler {
     fn end_sequence_item(&mut self, _attribute: &Attribute) {
         self.depth -= 1;
         if self.print {
-            println!("{: <width$} }}", "", width = (self.depth * 2));
+            //println!("end_sequence_item for {:?}", _attribute.tag);
+            println!(
+                "{: <width$} }} end_sequence_item",
+                "",
+                width = (self.depth * 2)
+            );
         }
     }
 

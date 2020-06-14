@@ -51,6 +51,9 @@ impl<T: 'static + Encoding> Parser<T> for SequenceItemDataParser<T> {
             Ok(ParseResult::completed(parse_result.bytes_consumed + 8))
         } else if self.total_bytes_consumed == self.item_length {
             Ok(ParseResult::completed(parse_result.bytes_consumed))
+        } else if self.total_bytes_consumed < self.item_length {
+            // TODO: may want to change state here...
+            Ok(ParseResult::incomplete(parse_result.bytes_consumed))
         } else {
             Ok(parse_result)
         }
