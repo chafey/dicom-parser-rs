@@ -12,8 +12,10 @@ pub trait Handler {
         Control::Continue
     }
     fn data(&mut self, _attribute: &Attribute, _data: &[u8]) {}
+    fn start_sequence(&mut self, _attribute: &Attribute) {}
     fn start_sequence_item(&mut self, _attribute: &Attribute) {}
     fn end_sequence_item(&mut self, _attribute: &Attribute) {}
+    fn end_sequence(&mut self, _attribute: &Attribute) {}
     fn basic_offset_table(&mut self, _attribute: &Attribute, _data: &[u8]) -> Control {
         Control::Continue
     }

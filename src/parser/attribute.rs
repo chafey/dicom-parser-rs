@@ -44,6 +44,7 @@ impl<T: 'static + Encoding> Parser<T> for AttributeParser<T> {
         }
 
         if attribute.vr == Some(VR::SQ) {
+            handler.start_sequence(&attribute);
             let parser = Box::new(SequenceParser::<T>::new(attribute));
             Ok(ParseResult::partial(bytes_consumed, parser))
         } else if is_encapsulated_pixel_data(&attribute) {
@@ -54,6 +55,7 @@ impl<T: 'static + Encoding> Parser<T> for AttributeParser<T> {
             Ok(ParseResult::partial(bytes_consumed, parser))
         } else if attribute.length == 0xFFFF_FFFF {
             if is_sequence::<T>(&bytes[bytes_consumed..]) {
+                handler.start_sequence(&attribute);
                 let parser = Box::new(SequenceParser::<T>::new(attribute));
                 Ok(ParseResult::partial(bytes_consumed, parser))
             } else {

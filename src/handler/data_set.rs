@@ -1,7 +1,6 @@
 use crate::attribute::Attribute;
 use crate::data_set::DataSet;
 use crate::handler::{Control, Handler};
-use crate::vr::VR;
 
 #[derive(Default)]
 pub struct DataSetHandler {
@@ -13,12 +12,7 @@ pub struct DataSetHandler {
 impl Handler for DataSetHandler {
     fn element(&mut self, attribute: &Attribute) -> Control {
         if self.print {
-            println!("{: <width$}{:?}", "", attribute, width = (self.depth * 2));
-            if let Some(vr) = attribute.vr {
-                if vr == VR::SQ {
-                    println!("{: <width$}\\ begin_sequence", "", width = (self.depth * 2));
-                }
-            }
+            println!("{:-<width$}{:?}", "-", attribute, width = (self.depth * 2));
         }
         self.dataset.attributes.push(*attribute);
         Control::Continue
@@ -27,8 +21,8 @@ impl Handler for DataSetHandler {
     fn data(&mut self, _attribute: &Attribute, data: &[u8]) {
         if self.print {
             println!(
-                "{: <width$}+ data of len {:?}",
-                " ",
+                "{:-<width$}+ data of len {:?}",
+                "-",
                 data.len(),
                 width = (self.depth * 2)
             );
@@ -36,14 +30,17 @@ impl Handler for DataSetHandler {
         self.dataset.data.push(data.to_vec());
     }
 
+    fn start_sequence(&mut self, _attribute: &Attribute) {
+        if self.print {
+            println!("{:-<width$}[", "-", width = (self.depth * 2));
+        }
+        self.depth += 1;
+    }
+
     fn start_sequence_item(&mut self, _attribute: &Attribute) {
         if self.print {
             //println!("start_sequence_item {:?}", _attribute.tag);
-            println!(
-                "{: <width$} {{ start_sequence_item",
-                "",
-                width = (self.depth * 2)
-            );
+            println!("{:-<width$}{{", "-", width = (self.depth * 2));
         }
         self.depth += 1;
     }
@@ -52,19 +49,22 @@ impl Handler for DataSetHandler {
         self.depth -= 1;
         if self.print {
             //println!("end_sequence_item for {:?}", _attribute.tag);
-            println!(
-                "{: <width$} }} end_sequence_item",
-                "",
-                width = (self.depth * 2)
-            );
+            println!("{:-<width$}}}", "-", width = (self.depth * 2));
+        }
+    }
+
+    fn end_sequence(&mut self, _attribute: &Attribute) {
+        self.depth -= 1;
+        if self.print {
+            println!("{: <width$}]", "-", width = (self.depth * 2));
         }
     }
 
     fn basic_offset_table(&mut self, _attribute: &Attribute, data: &[u8]) -> Control {
         if self.print {
             println!(
-                "{: <width$}  \\ basic offsett table of len {:?}",
-                " ",
+                "{:-<width$}  \\ basic offsett table of len {:?}",
+                "-",
                 data.len(),
                 width = (self.depth * 2)
             );
@@ -76,8 +76,8 @@ impl Handler for DataSetHandler {
     fn pixel_data_fragment(&mut self, _attribute: &Attribute, data: &[u8]) -> Control {
         if self.print {
             println!(
-                "{: <width$}  \\ pixel data fragment of len {:?}",
-                " ",
+                "{:-<width$}  \\ pixel data fragment of len {:?}",
+                "-",
                 data.len(),
                 width = (self.depth * 2)
             );

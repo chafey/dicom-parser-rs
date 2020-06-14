@@ -104,6 +104,7 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
         {
             Ok(ParseResult::incomplete(bytes_consumed))
         } else {
+            handler.end_sequence(&self.attribute);
             Ok(ParseResult::completed(bytes_consumed))
         }
     }
