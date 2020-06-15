@@ -22,11 +22,6 @@ impl<T: 'static + Encoding> Parser<T> for PixelDataFragmentParser<T> {
         let item_tag = Tag::from_bytes::<T>(bytes);
         let item_length = T::u32(&bytes[4..8]) as usize;
 
-        // check for sequence delimeter item
-        if item_tag.group == 0xFFFE && item_tag.element == 0xE0DD {
-            return Ok(ParseResult::completed(8));
-        }
-
         // check for sequence item
         if item_tag != Tag::new(0xFFFE, 0xE000) {
             return Err(());

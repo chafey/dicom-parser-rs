@@ -13,7 +13,7 @@ use std::marker::PhantomData;
 pub struct EncapsulatedPixelDataParser<T: Encoding> {
     pub attribute: Attribute,
     parser: Box<dyn Parser<T>>,
-    total_consumed: usize,
+    total_bytes_consumed: usize,
 }
 
 impl<T: 'static + Encoding> EncapsulatedPixelDataParser<T> {
@@ -24,7 +24,7 @@ impl<T: 'static + Encoding> EncapsulatedPixelDataParser<T> {
                 attribute,
                 phantom: PhantomData,
             }),
-            total_consumed: 0,
+            total_bytes_consumed: 0,
         }
     }
 }
@@ -45,7 +45,8 @@ impl<T: 'static + Encoding> Parser<T> for EncapsulatedPixelDataParser<T> {
             }
 
             let parse_result = self.parser.parse(handler, remaining_bytes)?;
-            self.total_consumed += parse_result.bytes_consumed;
+
+            self.total_bytes_consumed += parse_result.bytes_consumed;
             remaining_bytes = &remaining_bytes[parse_result.bytes_consumed..];
             bytes_consumed += parse_result.bytes_consumed;
 

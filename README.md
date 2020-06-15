@@ -44,4 +44,5 @@ Actively being developed (June 15, 2020)
 * [ ] Create handler that produces DICOM JSON?
 * [ ] Consider helpers to convert attribute data into rust types (e.g. strings, numbers, etc)
 * [ ] Consider adding TagCancelHandler to cancel parsing on specific tag (or tags)
-
+* [ ] Consider consolidating PixelDataFragmentParser and BasicOffsetTableParser into EncapsulatedPixelDataParser
+* [ ] Refactor parse_tag_and_length() so we don't have two of them - perhaps replace with parse_attribute()?

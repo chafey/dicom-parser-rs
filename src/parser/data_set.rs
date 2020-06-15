@@ -134,6 +134,7 @@ mod tests {
         assert!(result.is_ok());
         //println!("{:?}", result);
     }
+    /*
     #[test]
     fn parse_partial_ok() {
         //let bytes = read_data_set_bytes_from_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm");
@@ -146,4 +147,5 @@ mod tests {
         }
         //println!("{:?}", result);
     }
+    */
 }
