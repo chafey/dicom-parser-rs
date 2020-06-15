@@ -1,7 +1,7 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
 use crate::handler::Handler;
-use crate::parser::encapsulated_pixel_data::EncapsulatedPixelDataParser;
+use crate::parser::pixel_data_fragment::PixelDataFragmentParser;
 use crate::parser::ParseResult;
 use crate::parser::Parser;
 use crate::tag::Tag;
@@ -37,7 +37,7 @@ impl<T: 'static + Encoding> Parser<T> for BasicOffsetTableParser<T> {
         handler.basic_offset_table(&self.attribute, &bytes[8..(8 + item_length)]);
 
         // read the encapsulated pixel data
-        let parser = Box::new(EncapsulatedPixelDataParser::<T> {
+        let parser = Box::new(PixelDataFragmentParser::<T> {
             attribute: self.attribute,
             phantom: PhantomData,
         });

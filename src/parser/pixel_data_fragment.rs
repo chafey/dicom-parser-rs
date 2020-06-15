@@ -7,14 +7,14 @@ use crate::parser::Parser;
 use crate::tag::Tag;
 use std::marker::PhantomData;
 
-pub struct EncapsulatedPixelDataParser<T: Encoding> {
+pub struct PixelDataFragmentParser<T: Encoding> {
     pub attribute: Attribute,
     pub phantom: PhantomData<T>,
 }
 
-impl<T: Encoding> EncapsulatedPixelDataParser<T> {}
+impl<T: Encoding> PixelDataFragmentParser<T> {}
 
-impl<T: 'static + Encoding> Parser<T> for EncapsulatedPixelDataParser<T> {
+impl<T: 'static + Encoding> Parser<T> for PixelDataFragmentParser<T> {
     fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
         // read item tag and length
         if bytes.len() < 8 {
@@ -45,7 +45,7 @@ impl<T: 'static + Encoding> Parser<T> for EncapsulatedPixelDataParser<T> {
         handler.pixel_data_fragment(&self.attribute, &bytes[8..(8 + item_length)]);
 
         // read the encapsulated pixel data
-        let parser = Box::new(EncapsulatedPixelDataParser::<T> {
+        let parser = Box::new(PixelDataFragmentParser::<T> {
             attribute: self.attribute,
             phantom: PhantomData,
         });
