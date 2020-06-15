@@ -30,11 +30,17 @@ impl Handler for StopHandler<'_> {
     fn data(&mut self, attribute: &Attribute, data: &[u8]) {
         self.handler.data(&attribute, data)
     }
+    fn start_sequence(&mut self, attribute: &Attribute) {
+        self.handler.start_sequence(&attribute)
+    }
     fn start_sequence_item(&mut self, attribute: &Attribute) {
         self.handler.start_sequence_item(&attribute)
     }
     fn end_sequence_item(&mut self, attribute: &Attribute) {
         self.handler.end_sequence_item(&attribute)
+    }
+    fn end_sequence(&mut self, attribute: &Attribute) {
+        self.handler.end_sequence(&attribute)
     }
     fn basic_offset_table(&mut self, attribute: &Attribute, data: &[u8]) -> Control {
         self.handler.basic_offset_table(&attribute, data)

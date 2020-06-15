@@ -39,7 +39,6 @@ impl Handler for DataSetHandler {
 
     fn start_sequence_item(&mut self, _attribute: &Attribute) {
         if self.print {
-            //println!("start_sequence_item {:?}", _attribute.tag);
             println!("{:-<width$}{{", "-", width = (self.depth * 2));
         }
         self.depth += 1;
@@ -48,7 +47,6 @@ impl Handler for DataSetHandler {
     fn end_sequence_item(&mut self, _attribute: &Attribute) {
         self.depth -= 1;
         if self.print {
-            //println!("end_sequence_item for {:?}", _attribute.tag);
             println!("{:-<width$}}}", "-", width = (self.depth * 2));
         }
     }
@@ -69,7 +67,6 @@ impl Handler for DataSetHandler {
                 width = (self.depth * 2)
             );
         }
-        //self.dataset.data.push(data.to_vec());
         Control::Continue
     }
 

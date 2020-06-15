@@ -48,8 +48,6 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
                     }
                     let (tag, length) = parse_tag_and_length::<T>(remaining_bytes);
 
-                    //println!("Parser Tag {:?} with length {}", tag, length);
-
                     // if we have undefined length, check for sequence delimitation item
                     if self.attribute.length == 0xFFFF_FFFF && tag == tag::SEQUENCEDELIMITATIONITEM
                     {
@@ -87,7 +85,6 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
                         ParseState::Partial => {
                             // This may not be possible?
                             panic!("not possible?");
-                            //continue;
                         }
                         ParseState::Completed => {
                             // this is what we expect in normal happy path

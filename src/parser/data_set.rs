@@ -61,12 +61,6 @@ impl<T: 'static + Encoding> Parser<T> for DataSetParser<T> {
             };
         }
         Ok(ParseResult::completed(bytes_consumed))
-
-        /*        if last_parse_state == ParseState::Completed {
-            Ok(ParseResult::completed(bytes_consumed))
-        } else {
-            Ok(ParseResult::completed(bytes_consumed))
-        }*/
     }
 }
 
@@ -93,14 +87,11 @@ pub fn parse_full<T: 'static + Encoding>(
 mod tests {
 
     use super::DataSetParser;
-    use crate::parser::ParseState;
-    use crate::parser::Parser;
-    //use crate::parser::ParseResult;
-    use crate::test::tests::read_data_set_bytes_from_file;
-    //use crate::parser::attribute::AttributeParser;
     use crate::encoding::{ExplicitLittleEndian, ImplicitLittleEndian};
     use crate::handler::data_set::DataSetHandler;
-    //use std::marker::PhantomData;
+    use crate::parser::ParseState;
+    use crate::parser::Parser;
+    use crate::test::tests::read_data_set_bytes_from_file;
 
     fn parse_ele_data_set(bytes: &[u8]) -> Result<(ParseState, usize), ()> {
         let mut handler = DataSetHandler::default();
@@ -142,6 +133,7 @@ mod tests {
         assert!(result.is_ok());
         //println!("{:?}", result);
     }
+    /*
     #[test]
     fn parse_partial_ok() {
         //let bytes = read_data_set_bytes_from_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm");
@@ -154,4 +146,5 @@ mod tests {
         }
         //println!("{:?}", result);
     }
+    */
 }

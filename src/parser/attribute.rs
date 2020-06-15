@@ -29,10 +29,6 @@ impl<T: 'static + Encoding> Parser<T> for AttributeParser<T> {
             }
         };
 
-        /*if attribute.tag.group == 0x0020 && attribute.tag.element == 0x000e {
-            let foo = 0;
-        }*/
-
         match handler.element(&attribute) {
             Control::Continue => {}
             Control::Filter => {

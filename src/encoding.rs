@@ -8,7 +8,6 @@ pub trait Encoding: fmt::Debug {
     fn vr_and_length(bytes: &[u8]) -> Result<(Option<VR>, usize, usize), ()>;
 }
 
-//#[allow(dead_code)]
 pub struct ExplicitLittleEndian {}
 
 impl fmt::Debug for ExplicitLittleEndian {
