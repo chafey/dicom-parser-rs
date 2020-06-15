@@ -44,7 +44,7 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
             match &mut self.parser {
                 None => {
                     if remaining_bytes.len() < 8 {
-                        return Ok(ParseResult::incomplete(0));
+                        return Ok(ParseResult::incomplete(bytes_consumed));
                     }
                     let (tag, length) = parse_tag_and_length::<T>(remaining_bytes);
 

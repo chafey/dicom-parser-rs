@@ -16,11 +16,12 @@ impl<T: Encoding> EncapsulatedPixelDataParser<T> {}
 
 impl<T: 'static + Encoding> Parser<T> for EncapsulatedPixelDataParser<T> {
     fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
-        // read item tag
-        if bytes.len() < 4 {
+        // read item tag and length
+        if bytes.len() < 8 {
             return Ok(ParseResult::incomplete(0));
         }
         let item_tag = Tag::from_bytes::<T>(bytes);
+        let item_length = T::u32(&bytes[4..8]) as usize;
 
         // check for sequence delimeter item
         if item_tag.group == 0xFFFE && item_tag.element == 0xE0DD {
@@ -34,12 +35,6 @@ impl<T: 'static + Encoding> Parser<T> for EncapsulatedPixelDataParser<T> {
         if item_tag != Tag::new(0xFFFE, 0xE000) {
             return Err(());
         }
-
-        // read item length
-        if bytes.len() < 8 {
-            return Ok(ParseResult::incomplete(0));
-        }
-        let item_length = T::u32(&bytes[4..8]) as usize;
 
         // make sure we have enough bytes for the item value
         if bytes.len() < item_length + 8 {

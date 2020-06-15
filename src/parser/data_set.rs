@@ -135,23 +135,23 @@ mod tests {
     fn parse_partial_debug() {
         //let bytes = read_data_set_bytes_from_file("tests/fixtures/CT1_UNC.explicit_little_endian.dcm");
         let bytes =
-            read_data_set_bytes_from_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm"); // meta ends at 352
+            read_data_set_bytes_from_file("tests/fixtures/IM00001.implicit_little_endian.dcm"); // meta ends at 352
 
-        // 1569 + 352 = 1921 x781 (in tag of seq item )
-        let result = split_parse(&bytes, 1569);
+        // 89236 + 352 = 89588 x15d4 (in tag of seq item )
+        let result = split_parse(&bytes, 0);
         assert!(result.is_ok());
         //println!("{:?}", result);
     }
-    /*
     #[test]
     fn parse_partial_ok() {
-        let bytes = read_data_set_bytes_from_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm");
+        //let bytes = read_data_set_bytes_from_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm");
         //let bytes = read_data_set_bytes_from_file("tests/fixtures/CT1_UNC.explicit_little_endian.dcm");
+        let bytes =
+            read_data_set_bytes_from_file("tests/fixtures/IM00001.implicit_little_endian.dcm");
         for i in 0..bytes.len() {
             let result = split_parse(&bytes, i);
             assert!(result.is_ok());
         }
         //println!("{:?}", result);
     }
-    */
 }
