@@ -54,6 +54,10 @@ impl<T: 'static + Encoding> Parser<T> for AttributeParser<T> {
             });
             Ok(ParseResult::partial(bytes_consumed, parser))
         } else if attribute.length == 0xFFFF_FFFF {
+            if bytes.len() <= 8 + bytes_consumed {
+                return Ok(ParseResult::incomplete(bytes_consumed));
+            }
+
             if is_sequence::<T>(&bytes[bytes_consumed..]) {
                 handler.start_sequence(&attribute);
                 let parser = Box::new(SequenceParser::<T>::new(attribute));
@@ -81,6 +85,9 @@ fn parse_attribute<T: Encoding>(bytes: &[u8]) -> Result<(usize, Attribute), ()> 
     let tag = Tag::new(group, element);
 
     let (vr, length, bytes_consumed) = if is_sequence_tag(tag) {
+        if bytes.len() < 8 {
+            return Err(());
+        }
         let length = T::u32(&bytes[4..8]) as usize;
         (None, length, 4)
     } else {

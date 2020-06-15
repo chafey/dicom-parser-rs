@@ -98,7 +98,7 @@ mod tests {
     //use crate::parser::ParseResult;
     use crate::test::tests::read_data_set_bytes_from_file;
     //use crate::parser::attribute::AttributeParser;
-    use crate::encoding::ExplicitLittleEndian;
+    use crate::encoding::{ExplicitLittleEndian, ImplicitLittleEndian};
     use crate::handler::data_set::DataSetHandler;
     //use std::marker::PhantomData;
 
@@ -119,8 +119,8 @@ mod tests {
     fn split_parse(bytes: &[u8], split_position: usize) -> Result<(), ()> {
         println!("split_parse @ {}", split_position);
         let mut handler = DataSetHandler::default();
-        handler.print = true;
-        let mut parser = DataSetParser::<ExplicitLittleEndian>::default();
+        //handler.print = true;
+        let mut parser = DataSetParser::<ImplicitLittleEndian>::default();
         let result = parser.parse(&mut handler, &bytes[0..split_position])?;
         println!("bytes_consumed: {:?}", result.bytes_consumed);
         //println!("state: {:?}", result.state);
@@ -137,8 +137,8 @@ mod tests {
         let bytes =
             read_data_set_bytes_from_file("tests/fixtures/IM00001.implicit_little_endian.dcm"); // meta ends at 352
 
-        // 89236 + 352 = 89588 x15d4 (in tag of seq item )
-        let result = split_parse(&bytes, 0);
+        // 762 + 336 = 1098 x44a (in length of ITEMDELIMITATIONITEM )
+        let result = split_parse(&bytes, 762);
         assert!(result.is_ok());
         //println!("{:?}", result);
     }
@@ -148,7 +148,7 @@ mod tests {
         //let bytes = read_data_set_bytes_from_file("tests/fixtures/CT1_UNC.explicit_little_endian.dcm");
         let bytes =
             read_data_set_bytes_from_file("tests/fixtures/IM00001.implicit_little_endian.dcm");
-        for i in 0..bytes.len() {
+        for i in 762..bytes.len() {
             let result = split_parse(&bytes, i);
             assert!(result.is_ok());
         }

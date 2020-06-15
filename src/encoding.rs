@@ -70,6 +70,10 @@ impl Encoding for ImplicitLittleEndian {
     }
 
     fn vr_and_length(bytes: &[u8]) -> Result<(Option<VR>, usize, usize), ()> {
+        if bytes.len() < 8 {
+            return Err(());
+        }
+
         let length = ImplicitLittleEndian::u32(&bytes[4..8]) as usize;
         Ok((None, length, 8))
     }
