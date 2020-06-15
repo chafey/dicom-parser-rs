@@ -1,7 +1,6 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
 use crate::handler::Handler;
-use crate::parser::attribute::AttributeParser;
 use crate::parser::ParseResult;
 use crate::parser::Parser;
 use crate::tag::Tag;
@@ -25,10 +24,7 @@ impl<T: 'static + Encoding> Parser<T> for PixelDataFragmentParser<T> {
 
         // check for sequence delimeter item
         if item_tag.group == 0xFFFE && item_tag.element == 0xE0DD {
-            let parser = Box::new(AttributeParser::<T> {
-                phantom: PhantomData,
-            });
-            return Ok(ParseResult::partial(8, parser));
+            return Ok(ParseResult::completed(8));
         }
 
         // check for sequence item
@@ -44,12 +40,6 @@ impl<T: 'static + Encoding> Parser<T> for PixelDataFragmentParser<T> {
         // notify handler of data
         handler.pixel_data_fragment(&self.attribute, &bytes[8..(8 + item_length)]);
 
-        // read the encapsulated pixel data
-        let parser = Box::new(PixelDataFragmentParser::<T> {
-            attribute: self.attribute,
-            phantom: PhantomData,
-        });
-
-        Ok(ParseResult::partial(8 + item_length, parser))
+        Ok(ParseResult::completed(8 + item_length))
     }
 }

@@ -108,15 +108,15 @@ mod tests {
     }
 
     fn split_parse(bytes: &[u8], split_position: usize) -> Result<(), ()> {
-        println!("split_parse @ {}", split_position);
+        println!("split_parse @ {} of {} ", split_position, bytes.len());
         let mut handler = DataSetHandler::default();
         //handler.print = true;
         let mut parser = DataSetParser::<ImplicitLittleEndian>::default();
         let result = parser.parse(&mut handler, &bytes[0..split_position])?;
-        println!("bytes_consumed: {:?}", result.bytes_consumed);
+        //println!("bytes_consumed: {:?}", result.bytes_consumed);
         //println!("state: {:?}", result.state);
         let result2 = parser.parse(&mut handler, &bytes[result.bytes_consumed..])?;
-        println!("bytes_consumed: {:?}", result2.bytes_consumed);
+        //println!("bytes_consumed: {:?}", result2.bytes_consumed);
         //println!("state: {:?}", result2.state);
         assert_eq!(result2.bytes_consumed, bytes.len() - result.bytes_consumed);
         Ok(())
@@ -125,26 +125,25 @@ mod tests {
     #[test]
     fn parse_partial_debug() {
         //let bytes = read_data_set_bytes_from_file("tests/fixtures/CT1_UNC.explicit_little_endian.dcm");
+        //let bytes = read_data_set_bytes_from_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm");
         let bytes =
             read_data_set_bytes_from_file("tests/fixtures/IM00001.implicit_little_endian.dcm"); // meta ends at 352
 
-        // 762 + 336 = 1098 x44a (in length of ITEMDELIMITATIONITEM )
-        let result = split_parse(&bytes, 762);
+        // 3576 + 336 = 3912 xF48 (in VR of Pixel Data Attribute? )
+        let result = split_parse(&bytes, 3576);
         assert!(result.is_ok());
         //println!("{:?}", result);
     }
-    /*
     #[test]
     fn parse_partial_ok() {
         //let bytes = read_data_set_bytes_from_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm");
         //let bytes = read_data_set_bytes_from_file("tests/fixtures/CT1_UNC.explicit_little_endian.dcm");
         let bytes =
             read_data_set_bytes_from_file("tests/fixtures/IM00001.implicit_little_endian.dcm");
-        for i in 762..bytes.len() {
+        for i in 0..bytes.len() {
             let result = split_parse(&bytes, i);
             assert!(result.is_ok());
         }
         //println!("{:?}", result);
     }
-    */
 }

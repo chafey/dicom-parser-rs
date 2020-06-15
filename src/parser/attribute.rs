@@ -2,9 +2,9 @@ use crate::attribute::Attribute;
 use crate::encoding::Encoding;
 use crate::handler::Control;
 use crate::handler::Handler;
-use crate::parser::basic_offset_table::BasicOffsetTableParser;
 use crate::parser::data::DataParser;
 use crate::parser::data_undefined_length::DataUndefinedLengthParser;
+use crate::parser::encapsulated_pixel_data::EncapsulatedPixelDataParser;
 use crate::parser::sequence::SequenceParser;
 use crate::parser::ParseResult;
 use crate::parser::Parser;
@@ -44,10 +44,7 @@ impl<T: 'static + Encoding> Parser<T> for AttributeParser<T> {
             let parser = Box::new(SequenceParser::<T>::new(attribute));
             Ok(ParseResult::partial(bytes_consumed, parser))
         } else if is_encapsulated_pixel_data(&attribute) {
-            let parser = Box::new(BasicOffsetTableParser::<T> {
-                phantom: PhantomData,
-                attribute,
-            });
+            let parser = Box::new(EncapsulatedPixelDataParser::new(attribute));
             Ok(ParseResult::partial(bytes_consumed, parser))
         } else if attribute.length == 0xFFFF_FFFF {
             if bytes.len() <= 8 + bytes_consumed {
