@@ -73,4 +73,3 @@ pub mod data_undefined_length;
 pub mod encapsulated_pixel_data;
 pub mod sequence;
 pub mod sequence_item_data;
-pub mod stopped;

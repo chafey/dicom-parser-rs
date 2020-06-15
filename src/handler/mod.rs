@@ -4,7 +4,7 @@ use crate::attribute::Attribute;
 pub enum Control {
     Continue, // continue (decode the element's data)
     Filter,   // filter this element (skip to the next element and ignore its data)
-    Stop,     // stop parsing
+    Cancel,   // stop parsing
 }
 
 pub trait Handler {
@@ -24,6 +24,6 @@ pub trait Handler {
     }
 }
 
+pub mod cancel;
 pub mod data_set;
 pub mod filter;
-pub mod stop;

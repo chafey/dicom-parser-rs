@@ -1,8 +1,8 @@
 use crate::attribute::Attribute;
 use crate::data_set::DataSet;
 use crate::encoding::ExplicitLittleEndian;
+use crate::handler::cancel::CancelHandler;
 use crate::handler::data_set::DataSetHandler;
-use crate::handler::stop::StopHandler;
 use crate::parser::data_set;
 use crate::prefix;
 use crate::tag::Tag;
@@ -47,7 +47,7 @@ pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
 
     let mut data_set_handler = DataSetHandler::default();
 
-    let mut handler = StopHandler::new(&mut data_set_handler, |x: &Attribute| x.tag.group != 2);
+    let mut handler = CancelHandler::new(&mut data_set_handler, |x: &Attribute| x.tag.group != 2);
 
     let end_position =
         match data_set::parse_full::<ExplicitLittleEndian>(&mut handler, &bytes[132..]) {

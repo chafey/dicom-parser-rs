@@ -12,8 +12,8 @@ dicom parser written in Rust
 ## Features
 
 * [X] Callback based parsing
-    * [X] Stop Parsing
-    * [X] Skip Element Data
+    * [X] Cancel Parsing
+    * [ ] Skip Element Data
 * [X] DICOM P10 Meta Information
 * [X] Explicit Little Endian Transfer Syntax
 * [X] Streaming Parser
@@ -27,5 +27,21 @@ dicom parser written in Rust
 
 ## Status
 
-Actively being developed (June 8, 2020)
+Actively being developed (June 15, 2020)
+
+## To Do's
+
+* [ ] Get rid of ParseState::Partial
+* [ ] Implement skip element data parsing
+* [ ] Separate undefined length logic from known length logic
+* [ ] Add more unit tests
+* [ ] Add streaming test app that verifies stream operation by parsing one byte at a time
+* [ ] implement data skipping for sequence attributes?
+* [ ] Add design documentation
+* [ ] Add example applications
+* [ ] Add no_std configuration?
+* [ ] Build test suite of DICOM images that hit all conditions
+* [ ] Create handler that produces DICOM JSON?
+* [ ] Consider helpers to convert attribute data into rust types (e.g. strings, numbers, etc)
+* [ ] Consider adding TagCancelHandler to cancel parsing on specific tag (or tags)
 

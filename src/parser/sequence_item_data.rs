@@ -1,6 +1,6 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
-use crate::handler::stop::StopHandler;
+use crate::handler::cancel::CancelHandler;
 use crate::handler::Handler;
 use crate::parser::data_set::DataSetParser;
 use crate::parser::ParseResult;
@@ -35,7 +35,7 @@ impl<T: 'static + Encoding> Parser<T> for SequenceItemDataParser<T> {
         };
 
         let mut sequence_item_handler =
-            StopHandler::new(handler, |x: &Attribute| x.tag == tag::ITEMDELIMITATIONITEM);
+            CancelHandler::new(handler, |x: &Attribute| x.tag == tag::ITEMDELIMITATIONITEM);
 
         let parse_result = self
             .parser
@@ -43,11 +43,11 @@ impl<T: 'static + Encoding> Parser<T> for SequenceItemDataParser<T> {
 
         self.total_bytes_consumed += parse_result.bytes_consumed;
 
-        if sequence_item_handler.stopped {
+        if sequence_item_handler.canceled {
             self.total_bytes_consumed += 8;
         }
 
-        if sequence_item_handler.stopped {
+        if sequence_item_handler.canceled {
             Ok(ParseResult::completed(parse_result.bytes_consumed + 8))
         } else if self.total_bytes_consumed == self.item_length {
             Ok(ParseResult::completed(parse_result.bytes_consumed))

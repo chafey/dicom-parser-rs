@@ -34,7 +34,7 @@ impl<T: 'static + Encoding> Parser<T> for AttributeParser<T> {
             Control::Filter => {
                 // TODO: Skip data
             }
-            Control::Stop => {
+            Control::Cancel => {
                 return Ok(ParseResult::cancelled(0));
             }
         }
