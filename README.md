@@ -30,23 +30,26 @@ Actively being developed (June 16, 2020)
 
 ## To Do's
 
-* Consider enhancing the Handler API to receive the parser state for nested attributes (sequences)
-  * Could be some kind of path, e.g. 00186011/0/x00186012
-  * Consider adding FilterHandler that filters out handler calls for specific attributes.  
+* Consider adding information to returned Errors (e.g. what the error is)
+* Consider adding data_position property to Attribute?
+* Add no_std configuration?
+* Reconsider DataSet object - either delete or make it complete (it is not useful currently)
+  * Consider removing DataSetHandler to test code?
 * Add more unit tests
 * Add design documentation
 * Add inline source documentation
 * Add example applications
-* Add no_std configuration?
+* Add performance benchmark to establish baseline to understand performance implications of future changes
 * Build test suite of DICOM images that hit all conditions
-* Create handler that produces DICOM JSON?
+
+## Possible Future Functionality
+
 * Consider helpers to convert attribute data into rust types (e.g. strings, numbers, etc)
   * Note: already have meta_information::get_element() which will return a utf8 string
+* Create handler that produces DICOM JSON?
+* Consider adding FilterHandler that filters out handler calls for specific attributes.  
 * Consider adding TagCancelHandler to cancel parsing on specific tag (or tags)
 * Consider making a cancelled parse resumable?  Should work given that the parser is streaming capable
-* Consider adding data_position property to Attribute?
-* Reconsider DataSet object - either delete or make it complete (it is not useful currently)
-  * Consider removing DataSetHandler to test code?
 
 ## Rafactorings
 
