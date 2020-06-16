@@ -29,7 +29,7 @@ impl<T: 'static + Encoding> Parser<T> for SequenceItemDataParser<T> {
         handler: &mut dyn Handler,
         _attribute: &Attribute,
         bytes: &[u8],
-    ) -> Result<ParseResult<T>, ()> {
+    ) -> Result<ParseResult, ()> {
         // if we have a known length, only parse the bytes we know we have
         let remaining_bytes = if self.item_length == 0xFFFF_FFFF
             || bytes.len() < (self.item_length - self.total_bytes_consumed)

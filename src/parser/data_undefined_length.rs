@@ -16,7 +16,7 @@ impl<T: 'static + Encoding> Parser<T> for DataUndefinedLengthParser<T> {
         handler: &mut dyn Handler,
         attribute: &Attribute,
         bytes: &[u8],
-    ) -> Result<ParseResult<T>, ()> {
+    ) -> Result<ParseResult, ()> {
         // scan for sequence delimitation item
         let data_length = match find_end_of_data::<T>(bytes) {
             Err(()) => {

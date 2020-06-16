@@ -8,38 +8,34 @@ pub struct ParseError {}
 
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub enum ParseState {
-    Cancelled,  // parse was cancelled by client
-    Incomplete, // cannot parse due to lack of bytes
-    Completed,  // parse completed for this attribute/element
+    Cancelled,  // parse was cancelled by Handler
+    Incomplete, // attribute not fully parsed due to lack of bytes
+    Completed,  // attribute fully parsed
 }
 
-pub struct ParseResult<T: Encoding> {
+pub struct ParseResult {
     pub bytes_consumed: usize,
-    pub parser: Option<Box<dyn Parser<T>>>,
     pub state: ParseState,
 }
 
-impl<T: Encoding> ParseResult<T> {
-    pub fn cancelled(bytes_consumed: usize) -> ParseResult<T> {
-        ParseResult::<T> {
+impl ParseResult {
+    pub fn cancelled(bytes_consumed: usize) -> ParseResult {
+        ParseResult {
             bytes_consumed,
-            parser: None,
             state: ParseState::Cancelled,
         }
     }
 
-    pub fn incomplete(bytes_consumed: usize) -> ParseResult<T> {
-        ParseResult::<T> {
+    pub fn incomplete(bytes_consumed: usize) -> ParseResult {
+        ParseResult {
             bytes_consumed,
-            parser: None,
             state: ParseState::Incomplete,
         }
     }
 
-    pub fn completed(bytes_consumed: usize) -> ParseResult<T> {
-        ParseResult::<T> {
+    pub fn completed(bytes_consumed: usize) -> ParseResult {
+        ParseResult {
             bytes_consumed,
-            parser: None,
             state: ParseState::Completed,
         }
     }
@@ -60,7 +56,7 @@ pub trait Parser<T: Encoding + fmt::Debug> {
         handler: &mut dyn Handler,
         attribute: &Attribute,
         bytes: &[u8],
-    ) -> Result<ParseResult<T>, ()>;
+    ) -> Result<ParseResult, ()>;
 }
 
 pub mod attribute;

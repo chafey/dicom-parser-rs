@@ -16,7 +16,7 @@ impl<T: 'static + Encoding> Parser<T> for BasicOffsetTableParser<T> {
         handler: &mut dyn Handler,
         attribute: &Attribute,
         bytes: &[u8],
-    ) -> Result<ParseResult<T>, ()> {
+    ) -> Result<ParseResult, ()> {
         // make sure we have enough length to read item and length
         if bytes.len() < 8 {
             return Ok(ParseResult::incomplete(0));

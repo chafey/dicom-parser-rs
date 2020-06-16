@@ -20,7 +20,7 @@ impl<T: 'static + Encoding> DataSetParser<T> {
 }
 
 impl<T: 'static + Encoding> DataSetParser<T> {
-    pub fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
+    pub fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult, ()> {
         let mut remaining_bytes = bytes;
         let mut bytes_consumed = 0;
 

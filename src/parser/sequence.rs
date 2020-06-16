@@ -22,7 +22,7 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
         handler: &mut dyn Handler,
         attribute: &Attribute,
         bytes: &[u8],
-    ) -> Result<ParseResult<T>, ()> {
+    ) -> Result<ParseResult, ()> {
         // if we have a known length, only parse the bytes we know we have
         let mut remaining_bytes = if attribute.length == 0xFFFF_FFFF
             || bytes.len() < (attribute.length - self.total_bytes_consumed)

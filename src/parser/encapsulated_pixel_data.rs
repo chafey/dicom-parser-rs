@@ -32,7 +32,7 @@ impl<T: 'static + Encoding> Parser<T> for EncapsulatedPixelDataParser<T> {
         handler: &mut dyn Handler,
         attribute: &Attribute,
         bytes: &[u8],
-    ) -> Result<ParseResult<T>, ()> {
+    ) -> Result<ParseResult, ()> {
         // iterate over remaining bytes parsing them
         let mut remaining_bytes = bytes;
         let mut bytes_consumed = 0;
