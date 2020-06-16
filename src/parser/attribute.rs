@@ -22,8 +22,8 @@ impl<T: Encoding> AttributeParser<T> {
     }
 }
 
-impl<T: 'static + Encoding> Parser<T> for AttributeParser<T> {
-    fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
+impl<T: 'static + Encoding> AttributeParser<T> {
+    pub fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
         match &mut self.parser {
             None => {
                 let (bytes_consumed, attribute) = match parse_attribute::<T>(bytes) {

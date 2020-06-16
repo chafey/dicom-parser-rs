@@ -4,7 +4,6 @@ use crate::parser::attribute::AttributeParser;
 use crate::parser::ParseError;
 use crate::parser::ParseResult;
 use crate::parser::ParseState;
-use crate::parser::Parser;
 
 pub struct DataSetParser<T: Encoding> {
     parser: AttributeParser<T>,
@@ -20,8 +19,8 @@ impl<T: 'static + Encoding> DataSetParser<T> {
     }
 }
 
-impl<T: 'static + Encoding> Parser<T> for DataSetParser<T> {
-    fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
+impl<T: 'static + Encoding> DataSetParser<T> {
+    pub fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
         let mut remaining_bytes = bytes;
         let mut bytes_consumed = 0;
 
@@ -72,7 +71,6 @@ mod tests {
     use crate::encoding::{ExplicitLittleEndian, ImplicitLittleEndian};
     use crate::handler::data_set::DataSetHandler;
     use crate::parser::ParseState;
-    use crate::parser::Parser;
     use crate::test::tests::read_data_set_bytes_from_file;
 
     fn parse_ele_data_set(bytes: &[u8]) -> Result<(ParseState, usize), ()> {

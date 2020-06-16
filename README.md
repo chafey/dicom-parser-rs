@@ -26,10 +26,13 @@ dicom parser written in Rust
 
 ## Status
 
-Actively being developed (June 15, 2020)
+Actively being developed (June 16, 2020)
 
 ## To Do's
 
+* Consider enhancing the Handler API to receive the parser state for nested attributes (sequences)
+  * Could be some kind of path, e.g. 00186011/0/x00186012
+  * Consider adding FilterHandler that filters out handler calls for specific attributes.  
 * Add more unit tests
 * Add design documentation
 * Add inline source documentation
@@ -41,6 +44,9 @@ Actively being developed (June 15, 2020)
   * Note: already have meta_information::get_element() which will return a utf8 string
 * Consider adding TagCancelHandler to cancel parsing on specific tag (or tags)
 * Consider making a cancelled parse resumable?  Should work given that the parser is streaming capable
+* Consider adding data_position property to Attribute?
+* Reconsider DataSet object - either delete or make it complete (it is not useful currently)
+  * Consider removing DataSetHandler to test code?
 
 ## Rafactorings
 
@@ -48,5 +54,3 @@ Actively being developed (June 15, 2020)
 * Separate undefined length logic from known length logic
 * Consider consolidating PixelDataFragmentParser and BasicOffsetTableParser into EncapsulatedPixelDataParser
 * Refactor parse_tag_and_length() so we don't have two of them - perhaps replace with parse_attribute()?
-* Consider enhancing the Handler API to receive the parser state for nested attributes (sequences)
-* Reconsider DataSet object - either delete or make it complete (it is not useful currently)

@@ -2,12 +2,13 @@ use crate::vr::VR;
 use std::convert::TryInto;
 use std::fmt;
 
-pub trait Encoding: fmt::Debug {
+pub trait Encoding: fmt::Debug + Default {
     fn u16(bytes: &[u8]) -> u16;
     fn u32(bytes: &[u8]) -> u32;
     fn vr_and_length(bytes: &[u8]) -> Result<(Option<VR>, usize, usize), ()>;
 }
 
+#[derive(Default)]
 pub struct ExplicitLittleEndian {}
 
 impl fmt::Debug for ExplicitLittleEndian {
@@ -50,7 +51,7 @@ impl Encoding for ExplicitLittleEndian {
     }
 }
 
-#[allow(dead_code)]
+#[derive(Default)]
 pub struct ImplicitLittleEndian {}
 
 impl fmt::Debug for ImplicitLittleEndian {
@@ -78,7 +79,7 @@ impl Encoding for ImplicitLittleEndian {
     }
 }
 
-#[allow(dead_code)]
+#[derive(Default)]
 pub struct ExplicitBigEndian {}
 
 impl fmt::Debug for ExplicitBigEndian {

@@ -1,7 +1,7 @@
 use crate::encoding::Encoding;
 use std::fmt;
 
-#[derive(Eq, Clone, Copy)]
+#[derive(Default, Eq, Clone, Copy)]
 pub struct Tag {
     pub group: u16,
     pub element: u16,
