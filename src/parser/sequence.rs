@@ -7,13 +7,11 @@ use crate::parser::ParseState;
 use crate::parser::Parser;
 use crate::tag;
 use crate::tag::Tag;
-use std::marker::PhantomData;
 
 #[derive(Default)]
 pub struct SequenceParser<T: Encoding> {
     parser: Option<Box<dyn Parser<T>>>,
     total_bytes_consumed: usize,
-    phantom: PhantomData<T>,
 }
 
 impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {

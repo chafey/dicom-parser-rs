@@ -9,8 +9,8 @@ pub struct ParseError {}
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub enum ParseState {
     Cancelled,  // parse was cancelled by Handler
-    Incomplete, // attribute not fully parsed due to lack of bytes
-    Completed,  // attribute fully parsed
+    Incomplete, // attribute data not fully parsed due to lack of bytes
+    Completed,  // attribute data fully parsed
 }
 
 pub struct ParseResult {
@@ -42,15 +42,9 @@ impl ParseResult {
 }
 
 //
-// This trait defines an interface for parsing a portion of a DICOM bitstream
+// This trait defines an interface for parsing the data portion of a DICOM Attribute
 //
 pub trait Parser<T: Encoding + fmt::Debug> {
-    // parses bytes.  possible outcomes
-    //  - parse manually cancelled (stopped) - parsing should not continued
-    //  - parse manually suspended - parsing can continue if desired.  *Requires state management
-    //  - parse pending - due to lack of bytes to complete parse - this is expected while streaming.  *Requires state management
-    //  - parse completed - all bytes provided parsed - this can occur while streaming and does not indicate end of the parse
-    //  - unrecoverable error - parsing cannot continue
     fn parse(
         &mut self,
         handler: &mut dyn Handler,

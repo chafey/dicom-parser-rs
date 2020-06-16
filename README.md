@@ -53,3 +53,4 @@ Actively being developed (June 16, 2020)
 * Separate undefined length logic from known length logic
 * Consider consolidating PixelDataFragmentParser and BasicOffsetTableParser into EncapsulatedPixelDataParser
 * Refactor parse_tag_and_length() so we don't have two of them - perhaps replace with parse_attribute()?
+* Consider moving DataSetParser and AttributeParser up a level out of the parser folder?
