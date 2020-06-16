@@ -31,7 +31,7 @@ Actively being developed (June 15, 2020)
 
 ## To Do's
 
-* [ ] Get rid of ParseState::Partial
+* [X] Get rid of ParseState::Partial
 * [ ] Implement skip element data parsing
 * [ ] Separate undefined length logic from known length logic
 * [ ] Add more unit tests

@@ -8,8 +8,7 @@ pub struct ParseError {}
 pub enum ParseState {
     Cancelled,  // parse was cancelled by client
     Incomplete, // cannot parse due to lack of bytes
-    Partial,    // parse succeeded, continue parsing
-    Completed,  // parse succeeded, no more bytes to parse
+    Completed,  // parse completed for this attribute/element
 }
 
 pub struct ParseResult<T: Encoding> {
@@ -32,14 +31,6 @@ impl<T: Encoding> ParseResult<T> {
             bytes_consumed,
             parser: None,
             state: ParseState::Incomplete,
-        }
-    }
-
-    pub fn partial(bytes_consumed: usize, parser: Box<dyn Parser<T>>) -> ParseResult<T> {
-        ParseResult::<T> {
-            bytes_consumed,
-            parser: Some(parser),
-            state: ParseState::Partial,
         }
     }
 

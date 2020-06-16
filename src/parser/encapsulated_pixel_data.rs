@@ -57,9 +57,6 @@ impl<T: 'static + Encoding> Parser<T> for EncapsulatedPixelDataParser<T> {
                 ParseState::Incomplete => {
                     return Ok(parse_result);
                 }
-                ParseState::Partial => {
-                    panic!("partial to be removed");
-                }
                 ParseState::Completed => {
                     self.parser = Box::new(PixelDataFragmentParser::<T> {
                         attribute: self.attribute,

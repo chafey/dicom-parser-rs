@@ -1,7 +1,6 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
 use crate::handler::Handler;
-use crate::parser::attribute::AttributeParser;
 use crate::parser::ParseResult;
 use crate::parser::Parser;
 use std::marker::PhantomData;
@@ -11,7 +10,14 @@ pub struct DataUndefinedLengthParser<T: Encoding> {
     pub phantom: PhantomData<T>,
 }
 
-impl<T: Encoding> DataUndefinedLengthParser<T> {}
+impl<T: 'static + Encoding> DataUndefinedLengthParser<T> {
+    pub fn new(attribute: Attribute) -> DataUndefinedLengthParser<T> {
+        DataUndefinedLengthParser {
+            attribute,
+            phantom: PhantomData,
+        }
+    }
+}
 
 impl<T: 'static + Encoding> Parser<T> for DataUndefinedLengthParser<T> {
     fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
@@ -27,10 +33,7 @@ impl<T: 'static + Encoding> Parser<T> for DataUndefinedLengthParser<T> {
         handler.data(&self.attribute, &bytes[..data_length]);
 
         // next is attribute parser
-        let parser = Box::new(AttributeParser::<T> {
-            phantom: PhantomData,
-        });
-        Ok(ParseResult::partial(data_length + 8, parser))
+        Ok(ParseResult::completed(data_length + 8))
     }
 }
 

@@ -73,7 +73,7 @@ mod tests {
     fn implicit_little_endian() {
         let mut bytes = read_file("tests/fixtures/CT1_UNC.implicit_little_endian.dcm");
         let mut handler = DataSetHandler::default();
-        //accumulator.print = true;
+        //handler.print = true;
         let result = parse(&mut handler, &mut bytes);
         assert!(result.is_ok());
         assert_eq!(257, handler.dataset.attributes.len());
@@ -85,7 +85,7 @@ mod tests {
     fn explicit_big_endian() {
         let mut bytes = read_file("tests/fixtures/CT1_UNC.explicit_big_endian.dcm");
         let mut handler = DataSetHandler::default();
-        //accumulator.print = true;
+        //handler.print = true;
         let result = parse(&mut handler, &mut bytes);
         assert!(result.is_ok());
         assert_eq!(257, handler.dataset.attributes.len());

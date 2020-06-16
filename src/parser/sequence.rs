@@ -82,10 +82,6 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
                         ParseState::Incomplete => {
                             return Ok(ParseResult::incomplete(bytes_consumed));
                         }
-                        ParseState::Partial => {
-                            // This may not be possible?
-                            panic!("not possible?");
-                        }
                         ParseState::Completed => {
                             // this is what we expect in normal happy path
                             handler.end_sequence_item(&self.attribute);

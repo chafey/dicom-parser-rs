@@ -22,7 +22,7 @@
                 }
             },
             "args": [
-                "parse_partial_debug"
+                "implicit_little_endian"
             ],
             "cwd": "${workspaceFolder}"
         }

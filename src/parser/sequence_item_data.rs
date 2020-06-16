@@ -84,6 +84,34 @@ mod tests {
     }
 
     #[test]
+    fn known_length_completes() {
+        let bytes = make_sequence_item_known_length();
+        let mut parser = SequenceItemDataParser::<ExplicitLittleEndian>::new(bytes.len());
+        let mut handler = DataSetHandler {
+            dataset: DataSet::default(),
+            depth: 0,
+            print: false,
+        };
+        let result = parser.parse(&mut handler, &bytes[..]).unwrap();
+        assert_eq!(result.bytes_consumed, 12);
+        assert_eq!(result.state, ParseState::Completed);
+    }
+
+    #[test]
+    fn partial_known_length_returns_incomplete() {
+        let bytes = make_sequence_item_known_length();
+        let mut parser = SequenceItemDataParser::<ExplicitLittleEndian>::new(bytes.len());
+        let mut handler = DataSetHandler {
+            dataset: DataSet::default(),
+            depth: 0,
+            print: false,
+        };
+        let result = parser.parse(&mut handler, &bytes[..1]).unwrap();
+        assert_eq!(result.bytes_consumed, 0);
+        assert_eq!(result.state, ParseState::Incomplete);
+    }
+
+    #[test]
     fn undefined_length_completes() {
         let bytes = make_sequence_item_undefined_length();
         let mut parser = SequenceItemDataParser::<ExplicitLittleEndian>::new(0xFFFF_FFFF);
@@ -122,34 +150,6 @@ mod tests {
         };
         let result = parser.parse(&mut handler, &bytes[0..13]).unwrap();
         assert_eq!(result.bytes_consumed, 12);
-        assert_eq!(result.state, ParseState::Incomplete);
-    }
-
-    #[test]
-    fn known_length_completes() {
-        let bytes = make_sequence_item_known_length();
-        let mut parser = SequenceItemDataParser::<ExplicitLittleEndian>::new(bytes.len());
-        let mut handler = DataSetHandler {
-            dataset: DataSet::default(),
-            depth: 0,
-            print: false,
-        };
-        let result = parser.parse(&mut handler, &bytes[..]).unwrap();
-        assert_eq!(result.bytes_consumed, 12);
-        assert_eq!(result.state, ParseState::Completed);
-    }
-
-    #[test]
-    fn partial_known_length_returns_incomplete() {
-        let bytes = make_sequence_item_known_length();
-        let mut parser = SequenceItemDataParser::<ExplicitLittleEndian>::new(bytes.len());
-        let mut handler = DataSetHandler {
-            dataset: DataSet::default(),
-            depth: 0,
-            print: false,
-        };
-        let result = parser.parse(&mut handler, &bytes[..1]).unwrap();
-        assert_eq!(result.bytes_consumed, 0);
         assert_eq!(result.state, ParseState::Incomplete);
     }
 }
