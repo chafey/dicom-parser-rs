@@ -1,5 +1,7 @@
+use crate::attribute::Attribute;
 use crate::encoding::Encoding;
 use crate::handler::Handler;
+
 use std::fmt;
 
 pub struct ParseError {}
@@ -53,7 +55,12 @@ pub trait Parser<T: Encoding + fmt::Debug> {
     //  - parse pending - due to lack of bytes to complete parse - this is expected while streaming.  *Requires state management
     //  - parse completed - all bytes provided parsed - this can occur while streaming and does not indicate end of the parse
     //  - unrecoverable error - parsing cannot continue
-    fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()>;
+    fn parse(
+        &mut self,
+        handler: &mut dyn Handler,
+        attribute: &Attribute,
+        bytes: &[u8],
+    ) -> Result<ParseResult<T>, ()>;
 }
 
 pub mod attribute;

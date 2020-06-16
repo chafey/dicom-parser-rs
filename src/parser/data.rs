@@ -5,31 +5,27 @@ use crate::parser::ParseResult;
 use crate::parser::Parser;
 use std::marker::PhantomData;
 
+#[derive(Default)]
 pub struct DataParser<T: Encoding> {
-    pub attribute: Attribute,
     pub phantom: PhantomData<T>,
 }
 
-impl<T: 'static + Encoding> DataParser<T> {
-    pub fn new(attribute: Attribute) -> DataParser<T> {
-        DataParser {
-            attribute,
-            phantom: PhantomData,
-        }
-    }
-}
-
 impl<T: 'static + Encoding> Parser<T> for DataParser<T> {
-    fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
+    fn parse(
+        &mut self,
+        handler: &mut dyn Handler,
+        attribute: &Attribute,
+        bytes: &[u8],
+    ) -> Result<ParseResult<T>, ()> {
         // make sure we have enough bytes for this data
-        if bytes.len() < self.attribute.length {
+        if bytes.len() < attribute.length {
             return Ok(ParseResult::incomplete(0));
         }
 
         // notify handler of data
-        handler.data(&self.attribute, &bytes[..self.attribute.length]);
+        handler.data(attribute, &bytes[..attribute.length]);
 
         // next is attribute parser
-        Ok(ParseResult::completed(self.attribute.length))
+        Ok(ParseResult::completed(attribute.length))
     }
 }

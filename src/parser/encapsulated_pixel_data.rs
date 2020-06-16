@@ -11,17 +11,14 @@ use crate::tag::Tag;
 use std::marker::PhantomData;
 
 pub struct EncapsulatedPixelDataParser<T: Encoding> {
-    pub attribute: Attribute,
     parser: Box<dyn Parser<T>>,
     total_bytes_consumed: usize,
 }
 
 impl<T: 'static + Encoding> EncapsulatedPixelDataParser<T> {
-    pub fn new(attribute: Attribute) -> EncapsulatedPixelDataParser<T> {
+    pub fn default() -> EncapsulatedPixelDataParser<T> {
         EncapsulatedPixelDataParser {
-            attribute,
             parser: Box::new(BasicOffsetTableParser::<T> {
-                attribute,
                 phantom: PhantomData,
             }),
             total_bytes_consumed: 0,
@@ -30,7 +27,12 @@ impl<T: 'static + Encoding> EncapsulatedPixelDataParser<T> {
 }
 
 impl<T: 'static + Encoding> Parser<T> for EncapsulatedPixelDataParser<T> {
-    fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
+    fn parse(
+        &mut self,
+        handler: &mut dyn Handler,
+        attribute: &Attribute,
+        bytes: &[u8],
+    ) -> Result<ParseResult<T>, ()> {
         // iterate over remaining bytes parsing them
         let mut remaining_bytes = bytes;
         let mut bytes_consumed = 0;
@@ -44,7 +46,7 @@ impl<T: 'static + Encoding> Parser<T> for EncapsulatedPixelDataParser<T> {
                 return Ok(ParseResult::completed(bytes_consumed + 8));
             }
 
-            let parse_result = self.parser.parse(handler, remaining_bytes)?;
+            let parse_result = self.parser.parse(handler, attribute, remaining_bytes)?;
 
             self.total_bytes_consumed += parse_result.bytes_consumed;
             remaining_bytes = &remaining_bytes[parse_result.bytes_consumed..];
@@ -59,7 +61,6 @@ impl<T: 'static + Encoding> Parser<T> for EncapsulatedPixelDataParser<T> {
                 }
                 ParseState::Completed => {
                     self.parser = Box::new(PixelDataFragmentParser::<T> {
-                        attribute: self.attribute,
                         phantom: PhantomData,
                     });
                 }

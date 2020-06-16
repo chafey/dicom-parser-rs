@@ -12,14 +12,10 @@ use crate::tag;
 use crate::tag::Tag;
 use crate::vr::VR;
 
+#[derive(Default)]
 pub struct AttributeParser<T: Encoding> {
+    attribute: Attribute,
     parser: Option<Box<dyn Parser<T>>>,
-}
-
-impl<T: Encoding> AttributeParser<T> {
-    pub fn default() -> AttributeParser<T> {
-        AttributeParser::<T> { parser: None }
-    }
 }
 
 impl<T: 'static + Encoding> AttributeParser<T> {
@@ -33,7 +29,9 @@ impl<T: 'static + Encoding> AttributeParser<T> {
                     }
                 };
 
-                match handler.element(&attribute) {
+                self.attribute = attribute;
+
+                match handler.element(&self.attribute) {
                     Control::Continue => {}
                     Control::Cancel => {
                         return Ok(ParseResult::cancelled(0));
@@ -42,40 +40,40 @@ impl<T: 'static + Encoding> AttributeParser<T> {
 
                 let remaining_byes = &bytes[bytes_consumed..];
 
-                self.parser = Some(make_parser::<T>(handler, attribute, remaining_byes));
-                let mut parse_result = self
-                    .parser
-                    .as_mut()
-                    .unwrap()
-                    .parse(handler, remaining_byes)?;
+                self.parser = Some(make_parser::<T>(handler, &attribute, remaining_byes));
+                let mut parse_result = self.parser.as_mut().unwrap().parse(
+                    handler,
+                    &self.attribute,
+                    remaining_byes,
+                )?;
                 parse_result.bytes_consumed += bytes_consumed;
                 Ok(parse_result)
             }
-            Some(parser) => parser.parse(handler, bytes),
+            Some(parser) => parser.parse(handler, &self.attribute, bytes),
         }
     }
 }
 
 fn make_parser<T: 'static + Encoding>(
     handler: &mut dyn Handler,
-    attribute: Attribute,
+    attribute: &Attribute,
     bytes: &[u8],
 ) -> Box<dyn Parser<T>> {
     if attribute.vr == Some(VR::SQ) {
-        handler.start_sequence(&attribute);
-        Box::new(SequenceParser::<T>::new(attribute))
-    } else if is_encapsulated_pixel_data(&attribute) {
-        Box::new(EncapsulatedPixelDataParser::new(attribute))
+        handler.start_sequence(attribute);
+        Box::new(SequenceParser::<T>::default())
+    } else if is_encapsulated_pixel_data(attribute) {
+        Box::new(EncapsulatedPixelDataParser::default())
     } else if attribute.length == 0xFFFF_FFFF {
         // TODO: Consider moving sequence parsing into dataundefinedlengthparser
         if is_sequence::<T>(bytes) {
-            handler.start_sequence(&attribute);
-            Box::new(SequenceParser::<T>::new(attribute))
+            handler.start_sequence(attribute);
+            Box::new(SequenceParser::<T>::default())
         } else {
-            Box::new(DataUndefinedLengthParser::<T>::new(attribute))
+            Box::new(DataUndefinedLengthParser::<T>::default())
         }
     } else {
-        Box::new(DataParser::<T>::new(attribute))
+        Box::new(DataParser::<T>::default())
     }
 }
 

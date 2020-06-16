@@ -24,7 +24,12 @@ impl<T: 'static + Encoding> SequenceItemDataParser<T> {
 }
 
 impl<T: 'static + Encoding> Parser<T> for SequenceItemDataParser<T> {
-    fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
+    fn parse(
+        &mut self,
+        handler: &mut dyn Handler,
+        _attribute: &Attribute,
+        bytes: &[u8],
+    ) -> Result<ParseResult<T>, ()> {
         // if we have a known length, only parse the bytes we know we have
         let remaining_bytes = if self.item_length == 0xFFFF_FFFF
             || bytes.len() < (self.item_length - self.total_bytes_consumed)
@@ -62,11 +67,13 @@ impl<T: 'static + Encoding> Parser<T> for SequenceItemDataParser<T> {
 #[cfg(test)]
 mod tests {
     use super::SequenceItemDataParser;
+    use crate::attribute::Attribute;
     use crate::data_set::DataSet;
     use crate::encoding::ExplicitLittleEndian;
     use crate::handler::data_set::DataSetHandler;
     use crate::parser::ParseState;
     use crate::parser::Parser;
+    use crate::tag::Tag;
 
     fn make_sequence_item_undefined_length() -> Vec<u8> {
         let mut bytes = vec![];
@@ -92,7 +99,12 @@ mod tests {
             depth: 0,
             print: false,
         };
-        let result = parser.parse(&mut handler, &bytes[..]).unwrap();
+        let attribute = Attribute {
+            tag: Tag::new(0x0008, 0x0008),
+            vr: None,
+            length: 0,
+        };
+        let result = parser.parse(&mut handler, &attribute, &bytes[..]).unwrap();
         assert_eq!(result.bytes_consumed, 12);
         assert_eq!(result.state, ParseState::Completed);
     }
@@ -106,7 +118,12 @@ mod tests {
             depth: 0,
             print: false,
         };
-        let result = parser.parse(&mut handler, &bytes[..1]).unwrap();
+        let attribute = Attribute {
+            tag: Tag::new(0x0008, 0x0008),
+            vr: None,
+            length: 0,
+        };
+        let result = parser.parse(&mut handler, &attribute, &bytes[..1]).unwrap();
         assert_eq!(result.bytes_consumed, 0);
         assert_eq!(result.state, ParseState::Incomplete);
     }
@@ -120,7 +137,12 @@ mod tests {
             depth: 0,
             print: false,
         };
-        let result = parser.parse(&mut handler, &bytes[..]).unwrap();
+        let attribute = Attribute {
+            tag: Tag::new(0x0008, 0x0008),
+            vr: None,
+            length: 0,
+        };
+        let result = parser.parse(&mut handler, &attribute, &bytes[..]).unwrap();
         assert_eq!(result.bytes_consumed, 20);
         assert_eq!(result.state, ParseState::Completed);
     }
@@ -134,7 +156,14 @@ mod tests {
             depth: 0,
             print: false,
         };
-        let result = parser.parse(&mut handler, &bytes[0..1]).unwrap();
+        let attribute = Attribute {
+            tag: Tag::new(0x0008, 0x0008),
+            vr: None,
+            length: 0,
+        };
+        let result = parser
+            .parse(&mut handler, &attribute, &bytes[0..1])
+            .unwrap();
         assert_eq!(result.bytes_consumed, 0);
         assert_eq!(result.state, ParseState::Incomplete);
     }
@@ -148,7 +177,14 @@ mod tests {
             depth: 0,
             print: false,
         };
-        let result = parser.parse(&mut handler, &bytes[0..13]).unwrap();
+        let attribute = Attribute {
+            tag: Tag::new(0x0008, 0x0008),
+            vr: None,
+            length: 0,
+        };
+        let result = parser
+            .parse(&mut handler, &attribute, &bytes[0..13])
+            .unwrap();
         assert_eq!(result.bytes_consumed, 12);
         assert_eq!(result.state, ParseState::Incomplete);
     }

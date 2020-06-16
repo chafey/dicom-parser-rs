@@ -9,33 +9,27 @@ use crate::tag;
 use crate::tag::Tag;
 use std::marker::PhantomData;
 
+#[derive(Default)]
 pub struct SequenceParser<T: Encoding> {
-    pub attribute: Attribute,
     parser: Option<Box<dyn Parser<T>>>,
     total_bytes_consumed: usize,
     phantom: PhantomData<T>,
 }
 
-impl<T: Encoding> SequenceParser<T> {
-    pub fn new(attribute: Attribute) -> SequenceParser<T> {
-        SequenceParser::<T> {
-            attribute,
-            parser: None,
-            phantom: PhantomData,
-            total_bytes_consumed: 0,
-        }
-    }
-}
-
 impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
-    fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
+    fn parse(
+        &mut self,
+        handler: &mut dyn Handler,
+        attribute: &Attribute,
+        bytes: &[u8],
+    ) -> Result<ParseResult<T>, ()> {
         // if we have a known length, only parse the bytes we know we have
-        let mut remaining_bytes = if self.attribute.length == 0xFFFF_FFFF
-            || bytes.len() < (self.attribute.length - self.total_bytes_consumed)
+        let mut remaining_bytes = if attribute.length == 0xFFFF_FFFF
+            || bytes.len() < (attribute.length - self.total_bytes_consumed)
         {
             bytes
         } else {
-            &bytes[0..(self.attribute.length - self.total_bytes_consumed)]
+            &bytes[0..(attribute.length - self.total_bytes_consumed)]
         };
 
         let mut bytes_consumed = 0;
@@ -49,8 +43,7 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
                     let (tag, length) = parse_tag_and_length::<T>(remaining_bytes);
 
                     // if we have undefined length, check for sequence delimitation item
-                    if self.attribute.length == 0xFFFF_FFFF && tag == tag::SEQUENCEDELIMITATIONITEM
-                    {
+                    if attribute.length == 0xFFFF_FFFF && tag == tag::SEQUENCEDELIMITATIONITEM {
                         return Ok(ParseResult::completed(bytes_consumed + 8));
                     }
 
@@ -63,12 +56,12 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
                     self.total_bytes_consumed += 8;
                     remaining_bytes = &remaining_bytes[8..];
 
-                    handler.start_sequence_item(&self.attribute);
+                    handler.start_sequence_item(attribute);
 
                     self.parser = Some(Box::new(SequenceItemDataParser::<T>::new(length)));
                 }
                 Some(parser) => {
-                    let parse_result = parser.parse(handler, remaining_bytes)?;
+                    let parse_result = parser.parse(handler, attribute, remaining_bytes)?;
 
                     bytes_consumed += parse_result.bytes_consumed;
                     self.total_bytes_consumed += parse_result.bytes_consumed;
@@ -84,7 +77,7 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
                         }
                         ParseState::Completed => {
                             // this is what we expect in normal happy path
-                            handler.end_sequence_item(&self.attribute);
+                            handler.end_sequence_item(attribute);
                             self.parser = None;
                             continue;
                         }
@@ -93,11 +86,10 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
             }
         }
 
-        if self.attribute.length == 0xFFFF_FFFF || self.total_bytes_consumed < self.attribute.length
-        {
+        if attribute.length == 0xFFFF_FFFF || self.total_bytes_consumed < attribute.length {
             Ok(ParseResult::incomplete(bytes_consumed))
         } else {
-            handler.end_sequence(&self.attribute);
+            handler.end_sequence(attribute);
             Ok(ParseResult::completed(bytes_consumed))
         }
     }

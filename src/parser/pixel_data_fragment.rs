@@ -7,14 +7,16 @@ use crate::tag::Tag;
 use std::marker::PhantomData;
 
 pub struct PixelDataFragmentParser<T: Encoding> {
-    pub attribute: Attribute,
     pub phantom: PhantomData<T>,
 }
 
-impl<T: Encoding> PixelDataFragmentParser<T> {}
-
 impl<T: 'static + Encoding> Parser<T> for PixelDataFragmentParser<T> {
-    fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
+    fn parse(
+        &mut self,
+        handler: &mut dyn Handler,
+        attribute: &Attribute,
+        bytes: &[u8],
+    ) -> Result<ParseResult<T>, ()> {
         // read item tag and length
         if bytes.len() < 8 {
             return Ok(ParseResult::incomplete(0));
@@ -33,7 +35,7 @@ impl<T: 'static + Encoding> Parser<T> for PixelDataFragmentParser<T> {
         }
 
         // notify handler of data
-        handler.pixel_data_fragment(&self.attribute, &bytes[8..(8 + item_length)]);
+        handler.pixel_data_fragment(attribute, &bytes[8..(8 + item_length)]);
 
         Ok(ParseResult::completed(8 + item_length))
     }

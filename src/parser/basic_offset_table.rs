@@ -7,14 +7,16 @@ use crate::tag::Tag;
 use std::marker::PhantomData;
 
 pub struct BasicOffsetTableParser<T: Encoding> {
-    pub attribute: Attribute,
     pub phantom: PhantomData<T>,
 }
 
-impl<T: Encoding> BasicOffsetTableParser<T> {}
-
 impl<T: 'static + Encoding> Parser<T> for BasicOffsetTableParser<T> {
-    fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult<T>, ()> {
+    fn parse(
+        &mut self,
+        handler: &mut dyn Handler,
+        attribute: &Attribute,
+        bytes: &[u8],
+    ) -> Result<ParseResult<T>, ()> {
         // make sure we have enough length to read item and length
         if bytes.len() < 8 {
             return Ok(ParseResult::incomplete(0));
@@ -33,7 +35,7 @@ impl<T: 'static + Encoding> Parser<T> for BasicOffsetTableParser<T> {
         }
 
         // notify handler of data
-        handler.basic_offset_table(&self.attribute, &bytes[8..(8 + item_length)]);
+        handler.basic_offset_table(attribute, &bytes[8..(8 + item_length)]);
 
         Ok(ParseResult::completed(8 + item_length))
     }
