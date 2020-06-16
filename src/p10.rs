@@ -65,8 +65,6 @@ mod tests {
         let result = parse(&mut handler, &mut bytes);
         assert!(result.is_ok());
         assert_eq!(257, handler.dataset.attributes.len());
-        //println!("Parsed {:?} attributes", accumulator.attributes.len());
-        //println!("{:?}", accumulator.attributes);
     }
 
     #[test]
@@ -77,8 +75,6 @@ mod tests {
         let result = parse(&mut handler, &mut bytes);
         assert!(result.is_ok());
         assert_eq!(257, handler.dataset.attributes.len());
-        //println!("Parsed {:?} attributes", accumulator.attributes.len());
-        //println!("{:?}", accumulator.attributes);
     }
 
     #[test]
@@ -89,7 +85,6 @@ mod tests {
         let result = parse(&mut handler, &mut bytes);
         assert!(result.is_ok());
         assert_eq!(257, handler.dataset.attributes.len());
-        //println!("Parsed {:?} attributes", accumulator.attributes.len());
     }
 
     #[test]
@@ -101,7 +96,6 @@ mod tests {
         let result = parse(&mut handler, &mut bytes);
         assert!(result.is_ok());
         assert_eq!(157, handler.dataset.attributes.len());
-        //println!("Parsed {:?} attributes", handler.dataset.attributes.len());
     }
 
     #[test]
@@ -113,6 +107,5 @@ mod tests {
         let result = parse(&mut handler, &mut bytes);
         assert!(result.is_ok());
         assert_eq!(94, handler.dataset.attributes.len());
-        //println!("Parsed {:?} attributes", handler.dataset.attributes.len());
     }
 }

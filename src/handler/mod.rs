@@ -3,7 +3,6 @@ use crate::attribute::Attribute;
 #[derive(PartialEq)]
 pub enum Control {
     Continue, // continue (decode the element's data)
-    Filter,   // filter this element (skip to the next element and ignore its data)
     Cancel,   // stop parsing
 }
 
@@ -26,4 +25,3 @@ pub trait Handler {
 
 pub mod cancel;
 pub mod data_set;
-pub mod filter;
