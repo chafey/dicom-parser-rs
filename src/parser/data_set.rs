@@ -7,14 +7,14 @@ use crate::parser::ParseState;
 use crate::parser::Parser;
 
 pub struct DataSetParser<T: Encoding> {
-    parser: Option<Box<dyn Parser<T>>>,
+    parser: AttributeParser<T>,
     total_bytes_consumed: usize,
 }
 
 impl<T: 'static + Encoding> DataSetParser<T> {
     pub fn default() -> DataSetParser<T> {
         DataSetParser {
-            parser: Some(Box::new(AttributeParser::<T>::default())),
+            parser: AttributeParser::<T>::default(),
             total_bytes_consumed: 0,
         }
     }
@@ -26,28 +26,22 @@ impl<T: 'static + Encoding> Parser<T> for DataSetParser<T> {
         let mut bytes_consumed = 0;
 
         while !remaining_bytes.is_empty() {
-            match &mut self.parser {
-                Some(parser) => {
-                    let result = parser.parse(handler, remaining_bytes)?;
-                    bytes_consumed += result.bytes_consumed;
-                    self.total_bytes_consumed += result.bytes_consumed;
-                    remaining_bytes = &remaining_bytes[result.bytes_consumed..];
-                    match result.state {
-                        ParseState::Cancelled => {
-                            self.parser = None;
-                            return Ok(ParseResult::cancelled(bytes_consumed));
-                        }
-                        ParseState::Incomplete => {
-                            return Ok(ParseResult::incomplete(bytes_consumed));
-                        }
-                        ParseState::Completed => {
-                            self.parser = Some(Box::new(AttributeParser::<T>::default()));
-                            continue;
-                        }
-                    }
+            let result = self.parser.parse(handler, remaining_bytes)?;
+            bytes_consumed += result.bytes_consumed;
+            self.total_bytes_consumed += result.bytes_consumed;
+            remaining_bytes = &remaining_bytes[result.bytes_consumed..];
+            match result.state {
+                ParseState::Cancelled => {
+                    return Ok(ParseResult::cancelled(bytes_consumed));
                 }
-                None => return Err(()), // parsing cannot continue - either cancelled or completed
-            };
+                ParseState::Incomplete => {
+                    return Ok(ParseResult::incomplete(bytes_consumed));
+                }
+                ParseState::Completed => {
+                    self.parser = AttributeParser::<T>::default();
+                    continue;
+                }
+            }
         }
         Ok(ParseResult::completed(bytes_consumed))
     }
@@ -73,7 +67,6 @@ pub fn parse_full<T: 'static + Encoding>(
 
 #[cfg(test)]
 mod tests {
-    /*
 
     use super::DataSetParser;
     use crate::encoding::{ExplicitLittleEndian, ImplicitLittleEndian};
@@ -90,11 +83,12 @@ mod tests {
     }
     #[test]
     fn parse_full_ok() {
-        let bytes =
+        let (_meta, bytes) =
             read_data_set_bytes_from_file("tests/fixtures/CT1_UNC.explicit_little_endian.dcm");
         let result = parse_ele_data_set(&bytes[..]);
         assert!(result.is_ok());
     }
+    /*
 
     fn split_parse(bytes: &[u8], split_position: usize) -> Result<(), ()> {
         println!("split_parse @ {} of {} ", split_position, bytes.len());
@@ -110,7 +104,6 @@ mod tests {
         assert_eq!(result2.bytes_consumed, bytes.len() - result.bytes_consumed);
         Ok(())
     }
-
     #[test]
     fn parse_partial_debug() {
         //let bytes = read_data_set_bytes_from_file("tests/fixtures/CT1_UNC.explicit_little_endian.dcm");
@@ -123,17 +116,49 @@ mod tests {
         assert!(result.is_ok());
         //println!("{:?}", result);
     }
-    #[test]
-    fn parse_partial_ok() {
-        //let bytes = read_data_set_bytes_from_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm");
-        //let bytes = read_data_set_bytes_from_file("tests/fixtures/CT1_UNC.explicit_little_endian.dcm");
-        let bytes =
-            read_data_set_bytes_from_file("tests/fixtures/IM00001.implicit_little_endian.dcm");
-        for i in 0..bytes.len() {
-            let result = split_parse(&bytes, i);
-            assert!(result.is_ok());
-        }
-        //println!("{:?}", result);
-    }
     */
+
+    #[test]
+    fn explicit_little_endian_streaming_parse_ok() {
+        let (_meta, bytes) =
+            read_data_set_bytes_from_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm");
+        let mut handler = DataSetHandler::default();
+        //handler.print = true;
+        let mut parser = DataSetParser::<ExplicitLittleEndian>::default();
+        let mut offset = 0;
+        for i in 0..bytes.len() {
+            match parser.parse(&mut handler, &bytes[offset..i + 1]) {
+                Ok(parse_result) => {
+                    if parse_result.bytes_consumed != 0 {
+                        //println!("consumed {} bytes", parse_result.bytes_consumed)
+                    }
+                    offset += parse_result.bytes_consumed;
+                }
+                Err(()) => panic!("Parse Errored"),
+            }
+        }
+        assert_eq!(157, handler.dataset.attributes.len());
+    }
+
+    #[test]
+    fn implicit_little_endian_streaming_parse_ok() {
+        let (_meta, bytes) =
+            read_data_set_bytes_from_file("tests/fixtures/IM00001.implicit_little_endian.dcm");
+        let mut handler = DataSetHandler::default();
+        //handler.print = true;
+        let mut parser = DataSetParser::<ImplicitLittleEndian>::default();
+        let mut offset = 0;
+        for i in 0..bytes.len() {
+            match parser.parse(&mut handler, &bytes[offset..i + 1]) {
+                Ok(parse_result) => {
+                    if parse_result.bytes_consumed != 0 {
+                        //println!("consumed {} bytes", parse_result.bytes_consumed)
+                    }
+                    offset += parse_result.bytes_consumed;
+                }
+                Err(()) => panic!("Parse Errored"),
+            }
+        }
+        assert_eq!(94, handler.dataset.attributes.len());
+    }
 }

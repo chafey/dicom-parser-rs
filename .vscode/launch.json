@@ -22,7 +22,6 @@
                 }
             },
             "args": [
-                "implicit_little_endian"
             ],
             "cwd": "${workspaceFolder}"
         }

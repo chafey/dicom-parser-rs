@@ -8,6 +8,7 @@ use crate::parser::encapsulated_pixel_data::EncapsulatedPixelDataParser;
 use crate::parser::sequence::SequenceParser;
 use crate::parser::ParseResult;
 use crate::parser::Parser;
+use crate::tag;
 use crate::tag::Tag;
 use crate::vr::VR;
 
@@ -43,12 +44,6 @@ impl<T: 'static + Encoding> Parser<T> for AttributeParser<T> {
                 }
 
                 let remaining_byes = &bytes[bytes_consumed..];
-
-                // return incomplete if we have undefined length and less than 8 bytes
-                // to parse (we need 8 to look ahead to see if its a sequence)
-                if attribute.length == 0xFFFF_FFFF && remaining_byes.len() < 8 {
-                    return Ok(ParseResult::incomplete(bytes_consumed));
-                }
 
                 self.parser = Some(make_parser::<T>(handler, attribute, remaining_byes));
                 let mut parse_result = self
@@ -105,6 +100,13 @@ fn parse_attribute<T: Encoding>(bytes: &[u8]) -> Result<(usize, Attribute), ()> 
         T::vr_and_length(&bytes)?
     };
 
+    // if we have undefined length, check to make sure we have an additional 8 bytes
+    // which will be needed for implicit little endian to detect if this is a sequence
+    // item or not.  This check occurs shortly after this function is called
+    if length == 0xFFFF_FFFF && bytes.len() < (bytes_consumed + 8) {
+        return Err(());
+    }
+
     let attribute = Attribute {
         tag: Tag::new(group, element),
         vr,
@@ -122,12 +124,6 @@ fn is_encapsulated_pixel_data(attribute: &Attribute) -> bool {
 }
 
 fn is_sequence<T: Encoding>(bytes: &[u8]) -> bool {
-    // peek ahead to see if it looks like a sequence
-    if bytes.len() >= 8 {
-        let item_tag = Tag::from_bytes::<T>(&bytes[0..4]);
-        if item_tag.group == 0xFFFE && item_tag.element == 0xE000 {
-            return true;
-        }
-    }
-    false
+    let item_tag = Tag::from_bytes::<T>(&bytes[0..4]);
+    item_tag == tag::ITEM
 }
