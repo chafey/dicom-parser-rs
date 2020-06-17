@@ -40,16 +40,16 @@ following categories:
   to visualize or dump a DICOM Data Set for debugging purposes.  If a 
   given tag is in the DataSet but not in the dictionary, the tool will
   still work but it won't have information about that specific tag.
-* Those that may fail if it encounters an attribute not in the Data Dictionary.
+* Those that may fail if they encounter an attribute not in the Data Dictionary.
   Having functionality that can fail is rare and generally undesirable - if
   this situation occurs, there are usually ways to workaround them (perhaps
-  with some drawbacks).  Am example of such a use case is converting the 
+  with some drawbacks).  An example of such a use case is converting the 
   transfer syntax for a DICOM P10 file from implicit little endian to explicit
   little endian.
 
 ## Streaming
 
-Full support for streaming was an important require in the design of this
+Full support for streaming was an important requirement in the design of this
 library.  Streaming provides the following benefits compared to a design
 that doesn't support streaming:
 
@@ -78,7 +78,7 @@ the following benefits compared to a non callback interface:
   the DICOM DataSet.  The Handler abstraction introduces no overhead to the
   processing allowing highly efficient and optimized processing
   implementations.  In non callback designs, the result of a parse is usually
-  a DataSet type object which the caller can interpret.  Efficienes can be
+  a DataSet type object which the caller can interpret.  Efficiencies can be
   gained by avoiding the construction of this intermediary DataSet object
   and let the processing logic access the underlying data stream directly.
   Note that a DataSet parse interface can still be provided on top of a
@@ -124,9 +124,9 @@ Some applications of these features:
   a generic parameter T to ValueParser.
 
 * Handler trait provides a callback interface for the parser to notify the
-  consumer/user of what has been parsed.  Users of this library can
-  use a provided concrete Handler implementation or create their own.  
-  The CancelProvider
+  consumer/user of what has been parsed.  Complex processing logic can
+  be broken up into multiple Handler implementations which can be chained
+  together (see the included CancelHandler for an example of this)
 
 ## Words of Wisdom
 
@@ -140,8 +140,8 @@ library some day.
   to see if it is a sequence and if so, parse it fully.  It is good to
   implement this case ASAP as it tends to impact the rest of the design.
 
-* The variability associated with parsing the value field of an attribute is
-  independent of parsing DataSets and attribute Tag/VR/Length.  Initially they
+* The variability associated with parsing the value field of an Attribute is
+  independent of parsing DataSets and Attribute Tag/VR/Length.  Initially they
   seem similar since the code for parsing a DataSet and Attribute is used
   when parsing the value field (e.g. sequences).  Intially I implemented
   DataSet and Attribute Parsing behind the same trait/interface that I used
