@@ -1,15 +1,17 @@
 # dicom-parser-rs
 dicom parser written in Rust
 
-Read about the [design rationale for this library](DESIGN.md)
 
-## Goals
+## Design Goals
 
 * Parse all standards compliant DICOM P10 files
 * First class support for WebAssembly builds 
 * Streaming compatible API
 * Callback based parsing
-* Does not utilize data dictionary
+* Does not utilize a DICOM data dictionary
+* Modular design enabling flexible re-use of the library functionality
+
+Read about the [design rationale for this library](DESIGN.md)
 
 ## Features
 
@@ -32,15 +34,14 @@ Actively being developed (June 17, 2020)
 
 ## To Do's
 
-* Add no_std configuration?
-* Consider making Handler::data callback streamable? (for large data like pixel data)
-  * The Handler could control this by the return value from element()
 * Consider buffering unconsumed bytes in DataSetParser?
   * Need to deal with nested DataSetParser case though (from sequences)
+* Consider making Handler::data callback streamable? (for large data like pixel data)
+  * The Handler could control this by the return value from element()
 * Reconsider DataSet object - either delete or make it complete (it is not useful currently)
   * Consider removing DataSetHandler to test code?
+* Add no_std configuration?
 * Add more unit tests
-* Add design documentation
 * Add inline source documentation
 * Add example applications
   * dump to DICOM JSON format
@@ -57,8 +58,11 @@ Actively being developed (June 17, 2020)
 * Consider adding TagCancelHandler to cancel parsing on specific tag (or tags)
 * Consider making a cancelled parse resumable?  Should work given that the parser is streaming capable
 
-## Rafactorings
+## Refactorings
 
+* Change MetaInformation to not use DataSetHandler/DataSet
+  * Custom Handler or a new one that is more flexible
+  * Want to be able to provide access to all MetaInformation attributes
 * Separate undefined length logic from known length logic
   * SequenceItemDataParser->SequenceItemDataUndefinedLengthParser
   * SequenceParser -> SequenceUndefinedLengthParser 
