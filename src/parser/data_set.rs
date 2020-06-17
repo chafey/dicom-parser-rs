@@ -25,7 +25,7 @@ impl<T: 'static + Encoding> DataSetParser<T> {
         handler: &mut dyn Handler,
         bytes: &[u8],
         bytes_from_beginning: usize,
-    ) -> Result<ParseResult, ()> {
+    ) -> Result<ParseResult, ParseError> {
         let mut remaining_bytes = bytes;
         let mut bytes_consumed = 0;
         while !remaining_bytes.is_empty() {
@@ -63,10 +63,13 @@ pub fn parse_full<T: 'static + Encoding>(
     match parser.parse(handler, bytes, bytes_from_beginning) {
         Ok(parse_result) => match parse_result.state {
             ParseState::Cancelled => Ok((parse_result.bytes_consumed, true)),
-            ParseState::Incomplete => Err(ParseError {}),
+            ParseState::Incomplete => Err(ParseError {
+                reason: "unexpected EOF",
+                position: parse_result.bytes_consumed + bytes_from_beginning,
+            }),
             ParseState::Completed => Ok((parse_result.bytes_consumed, false)),
         },
-        Err(()) => Err(ParseError {}),
+        Err(parse_error) => Err(parse_error),
     }
 }
 
@@ -76,18 +79,17 @@ mod tests {
     use super::DataSetParser;
     use crate::encoding::{ExplicitLittleEndian, ImplicitLittleEndian};
     use crate::handler::data_set::DataSetHandler;
+    use crate::parser::ParseError;
     use crate::parser::ParseState;
     use crate::test::tests::read_data_set_bytes_from_file;
 
     fn parse_ele_data_set(
         bytes: &[u8],
         bytes_from_beginning: usize,
-    ) -> Result<(ParseState, usize), ()> {
+    ) -> Result<(ParseState, usize), ParseError> {
         let mut handler = DataSetHandler::default();
         let mut parser = DataSetParser::<ExplicitLittleEndian>::default();
-        let result = parser
-            .parse(&mut handler, bytes, bytes_from_beginning)
-            .unwrap();
+        let result = parser.parse(&mut handler, bytes, bytes_from_beginning)?;
         Ok((result.state, result.bytes_consumed))
     }
     #[test]
@@ -143,7 +145,7 @@ mod tests {
                     }
                     offset += parse_result.bytes_consumed;
                 }
-                Err(()) => panic!("Parse Errored"),
+                Err(_error) => panic!("Parse Errored"),
             }
         }
         assert_eq!(157, handler.dataset.attributes.len());
@@ -165,7 +167,7 @@ mod tests {
                     }
                     offset += parse_result.bytes_consumed;
                 }
-                Err(()) => panic!("Parse Errored"),
+                Err(_error) => panic!("Parse Errored"),
             }
         }
         assert_eq!(94, handler.dataset.attributes.len());

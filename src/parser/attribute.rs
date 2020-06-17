@@ -6,6 +6,7 @@ use crate::parser::data::DataParser;
 use crate::parser::data_undefined_length::DataUndefinedLengthParser;
 use crate::parser::encapsulated_pixel_data::EncapsulatedPixelDataParser;
 use crate::parser::sequence::SequenceParser;
+use crate::parser::ParseError;
 use crate::parser::ParseResult;
 use crate::parser::Parser;
 use crate::tag;
@@ -24,7 +25,7 @@ impl<T: 'static + Encoding> AttributeParser<T> {
         handler: &mut dyn Handler,
         bytes: &[u8],
         bytes_from_beginning: usize,
-    ) -> Result<ParseResult, ()> {
+    ) -> Result<ParseResult, ParseError> {
         match &mut self.parser {
             None => {
                 let (bytes_consumed, attribute) = match parse_attribute::<T>(bytes) {

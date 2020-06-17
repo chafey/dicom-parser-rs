@@ -30,7 +30,6 @@ Actively being developed (June 16, 2020)
 
 ## To Do's
 
-* Consider adding information to returned Errors (e.g. what the error is)
 * Add no_std configuration?
 * Reconsider DataSet object - either delete or make it complete (it is not useful currently)
   * Consider removing DataSetHandler to test code?

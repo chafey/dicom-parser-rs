@@ -2,6 +2,7 @@ use crate::attribute::Attribute;
 use crate::encoding::Encoding;
 use crate::handler::Handler;
 use crate::parser::sequence_item_data::SequenceItemDataParser;
+use crate::parser::ParseError;
 use crate::parser::ParseResult;
 use crate::parser::ParseState;
 use crate::parser::Parser;
@@ -21,7 +22,7 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
         attribute: &Attribute,
         bytes: &[u8],
         position: usize,
-    ) -> Result<ParseResult, ()> {
+    ) -> Result<ParseResult, ParseError> {
         // if we have a known length, only parse the bytes we know we have
         let mut remaining_bytes = if attribute.length == 0xFFFF_FFFF
             || bytes.len() < (attribute.length - self.total_bytes_consumed)
@@ -48,7 +49,10 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
 
                     // verify we have a sequence item and return error if not
                     if tag != tag::ITEM {
-                        return Err(());
+                        return Err(ParseError {
+                            reason: "expected Item tag FFFE,E000",
+                            position,
+                        });
                     }
 
                     bytes_consumed += 8;

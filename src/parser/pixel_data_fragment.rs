@@ -1,6 +1,7 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
 use crate::handler::Handler;
+use crate::parser::ParseError;
 use crate::parser::ParseResult;
 use crate::parser::Parser;
 use crate::tag::Tag;
@@ -16,8 +17,8 @@ impl<T: 'static + Encoding> Parser<T> for PixelDataFragmentParser<T> {
         handler: &mut dyn Handler,
         attribute: &Attribute,
         bytes: &[u8],
-        _position: usize,
-    ) -> Result<ParseResult, ()> {
+        position: usize,
+    ) -> Result<ParseResult, ParseError> {
         // read item tag and length
         if bytes.len() < 8 {
             return Ok(ParseResult::incomplete(0));
@@ -27,7 +28,10 @@ impl<T: 'static + Encoding> Parser<T> for PixelDataFragmentParser<T> {
 
         // check for sequence item
         if item_tag != Tag::new(0xFFFE, 0xE000) {
-            return Err(());
+            return Err(ParseError {
+                reason: "expected Item tag FFFE,E000",
+                position,
+            });
         }
 
         // make sure we have enough bytes for the item value

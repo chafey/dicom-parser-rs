@@ -3,6 +3,7 @@ use crate::encoding::Encoding;
 use crate::handler::Handler;
 use crate::parser::basic_offset_table::BasicOffsetTableParser;
 use crate::parser::pixel_data_fragment::PixelDataFragmentParser;
+use crate::parser::ParseError;
 use crate::parser::ParseResult;
 use crate::parser::ParseState;
 use crate::parser::Parser;
@@ -33,7 +34,7 @@ impl<T: 'static + Encoding> Parser<T> for EncapsulatedPixelDataParser<T> {
         attribute: &Attribute,
         bytes: &[u8],
         position: usize,
-    ) -> Result<ParseResult, ()> {
+    ) -> Result<ParseResult, ParseError> {
         // iterate over remaining bytes parsing them
         let mut remaining_bytes = bytes;
         let mut bytes_consumed = 0;

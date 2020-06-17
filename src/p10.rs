@@ -30,7 +30,7 @@ pub fn parse<'a, T: Handler>(
     };
     match result {
         Ok(_) => Ok(meta),
-        Err(_bytes_remaining) => Err(ParseError {}),
+        Err(parse_error) => Err(parse_error),
     }
 }
 

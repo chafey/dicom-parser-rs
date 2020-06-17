@@ -1,6 +1,7 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
 use crate::handler::Handler;
+use crate::parser::ParseError;
 use crate::parser::ParseResult;
 use crate::parser::Parser;
 use std::marker::PhantomData;
@@ -17,7 +18,7 @@ impl<T: 'static + Encoding> Parser<T> for DataUndefinedLengthParser<T> {
         attribute: &Attribute,
         bytes: &[u8],
         _position: usize,
-    ) -> Result<ParseResult, ()> {
+    ) -> Result<ParseResult, ParseError> {
         // scan for sequence delimitation item
         let data_length = match find_end_of_data::<T>(bytes) {
             Err(()) => {

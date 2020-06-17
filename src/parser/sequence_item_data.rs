@@ -3,6 +3,7 @@ use crate::encoding::Encoding;
 use crate::handler::cancel::CancelHandler;
 use crate::handler::Handler;
 use crate::parser::data_set::DataSetParser;
+use crate::parser::ParseError;
 use crate::parser::ParseResult;
 use crate::parser::Parser;
 use crate::tag;
@@ -30,7 +31,7 @@ impl<T: 'static + Encoding> Parser<T> for SequenceItemDataParser<T> {
         _attribute: &Attribute,
         bytes: &[u8],
         position: usize,
-    ) -> Result<ParseResult, ()> {
+    ) -> Result<ParseResult, ParseError> {
         // if we have a known length, only parse the bytes we know we have
         let remaining_bytes = if self.item_length == 0xFFFF_FFFF
             || bytes.len() < (self.item_length - self.total_bytes_consumed)
@@ -105,11 +106,13 @@ mod tests {
             vr: None,
             length: 0,
         };
-        let result = parser
-            .parse(&mut handler, &attribute, &bytes[..], 0)
-            .unwrap();
-        assert_eq!(result.bytes_consumed, 12);
-        assert_eq!(result.state, ParseState::Completed);
+        match parser.parse(&mut handler, &attribute, &bytes[..], 0) {
+            Ok(result) => {
+                assert_eq!(result.bytes_consumed, 12);
+                assert_eq!(result.state, ParseState::Completed);
+            }
+            Err(_parse_result) => panic!("AHHH"),
+        }
     }
 
     #[test]
@@ -126,11 +129,13 @@ mod tests {
             vr: None,
             length: 0,
         };
-        let result = parser
-            .parse(&mut handler, &attribute, &bytes[..1], 0)
-            .unwrap();
-        assert_eq!(result.bytes_consumed, 0);
-        assert_eq!(result.state, ParseState::Incomplete);
+        match parser.parse(&mut handler, &attribute, &bytes[..1], 0) {
+            Ok(result) => {
+                assert_eq!(result.bytes_consumed, 0);
+                assert_eq!(result.state, ParseState::Incomplete);
+            }
+            Err(_parse_error) => panic!("AHHH"),
+        }
     }
 
     #[test]
@@ -147,11 +152,13 @@ mod tests {
             vr: None,
             length: 0,
         };
-        let result = parser
-            .parse(&mut handler, &attribute, &bytes[..], 0)
-            .unwrap();
-        assert_eq!(result.bytes_consumed, 20);
-        assert_eq!(result.state, ParseState::Completed);
+        match parser.parse(&mut handler, &attribute, &bytes[..], 0) {
+            Ok(result) => {
+                assert_eq!(result.bytes_consumed, 20);
+                assert_eq!(result.state, ParseState::Completed);
+            }
+            Err(_) => panic!("AHHH"),
+        };
     }
 
     #[test]
@@ -168,11 +175,15 @@ mod tests {
             vr: None,
             length: 0,
         };
-        let result = parser
-            .parse(&mut handler, &attribute, &bytes[0..1], 0)
-            .unwrap();
-        assert_eq!(result.bytes_consumed, 0);
-        assert_eq!(result.state, ParseState::Incomplete);
+        match parser.parse(&mut handler, &attribute, &bytes[0..1], 0) {
+            Ok(result) => {
+                assert_eq!(result.bytes_consumed, 0);
+                assert_eq!(result.state, ParseState::Incomplete);
+            }
+            Err(_error) => {
+                panic!("AHHH");
+            }
+        }
     }
 
     #[test]
@@ -189,10 +200,12 @@ mod tests {
             vr: None,
             length: 0,
         };
-        let result = parser
-            .parse(&mut handler, &attribute, &bytes[0..13], 0)
-            .unwrap();
-        assert_eq!(result.bytes_consumed, 12);
-        assert_eq!(result.state, ParseState::Incomplete);
+        match parser.parse(&mut handler, &attribute, &bytes[0..13], 0) {
+            Ok(result) => {
+                assert_eq!(result.bytes_consumed, 12);
+                assert_eq!(result.state, ParseState::Incomplete);
+            }
+            Err(_error) => panic!("AHHH"),
+        }
     }
 }

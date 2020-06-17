@@ -4,7 +4,10 @@ use crate::handler::Handler;
 
 use std::fmt;
 
-pub struct ParseError {}
+pub struct ParseError {
+    pub reason: &'static str,
+    pub position: usize,
+}
 
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub enum ParseState {
@@ -51,7 +54,7 @@ pub trait Parser<T: Encoding + fmt::Debug> {
         attribute: &Attribute,
         bytes: &[u8],
         position: usize,
-    ) -> Result<ParseResult, ()>;
+    ) -> Result<ParseResult, ParseError>;
 }
 
 pub mod attribute;
