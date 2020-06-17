@@ -16,16 +16,16 @@ pub fn parse<'a, T: Handler>(
     let result = match &meta.transfer_syntax_uid[..] {
         "1.2.840.10008.1.2" => {
             // implicit little endian
-            parse_full::<ImplicitLittleEndian>(callback, remaining_bytes)
+            parse_full::<ImplicitLittleEndian>(callback, remaining_bytes, meta.end_position)
         }
         "1.2.840.10008.1.2.2" => {
             // explicit big endian
-            parse_full::<ExplicitBigEndian>(callback, remaining_bytes)
+            parse_full::<ExplicitBigEndian>(callback, remaining_bytes, meta.end_position)
         }
         "1.2.840.10008.1.2.1.99" => panic!("deflated not suported yet"),
         _ => {
             // explicit little endian
-            parse_full::<ExplicitLittleEndian>(callback, remaining_bytes)
+            parse_full::<ExplicitLittleEndian>(callback, remaining_bytes, meta.end_position)
         }
     };
     match result {

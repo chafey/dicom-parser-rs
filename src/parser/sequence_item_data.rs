@@ -29,6 +29,7 @@ impl<T: 'static + Encoding> Parser<T> for SequenceItemDataParser<T> {
         handler: &mut dyn Handler,
         _attribute: &Attribute,
         bytes: &[u8],
+        position: usize,
     ) -> Result<ParseResult, ()> {
         // if we have a known length, only parse the bytes we know we have
         let remaining_bytes = if self.item_length == 0xFFFF_FFFF
@@ -42,9 +43,9 @@ impl<T: 'static + Encoding> Parser<T> for SequenceItemDataParser<T> {
         let mut sequence_item_handler =
             CancelHandler::new(handler, |x: &Attribute| x.tag == tag::ITEMDELIMITATIONITEM);
 
-        let parse_result = self
-            .parser
-            .parse(&mut sequence_item_handler, remaining_bytes)?;
+        let parse_result =
+            self.parser
+                .parse(&mut sequence_item_handler, remaining_bytes, position)?;
 
         self.total_bytes_consumed += parse_result.bytes_consumed;
 
@@ -104,7 +105,9 @@ mod tests {
             vr: None,
             length: 0,
         };
-        let result = parser.parse(&mut handler, &attribute, &bytes[..]).unwrap();
+        let result = parser
+            .parse(&mut handler, &attribute, &bytes[..], 0)
+            .unwrap();
         assert_eq!(result.bytes_consumed, 12);
         assert_eq!(result.state, ParseState::Completed);
     }
@@ -123,7 +126,9 @@ mod tests {
             vr: None,
             length: 0,
         };
-        let result = parser.parse(&mut handler, &attribute, &bytes[..1]).unwrap();
+        let result = parser
+            .parse(&mut handler, &attribute, &bytes[..1], 0)
+            .unwrap();
         assert_eq!(result.bytes_consumed, 0);
         assert_eq!(result.state, ParseState::Incomplete);
     }
@@ -142,7 +147,9 @@ mod tests {
             vr: None,
             length: 0,
         };
-        let result = parser.parse(&mut handler, &attribute, &bytes[..]).unwrap();
+        let result = parser
+            .parse(&mut handler, &attribute, &bytes[..], 0)
+            .unwrap();
         assert_eq!(result.bytes_consumed, 20);
         assert_eq!(result.state, ParseState::Completed);
     }
@@ -162,7 +169,7 @@ mod tests {
             length: 0,
         };
         let result = parser
-            .parse(&mut handler, &attribute, &bytes[0..1])
+            .parse(&mut handler, &attribute, &bytes[0..1], 0)
             .unwrap();
         assert_eq!(result.bytes_consumed, 0);
         assert_eq!(result.state, ParseState::Incomplete);
@@ -183,7 +190,7 @@ mod tests {
             length: 0,
         };
         let result = parser
-            .parse(&mut handler, &attribute, &bytes[0..13])
+            .parse(&mut handler, &attribute, &bytes[0..13], 0)
             .unwrap();
         assert_eq!(result.bytes_consumed, 12);
         assert_eq!(result.state, ParseState::Incomplete);

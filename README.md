@@ -31,7 +31,6 @@ Actively being developed (June 16, 2020)
 ## To Do's
 
 * Consider adding information to returned Errors (e.g. what the error is)
-* Consider adding data_position property to Attribute?
 * Add no_std configuration?
 * Reconsider DataSet object - either delete or make it complete (it is not useful currently)
   * Consider removing DataSetHandler to test code?
@@ -39,6 +38,8 @@ Actively being developed (June 16, 2020)
 * Add design documentation
 * Add inline source documentation
 * Add example applications
+  * dump to DICOM JSON format
+  * dump to text (in DCMTK dcmdump format) - requires data dictionary though
 * Add performance benchmark to establish baseline to understand performance implications of future changes
 * Build test suite of DICOM images that hit all conditions
 

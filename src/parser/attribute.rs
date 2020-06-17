@@ -19,7 +19,12 @@ pub struct AttributeParser<T: Encoding> {
 }
 
 impl<T: 'static + Encoding> AttributeParser<T> {
-    pub fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult, ()> {
+    pub fn parse(
+        &mut self,
+        handler: &mut dyn Handler,
+        bytes: &[u8],
+        bytes_from_beginning: usize,
+    ) -> Result<ParseResult, ()> {
         match &mut self.parser {
             None => {
                 let (bytes_consumed, attribute) = match parse_attribute::<T>(bytes) {
@@ -31,13 +36,14 @@ impl<T: 'static + Encoding> AttributeParser<T> {
 
                 self.attribute = attribute;
 
-                match handler.element(&self.attribute) {
+                match handler.element(&self.attribute, bytes_from_beginning, bytes_consumed) {
                     Control::Continue => {}
                     Control::Cancel => {
                         return Ok(ParseResult::cancelled(0));
                     }
                 }
 
+                let data_position = bytes_from_beginning + bytes_consumed;
                 let remaining_byes = &bytes[bytes_consumed..];
 
                 self.parser = Some(make_parser::<T>(handler, &attribute, remaining_byes));
@@ -45,11 +51,12 @@ impl<T: 'static + Encoding> AttributeParser<T> {
                     handler,
                     &self.attribute,
                     remaining_byes,
+                    data_position,
                 )?;
                 parse_result.bytes_consumed += bytes_consumed;
                 Ok(parse_result)
             }
-            Some(parser) => parser.parse(handler, &self.attribute, bytes),
+            Some(parser) => parser.parse(handler, &self.attribute, bytes, bytes_from_beginning),
         }
     }
 }

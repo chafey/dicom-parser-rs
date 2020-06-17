@@ -16,6 +16,7 @@ impl<T: 'static + Encoding> Parser<T> for PixelDataFragmentParser<T> {
         handler: &mut dyn Handler,
         attribute: &Attribute,
         bytes: &[u8],
+        _position: usize,
     ) -> Result<ParseResult, ()> {
         // read item tag and length
         if bytes.len() < 8 {

@@ -10,9 +10,16 @@ pub struct DataSetHandler {
 }
 
 impl Handler for DataSetHandler {
-    fn element(&mut self, attribute: &Attribute) -> Control {
+    fn element(&mut self, attribute: &Attribute, position: usize, data_offset: usize) -> Control {
         if self.print {
-            println!("{:-<width$}{:?}", "-", attribute, width = (self.depth * 2));
+            println!(
+                "{:-<width$}{:?} (position={}, data_offset={})",
+                "-",
+                attribute,
+                position,
+                data_offset,
+                width = (self.depth * 2)
+            );
         }
         self.dataset.attributes.push(*attribute);
         Control::Continue

@@ -50,7 +50,7 @@ pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
     let mut handler = CancelHandler::new(&mut data_set_handler, |x: &Attribute| x.tag.group != 2);
 
     let end_position =
-        match data_set::parse_full::<ExplicitLittleEndian>(&mut handler, &bytes[132..]) {
+        match data_set::parse_full::<ExplicitLittleEndian>(&mut handler, &bytes[132..], 132) {
             Ok((bytes_consumed, _cancelled)) => {
                 // note, we expect to be cancelled, but don't check for it as it is possible
                 // that the caller is only passing in the header

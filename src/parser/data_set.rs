@@ -20,12 +20,17 @@ impl<T: 'static + Encoding> DataSetParser<T> {
 }
 
 impl<T: 'static + Encoding> DataSetParser<T> {
-    pub fn parse(&mut self, handler: &mut dyn Handler, bytes: &[u8]) -> Result<ParseResult, ()> {
+    pub fn parse(
+        &mut self,
+        handler: &mut dyn Handler,
+        bytes: &[u8],
+        bytes_from_beginning: usize,
+    ) -> Result<ParseResult, ()> {
         let mut remaining_bytes = bytes;
         let mut bytes_consumed = 0;
-
         while !remaining_bytes.is_empty() {
-            let result = self.parser.parse(handler, remaining_bytes)?;
+            let position = bytes_from_beginning + bytes_consumed;
+            let result = self.parser.parse(handler, remaining_bytes, position)?;
             bytes_consumed += result.bytes_consumed;
             self.total_bytes_consumed += result.bytes_consumed;
             remaining_bytes = &remaining_bytes[result.bytes_consumed..];
@@ -52,9 +57,10 @@ impl<T: 'static + Encoding> DataSetParser<T> {
 pub fn parse_full<T: 'static + Encoding>(
     handler: &mut dyn Handler,
     bytes: &[u8],
+    bytes_from_beginning: usize,
 ) -> Result<(usize, bool), ParseError> {
     let mut parser = DataSetParser::<T>::default();
-    match parser.parse(handler, bytes) {
+    match parser.parse(handler, bytes, bytes_from_beginning) {
         Ok(parse_result) => match parse_result.state {
             ParseState::Cancelled => Ok((parse_result.bytes_consumed, true)),
             ParseState::Incomplete => Err(ParseError {}),
@@ -73,17 +79,22 @@ mod tests {
     use crate::parser::ParseState;
     use crate::test::tests::read_data_set_bytes_from_file;
 
-    fn parse_ele_data_set(bytes: &[u8]) -> Result<(ParseState, usize), ()> {
+    fn parse_ele_data_set(
+        bytes: &[u8],
+        bytes_from_beginning: usize,
+    ) -> Result<(ParseState, usize), ()> {
         let mut handler = DataSetHandler::default();
         let mut parser = DataSetParser::<ExplicitLittleEndian>::default();
-        let result = parser.parse(&mut handler, bytes).unwrap();
+        let result = parser
+            .parse(&mut handler, bytes, bytes_from_beginning)
+            .unwrap();
         Ok((result.state, result.bytes_consumed))
     }
     #[test]
     fn parse_full_ok() {
-        let (_meta, bytes) =
+        let (meta, bytes) =
             read_data_set_bytes_from_file("tests/fixtures/CT1_UNC.explicit_little_endian.dcm");
-        let result = parse_ele_data_set(&bytes[..]);
+        let result = parse_ele_data_set(&bytes[..], meta.end_position);
         assert!(result.is_ok());
     }
     /*
@@ -118,14 +129,14 @@ mod tests {
 
     #[test]
     fn explicit_little_endian_streaming_parse_ok() {
-        let (_meta, bytes) =
+        let (meta, bytes) =
             read_data_set_bytes_from_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm");
         let mut handler = DataSetHandler::default();
         //handler.print = true;
         let mut parser = DataSetParser::<ExplicitLittleEndian>::default();
         let mut offset = 0;
         for i in 0..bytes.len() {
-            match parser.parse(&mut handler, &bytes[offset..i + 1]) {
+            match parser.parse(&mut handler, &bytes[offset..i + 1], meta.end_position) {
                 Ok(parse_result) => {
                     if parse_result.bytes_consumed != 0 {
                         //println!("consumed {} bytes", parse_result.bytes_consumed)
@@ -140,14 +151,14 @@ mod tests {
 
     #[test]
     fn implicit_little_endian_streaming_parse_ok() {
-        let (_meta, bytes) =
+        let (meta, bytes) =
             read_data_set_bytes_from_file("tests/fixtures/IM00001.implicit_little_endian.dcm");
         let mut handler = DataSetHandler::default();
         //handler.print = true;
         let mut parser = DataSetParser::<ImplicitLittleEndian>::default();
         let mut offset = 0;
         for i in 0..bytes.len() {
-            match parser.parse(&mut handler, &bytes[offset..i + 1]) {
+            match parser.parse(&mut handler, &bytes[offset..i + 1], meta.end_position + i) {
                 Ok(parse_result) => {
                     if parse_result.bytes_consumed != 0 {
                         //println!("consumed {} bytes", parse_result.bytes_consumed)

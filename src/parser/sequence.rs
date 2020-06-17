@@ -20,6 +20,7 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
         handler: &mut dyn Handler,
         attribute: &Attribute,
         bytes: &[u8],
+        position: usize,
     ) -> Result<ParseResult, ()> {
         // if we have a known length, only parse the bytes we know we have
         let mut remaining_bytes = if attribute.length == 0xFFFF_FFFF
@@ -59,7 +60,12 @@ impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
                     self.parser = Some(Box::new(SequenceItemDataParser::<T>::new(length)));
                 }
                 Some(parser) => {
-                    let parse_result = parser.parse(handler, attribute, remaining_bytes)?;
+                    let parse_result = parser.parse(
+                        handler,
+                        attribute,
+                        remaining_bytes,
+                        position + bytes_consumed,
+                    )?;
 
                     bytes_consumed += parse_result.bytes_consumed;
                     self.total_bytes_consumed += parse_result.bytes_consumed;

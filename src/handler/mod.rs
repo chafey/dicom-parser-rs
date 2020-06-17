@@ -7,7 +7,12 @@ pub enum Control {
 }
 
 pub trait Handler {
-    fn element(&mut self, _attribute: &Attribute) -> Control {
+    fn element(
+        &mut self,
+        _attribute: &Attribute,
+        _position: usize,
+        _data_offset: usize,
+    ) -> Control {
         Control::Continue
     }
     fn data(&mut self, _attribute: &Attribute, _data: &[u8]) {}

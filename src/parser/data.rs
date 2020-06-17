@@ -16,6 +16,7 @@ impl<T: 'static + Encoding> Parser<T> for DataParser<T> {
         handler: &mut dyn Handler,
         attribute: &Attribute,
         bytes: &[u8],
+        _position: usize,
     ) -> Result<ParseResult, ()> {
         // make sure we have enough bytes for this data
         if bytes.len() < attribute.length {

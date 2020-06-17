@@ -20,12 +20,12 @@ impl<'t> CancelHandler<'t> {
 }
 
 impl Handler for CancelHandler<'_> {
-    fn element(&mut self, attribute: &Attribute) -> Control {
+    fn element(&mut self, attribute: &Attribute, position: usize, data_offset: usize) -> Control {
         if (self.cancel_fn)(&attribute) {
             self.canceled = true;
             return Control::Cancel;
         }
-        self.handler.element(&attribute)
+        self.handler.element(&attribute, position, data_offset)
     }
     fn data(&mut self, attribute: &Attribute, data: &[u8]) {
         self.handler.data(&attribute, data)

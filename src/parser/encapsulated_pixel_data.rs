@@ -32,6 +32,7 @@ impl<T: 'static + Encoding> Parser<T> for EncapsulatedPixelDataParser<T> {
         handler: &mut dyn Handler,
         attribute: &Attribute,
         bytes: &[u8],
+        position: usize,
     ) -> Result<ParseResult, ()> {
         // iterate over remaining bytes parsing them
         let mut remaining_bytes = bytes;
@@ -46,7 +47,12 @@ impl<T: 'static + Encoding> Parser<T> for EncapsulatedPixelDataParser<T> {
                 return Ok(ParseResult::completed(bytes_consumed + 8));
             }
 
-            let parse_result = self.parser.parse(handler, attribute, remaining_bytes)?;
+            let parse_result = self.parser.parse(
+                handler,
+                attribute,
+                remaining_bytes,
+                position + bytes_consumed,
+            )?;
 
             self.total_bytes_consumed += parse_result.bytes_consumed;
             remaining_bytes = &remaining_bytes[parse_result.bytes_consumed..];

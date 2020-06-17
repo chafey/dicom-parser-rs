@@ -50,6 +50,7 @@ pub trait Parser<T: Encoding + fmt::Debug> {
         handler: &mut dyn Handler,
         attribute: &Attribute,
         bytes: &[u8],
+        position: usize,
     ) -> Result<ParseResult, ()>;
 }
 
