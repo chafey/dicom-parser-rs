@@ -1,5 +1,5 @@
 use crate::attribute::Attribute;
-use crate::handler::{Control, Handler};
+use crate::handler::{Handler, HandlerResult};
 
 pub type CancelFN = fn(&Attribute) -> bool;
 
@@ -20,10 +20,15 @@ impl<'t> CancelHandler<'t> {
 }
 
 impl Handler for CancelHandler<'_> {
-    fn attribute(&mut self, attribute: &Attribute, position: usize, data_offset: usize) -> Control {
+    fn attribute(
+        &mut self,
+        attribute: &Attribute,
+        position: usize,
+        data_offset: usize,
+    ) -> HandlerResult {
         if (self.cancel_fn)(&attribute) {
             self.canceled = true;
-            return Control::Cancel;
+            return HandlerResult::Cancel;
         }
         self.handler.attribute(&attribute, position, data_offset)
     }
@@ -42,10 +47,10 @@ impl Handler for CancelHandler<'_> {
     fn end_sequence(&mut self, attribute: &Attribute) {
         self.handler.end_sequence(&attribute)
     }
-    fn basic_offset_table(&mut self, attribute: &Attribute, data: &[u8]) -> Control {
+    fn basic_offset_table(&mut self, attribute: &Attribute, data: &[u8]) -> HandlerResult {
         self.handler.basic_offset_table(&attribute, data)
     }
-    fn pixel_data_fragment(&mut self, attribute: &Attribute, data: &[u8]) -> Control {
+    fn pixel_data_fragment(&mut self, attribute: &Attribute, data: &[u8]) -> HandlerResult {
         self.handler.pixel_data_fragment(&attribute, data)
     }
 }

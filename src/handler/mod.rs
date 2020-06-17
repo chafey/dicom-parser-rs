@@ -1,7 +1,7 @@
 use crate::attribute::Attribute;
 
 #[derive(PartialEq)]
-pub enum Control {
+pub enum HandlerResult {
     Continue, // continue (decode the element's data)
     Cancel,   // stop parsing
 }
@@ -12,19 +12,19 @@ pub trait Handler {
         _attribute: &Attribute,
         _position: usize,
         _data_offset: usize,
-    ) -> Control {
-        Control::Continue
+    ) -> HandlerResult {
+        HandlerResult::Continue
     }
     fn data(&mut self, _attribute: &Attribute, _data: &[u8]) {}
     fn start_sequence(&mut self, _attribute: &Attribute) {}
     fn start_sequence_item(&mut self, _attribute: &Attribute) {}
     fn end_sequence_item(&mut self, _attribute: &Attribute) {}
     fn end_sequence(&mut self, _attribute: &Attribute) {}
-    fn basic_offset_table(&mut self, _attribute: &Attribute, _data: &[u8]) -> Control {
-        Control::Continue
+    fn basic_offset_table(&mut self, _attribute: &Attribute, _data: &[u8]) -> HandlerResult {
+        HandlerResult::Continue
     }
-    fn pixel_data_fragment(&mut self, _attribute: &Attribute, _data: &[u8]) -> Control {
-        Control::Continue
+    fn pixel_data_fragment(&mut self, _attribute: &Attribute, _data: &[u8]) -> HandlerResult {
+        HandlerResult::Continue
     }
 }
 

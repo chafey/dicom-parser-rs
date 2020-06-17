@@ -1,6 +1,6 @@
 use crate::attribute::Attribute;
 use crate::data_set::DataSet;
-use crate::handler::{Control, Handler};
+use crate::handler::{Handler, HandlerResult};
 
 #[derive(Default)]
 pub struct DataSetHandler {
@@ -10,7 +10,12 @@ pub struct DataSetHandler {
 }
 
 impl Handler for DataSetHandler {
-    fn attribute(&mut self, attribute: &Attribute, position: usize, data_offset: usize) -> Control {
+    fn attribute(
+        &mut self,
+        attribute: &Attribute,
+        position: usize,
+        data_offset: usize,
+    ) -> HandlerResult {
         if self.print {
             println!(
                 "{:-<width$}{:?} (position={}, data_offset={})",
@@ -22,7 +27,7 @@ impl Handler for DataSetHandler {
             );
         }
         self.dataset.attributes.push(*attribute);
-        Control::Continue
+        HandlerResult::Continue
     }
 
     fn data(&mut self, _attribute: &Attribute, data: &[u8]) {
@@ -65,7 +70,7 @@ impl Handler for DataSetHandler {
         }
     }
 
-    fn basic_offset_table(&mut self, _attribute: &Attribute, data: &[u8]) -> Control {
+    fn basic_offset_table(&mut self, _attribute: &Attribute, data: &[u8]) -> HandlerResult {
         if self.print {
             println!(
                 "{:-<width$}  \\ basic offsett table of len {:?}",
@@ -74,10 +79,10 @@ impl Handler for DataSetHandler {
                 width = (self.depth * 2)
             );
         }
-        Control::Continue
+        HandlerResult::Continue
     }
 
-    fn pixel_data_fragment(&mut self, _attribute: &Attribute, data: &[u8]) -> Control {
+    fn pixel_data_fragment(&mut self, _attribute: &Attribute, data: &[u8]) -> HandlerResult {
         if self.print {
             println!(
                 "{:-<width$}  \\ pixel data fragment of len {:?}",
@@ -87,6 +92,6 @@ impl Handler for DataSetHandler {
             );
         }
         self.dataset.data.push(data.to_vec());
-        Control::Continue
+        HandlerResult::Continue
     }
 }

@@ -1,7 +1,7 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
-use crate::handler::Control;
 use crate::handler::Handler;
+use crate::handler::HandlerResult;
 use crate::tag;
 use crate::tag::Tag;
 use crate::value_parser::data::DataParser;
@@ -38,8 +38,8 @@ impl<T: 'static + Encoding> AttributeParser<T> {
                 self.attribute = attribute;
 
                 match handler.attribute(&self.attribute, bytes_from_beginning, bytes_consumed) {
-                    Control::Continue => {}
-                    Control::Cancel => {
+                    HandlerResult::Continue => {}
+                    HandlerResult::Cancel => {
                         return Ok(ParseResult::cancelled(0));
                     }
                 }

@@ -37,7 +37,6 @@ Actively being developed (June 17, 2020)
   * The Handler could control this by the return value from element()
 * Consider buffering unconsumed bytes in DataSetParser?
   * Need to deal with nested DataSetParser case though (from sequences)
-* rename handler::Control to handler::HandlerResult
 * Reconsider DataSet object - either delete or make it complete (it is not useful currently)
   * Consider removing DataSetHandler to test code?
 * Add more unit tests
