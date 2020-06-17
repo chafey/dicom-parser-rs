@@ -45,9 +45,9 @@ impl ParseResult {
 }
 
 //
-// This trait defines an interface for parsing the data portion of a DICOM Attribute
+// This trait defines an interface for parsing the value portion of a DICOM Attribute
 //
-pub trait Parser<T: Encoding + fmt::Debug> {
+pub trait ValueParser<T: Encoding + fmt::Debug> {
     fn parse(
         &mut self,
         handler: &mut dyn Handler,

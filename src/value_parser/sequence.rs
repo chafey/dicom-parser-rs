@@ -1,21 +1,21 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
 use crate::handler::Handler;
-use crate::parser::sequence_item_data::SequenceItemDataParser;
-use crate::parser::ParseError;
-use crate::parser::ParseResult;
-use crate::parser::ParseState;
-use crate::parser::Parser;
 use crate::tag;
 use crate::tag::Tag;
+use crate::value_parser::sequence_item_data::SequenceItemDataParser;
+use crate::value_parser::ParseError;
+use crate::value_parser::ParseResult;
+use crate::value_parser::ParseState;
+use crate::value_parser::ValueParser;
 
 #[derive(Default)]
 pub struct SequenceParser<T: Encoding> {
-    parser: Option<Box<dyn Parser<T>>>,
+    parser: Option<Box<dyn ValueParser<T>>>,
     total_bytes_consumed: usize,
 }
 
-impl<T: 'static + Encoding> Parser<T> for SequenceParser<T> {
+impl<T: 'static + Encoding> ValueParser<T> for SequenceParser<T> {
     fn parse(
         &mut self,
         handler: &mut dyn Handler,

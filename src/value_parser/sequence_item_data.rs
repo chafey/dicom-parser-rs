@@ -3,10 +3,10 @@ use crate::data_set_parser::DataSetParser;
 use crate::encoding::Encoding;
 use crate::handler::cancel::CancelHandler;
 use crate::handler::Handler;
-use crate::parser::ParseError;
-use crate::parser::ParseResult;
-use crate::parser::Parser;
 use crate::tag;
+use crate::value_parser::ParseError;
+use crate::value_parser::ParseResult;
+use crate::value_parser::ValueParser;
 
 pub struct SequenceItemDataParser<T: Encoding> {
     item_length: usize,
@@ -24,7 +24,7 @@ impl<T: 'static + Encoding> SequenceItemDataParser<T> {
     }
 }
 
-impl<T: 'static + Encoding> Parser<T> for SequenceItemDataParser<T> {
+impl<T: 'static + Encoding> ValueParser<T> for SequenceItemDataParser<T> {
     fn parse(
         &mut self,
         handler: &mut dyn Handler,
@@ -73,9 +73,9 @@ mod tests {
     use crate::data_set::DataSet;
     use crate::encoding::ExplicitLittleEndian;
     use crate::handler::data_set::DataSetHandler;
-    use crate::parser::ParseState;
-    use crate::parser::Parser;
     use crate::tag::Tag;
+    use crate::value_parser::ParseState;
+    use crate::value_parser::ValueParser;
 
     fn make_sequence_item_undefined_length() -> Vec<u8> {
         let mut bytes = vec![];

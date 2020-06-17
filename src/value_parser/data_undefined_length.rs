@@ -1,9 +1,9 @@
 use crate::attribute::Attribute;
 use crate::encoding::Encoding;
 use crate::handler::Handler;
-use crate::parser::ParseError;
-use crate::parser::ParseResult;
-use crate::parser::Parser;
+use crate::value_parser::ParseError;
+use crate::value_parser::ParseResult;
+use crate::value_parser::ValueParser;
 use std::marker::PhantomData;
 
 #[derive(Default)]
@@ -11,7 +11,7 @@ pub struct DataUndefinedLengthParser<T: Encoding> {
     pub phantom: PhantomData<T>,
 }
 
-impl<T: 'static + Encoding> Parser<T> for DataUndefinedLengthParser<T> {
+impl<T: 'static + Encoding> ValueParser<T> for DataUndefinedLengthParser<T> {
     fn parse(
         &mut self,
         handler: &mut dyn Handler,

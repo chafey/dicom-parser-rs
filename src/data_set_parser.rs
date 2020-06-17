@@ -1,9 +1,9 @@
 use crate::attribute_parser::AttributeParser;
 use crate::encoding::Encoding;
 use crate::handler::Handler;
-use crate::parser::ParseError;
-use crate::parser::ParseResult;
-use crate::parser::ParseState;
+use crate::value_parser::ParseError;
+use crate::value_parser::ParseResult;
+use crate::value_parser::ParseState;
 
 pub struct DataSetParser<T: Encoding> {
     parser: AttributeParser<T>,
@@ -79,9 +79,9 @@ mod tests {
     use super::DataSetParser;
     use crate::encoding::{ExplicitLittleEndian, ImplicitLittleEndian};
     use crate::handler::data_set::DataSetHandler;
-    use crate::parser::ParseError;
-    use crate::parser::ParseState;
     use crate::test::tests::read_data_set_bytes_from_file;
+    use crate::value_parser::ParseError;
+    use crate::value_parser::ParseState;
 
     fn parse_ele_data_set(
         bytes: &[u8],

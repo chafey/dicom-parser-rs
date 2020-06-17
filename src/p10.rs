@@ -5,7 +5,7 @@ use crate::encoding::ImplicitLittleEndian;
 use crate::handler::Handler;
 use crate::meta_information;
 use crate::meta_information::MetaInformation;
-use crate::parser::ParseError;
+use crate::value_parser::ParseError;
 
 pub fn parse<'a, T: Handler>(
     callback: &'a mut T,

@@ -2,21 +2,21 @@ use crate::attribute::Attribute;
 use crate::encoding::Encoding;
 use crate::handler::Control;
 use crate::handler::Handler;
-use crate::parser::data::DataParser;
-use crate::parser::data_undefined_length::DataUndefinedLengthParser;
-use crate::parser::encapsulated_pixel_data::EncapsulatedPixelDataParser;
-use crate::parser::sequence::SequenceParser;
-use crate::parser::ParseError;
-use crate::parser::ParseResult;
-use crate::parser::Parser;
 use crate::tag;
 use crate::tag::Tag;
+use crate::value_parser::data::DataParser;
+use crate::value_parser::data_undefined_length::DataUndefinedLengthParser;
+use crate::value_parser::encapsulated_pixel_data::EncapsulatedPixelDataParser;
+use crate::value_parser::sequence::SequenceParser;
+use crate::value_parser::ParseError;
+use crate::value_parser::ParseResult;
+use crate::value_parser::ValueParser;
 use crate::vr::VR;
 
 #[derive(Default)]
 pub struct AttributeParser<T: Encoding> {
     attribute: Attribute,
-    parser: Option<Box<dyn Parser<T>>>,
+    parser: Option<Box<dyn ValueParser<T>>>,
 }
 
 impl<T: 'static + Encoding> AttributeParser<T> {
@@ -66,7 +66,7 @@ fn make_parser<T: 'static + Encoding>(
     handler: &mut dyn Handler,
     attribute: &Attribute,
     bytes: &[u8],
-) -> Box<dyn Parser<T>> {
+) -> Box<dyn ValueParser<T>> {
     if attribute.vr == Some(VR::SQ) {
         handler.start_sequence(attribute);
         Box::new(SequenceParser::<T>::default())
