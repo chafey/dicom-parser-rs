@@ -45,13 +45,21 @@ impl<T: 'static + Encoding> AttributeParser<T> {
                 }
 
                 let data_position = bytes_from_beginning + bytes_consumed;
-                let remaining_byes = &bytes[bytes_consumed..];
+                let remaining_bytes = &bytes[bytes_consumed..];
 
-                self.parser = Some(make_parser::<T>(handler, &attribute, remaining_byes));
+                let value_bytes = if attribute.length == 0xFFFF_FFFF
+                    || remaining_bytes.len() < attribute.length
+                {
+                    remaining_bytes
+                } else {
+                    &remaining_bytes[0..attribute.length]
+                };
+
+                self.parser = Some(make_parser::<T>(handler, &attribute, value_bytes));
                 let mut parse_result = self.parser.as_mut().unwrap().parse(
                     handler,
                     &self.attribute,
-                    remaining_byes,
+                    value_bytes,
                     data_position,
                 )?;
                 parse_result.bytes_consumed += bytes_consumed;

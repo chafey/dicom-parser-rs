@@ -1,7 +1,6 @@
 # dicom-parser-rs
 dicom parser written in Rust
 
-
 ## Design Goals
 
 * Parse all standards compliant DICOM P10 files
@@ -34,10 +33,7 @@ Actively being developed (June 17, 2020)
 
 ## To Do's
 
-* Consider buffering unconsumed bytes in DataSetParser?
-  * Need to deal with nested DataSetParser case though (from sequences)
-* Consider making Handler::data callback streamable? (for large data like pixel data)
-  * The Handler could control this by the return value from element()
+* Make Handler::data callback streamable for large data like pixel data
 * Reconsider DataSet object - either delete or make it complete (it is not useful currently)
   * Consider removing DataSetHandler to test code?
 * Add no_std configuration?
@@ -57,6 +53,9 @@ Actively being developed (June 17, 2020)
 * Consider adding FilterHandler that filters out handler calls for specific attributes.  
 * Consider adding TagCancelHandler to cancel parsing on specific tag (or tags)
 * Consider making a cancelled parse resumable?  Should work given that the parser is streaming capable
+* Add P10StreamParser which provides a simplified interface for stream parsing by buffering data from
+  incomplete parses
+* Add a handler that aggregates mutliple data callbacks into a single buffer (requires change to make data streamble first)
 
 ## Refactorings
 
