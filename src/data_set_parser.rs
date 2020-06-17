@@ -1,6 +1,6 @@
+use crate::attribute_parser::AttributeParser;
 use crate::encoding::Encoding;
 use crate::handler::Handler;
-use crate::parser::attribute::AttributeParser;
 use crate::parser::ParseError;
 use crate::parser::ParseResult;
 use crate::parser::ParseState;

@@ -66,4 +66,3 @@ Actively being developed (June 17, 2020)
   * SequenceParser -> SequenceUndefinedLengthParser 
 * Consider consolidating PixelDataFragmentParser and BasicOffsetTableParser into EncapsulatedPixelDataParser
 * Refactor parse_tag_and_length() so we don't have two of them - perhaps replace with parse_attribute()?
-* Consider moving DataSetParser and AttributeParser up a level out of the parser folder?

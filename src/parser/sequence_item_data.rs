@@ -1,8 +1,8 @@
 use crate::attribute::Attribute;
+use crate::data_set_parser::DataSetParser;
 use crate::encoding::Encoding;
 use crate::handler::cancel::CancelHandler;
 use crate::handler::Handler;
-use crate::parser::data_set::DataSetParser;
 use crate::parser::ParseError;
 use crate::parser::ParseResult;
 use crate::parser::Parser;
