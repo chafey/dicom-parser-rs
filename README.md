@@ -32,7 +32,6 @@ Actively being developed (June 17, 2020)
 
 ## To Do's
 
-* Consider renaming Parser trait to ValueParser (and renaming parser module to data_parser)
 * Add no_std configuration?
 * Consider making Handler::data callback streamable? (for large data like pixel data)
   * The Handler could control this by the return value from element()

@@ -7,7 +7,7 @@ pub enum Control {
 }
 
 pub trait Handler {
-    fn element(
+    fn attribute(
         &mut self,
         _attribute: &Attribute,
         _position: usize,

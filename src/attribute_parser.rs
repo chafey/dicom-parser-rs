@@ -37,7 +37,7 @@ impl<T: 'static + Encoding> AttributeParser<T> {
 
                 self.attribute = attribute;
 
-                match handler.element(&self.attribute, bytes_from_beginning, bytes_consumed) {
+                match handler.attribute(&self.attribute, bytes_from_beginning, bytes_consumed) {
                     Control::Continue => {}
                     Control::Cancel => {
                         return Ok(ParseResult::cancelled(0));

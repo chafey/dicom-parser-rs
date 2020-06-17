@@ -10,7 +10,7 @@ pub struct DataSetHandler {
 }
 
 impl Handler for DataSetHandler {
-    fn element(&mut self, attribute: &Attribute, position: usize, data_offset: usize) -> Control {
+    fn attribute(&mut self, attribute: &Attribute, position: usize, data_offset: usize) -> Control {
         if self.print {
             println!(
                 "{:-<width$}{:?} (position={}, data_offset={})",
