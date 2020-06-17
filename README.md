@@ -1,6 +1,8 @@
 # dicom-parser-rs
 dicom parser written in Rust
 
+Read about the [design rationale for this library](DESIGN.md)
+
 ## Goals
 
 * Parse all standards compliant DICOM P10 files
@@ -26,11 +28,17 @@ dicom parser written in Rust
 
 ## Status
 
-Actively being developed (June 16, 2020)
+Actively being developed (June 17, 2020)
 
 ## To Do's
 
+* Consider renaming Parser trait to DataParser (and renaming parser module to data_parser)
 * Add no_std configuration?
+* Consider making Handler::data callback streamable? (for large data like pixel data)
+  * The Handler could control this by the return value from element()
+* Consider buffering unconsumed bytes in DataSetParser?
+  * Need to deal with nested DataSetParser case though (from sequences)
+* rename handler::Control to handler::HandlerResult
 * Reconsider DataSet object - either delete or make it complete (it is not useful currently)
   * Consider removing DataSetHandler to test code?
 * Add more unit tests
@@ -54,6 +62,8 @@ Actively being developed (June 16, 2020)
 ## Rafactorings
 
 * Separate undefined length logic from known length logic
+  * SequenceItemDataParser->SequenceItemDataUndefinedLengthParser
+  * SequenceParser -> SequenceUndefinedLengthParser 
 * Consider consolidating PixelDataFragmentParser and BasicOffsetTableParser into EncapsulatedPixelDataParser
 * Refactor parse_tag_and_length() so we don't have two of them - perhaps replace with parse_attribute()?
 * Consider moving DataSetParser and AttributeParser up a level out of the parser folder?
