@@ -33,6 +33,9 @@ pub trait Handler {
         HandlerResult::Continue
     }
     /// Invoked after attribute() with the value field/data for the attribute
+    /// This function may be invoked multiple times for the same attribute
+    /// due to streaming.  Handler implementations are responsible for
+    /// concatenating the received data in this case
     ///
     /// # Arguments
     /// * `_attribute` - the Attribute corresponding to this data
@@ -57,6 +60,9 @@ pub trait Handler {
     /// Invoked when the basic offset table is parsed in an encaspulated pixel
     /// data attribute.  Note that basic offset table is not required so may be
     /// empty (or zero length)
+    /// This function may be invoked multiple times for the same attribute
+    /// due to streaming.  Handler implementations are responsible for
+    /// concatenating the received data in this case
     fn basic_offset_table(&mut self, _attribute: &Attribute, _data: &[u8]) -> HandlerResult {
         HandlerResult::Continue
     }
@@ -64,6 +70,9 @@ pub trait Handler {
     /// data attribute.  Note that a given image frame may consist of multiple
     /// fragments (although this may only occur in single frame - need to
     /// confirm this)
+    /// This function may be invoked multiple times for the same attribute
+    /// due to streaming.  Handler implementations are responsible for
+    /// concatenating the received data in this case
     fn pixel_data_fragment(
         &mut self,
         _attribute: &Attribute,

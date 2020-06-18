@@ -33,7 +33,6 @@ Actively being developed (June 18, 2020)
 
 ## To Do's
 
-* Make Handler::data callback streamable for large data like pixel data
 * Reconsider DataSet object - either delete or make it complete (it is not useful currently)
   * Consider removing DataSetHandler to test code?
 * Add no_std configuration?
