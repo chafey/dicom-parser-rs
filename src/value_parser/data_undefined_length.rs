@@ -20,18 +20,19 @@ impl<T: 'static + Encoding> ValueParser<T> for DataUndefinedLengthParser<T> {
         _position: usize,
     ) -> Result<ParseResult, ParseError> {
         // scan for sequence delimitation item
-        let data_length = match find_end_of_data::<T>(bytes) {
-            Err(()) => {
-                return Ok(ParseResult::incomplete(0));
-            }
-            Ok(data_length) => data_length,
+        let (data_length, complete) = match find_end_of_data::<T>(bytes) {
+            Err(()) => (bytes.len() - 8, false),
+            Ok(data_length) => (data_length, true),
         };
 
         // notify handler of data
         handler.data(attribute, &bytes[..data_length]);
 
-        // next is attribute parser
-        Ok(ParseResult::completed(data_length + 8))
+        if complete {
+            Ok(ParseResult::completed(data_length + 8))
+        } else {
+            Ok(ParseResult::incomplete(data_length))
+        }
     }
 }
 
@@ -51,4 +52,73 @@ fn find_end_of_data<T: Encoding>(bytes: &[u8]) -> Result<usize, ()> {
     }
 
     Err(())
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::DataUndefinedLengthParser;
+    use crate::attribute::Attribute;
+    use crate::encoding::ExplicitLittleEndian;
+    use crate::handler::data_set::DataSetHandler;
+    use crate::value_parser::ParseState;
+    use crate::value_parser::ValueParser;
+
+    fn make_undefined_length_value() -> Vec<u8> {
+        let mut bytes = vec![0; 250];
+        // end with sequence item delimeter
+        bytes.extend_from_slice(&vec![0xFE, 0xFF, 0xDD, 0xE0, 0, 0, 0, 0]);
+
+        bytes
+    }
+
+    #[test]
+    fn full_parse_completes() {
+        let mut parser = DataUndefinedLengthParser::<ExplicitLittleEndian>::default();
+        let mut handler = DataSetHandler::default();
+        let mut attribute = Attribute::default();
+        attribute.length = 0xFFFF_FFFF;
+        let bytes = make_undefined_length_value();
+        match parser.parse(&mut handler, &attribute, &bytes, 0) {
+            Ok(result) => {
+                assert_eq!(result.bytes_consumed, bytes.len());
+                assert_eq!(result.state, ParseState::Completed);
+            }
+            Err(_error) => {
+                assert!(false); // should not happen
+            }
+        };
+    }
+
+    #[test]
+    fn dul_streaming_parse_completes() {
+        let mut parser = DataUndefinedLengthParser::<ExplicitLittleEndian>::default();
+        let mut handler = DataSetHandler::default();
+        let mut attribute = Attribute::default();
+        attribute.length = 0xFFFF_FFFF;
+        let bytes = make_undefined_length_value();
+        match parser.parse(&mut handler, &attribute, &bytes[0..100], 0) {
+            Ok(result1) => {
+                assert_eq!(result1.bytes_consumed, 92);
+                assert_eq!(result1.state, ParseState::Incomplete);
+                match parser.parse(
+                    &mut handler,
+                    &attribute,
+                    &bytes[result1.bytes_consumed..],
+                    0,
+                ) {
+                    Ok(result2) => {
+                        assert_eq!(result2.bytes_consumed, bytes.len() - result1.bytes_consumed);
+                        assert_eq!(result2.state, ParseState::Completed);
+                    }
+                    Err(_error) => {
+                        assert!(false); // should not happen
+                    }
+                };
+            }
+            Err(_error) => {
+                assert!(false); // should not happen
+            }
+        };
+    }
 }

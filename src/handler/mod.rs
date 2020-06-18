@@ -64,7 +64,12 @@ pub trait Handler {
     /// data attribute.  Note that a given image frame may consist of multiple
     /// fragments (although this may only occur in single frame - need to
     /// confirm this)
-    fn pixel_data_fragment(&mut self, _attribute: &Attribute, _data: &[u8]) -> HandlerResult {
+    fn pixel_data_fragment(
+        &mut self,
+        _attribute: &Attribute,
+        _fragment_number: usize,
+        _data: &[u8],
+    ) -> HandlerResult {
         HandlerResult::Continue
     }
 }

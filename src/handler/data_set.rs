@@ -84,11 +84,17 @@ impl Handler for DataSetHandler {
         HandlerResult::Continue
     }
 
-    fn pixel_data_fragment(&mut self, _attribute: &Attribute, data: &[u8]) -> HandlerResult {
+    fn pixel_data_fragment(
+        &mut self,
+        _attribute: &Attribute,
+        fragment_number: usize,
+        data: &[u8],
+    ) -> HandlerResult {
         if self.print {
             println!(
-                "{:-<width$}  \\ pixel data fragment of len {:?}",
+                "{:-<width$}  \\ pixel data fragment #{} data of len {:?}",
                 "-",
+                fragment_number,
                 data.len(),
                 width = (self.depth * 2)
             );

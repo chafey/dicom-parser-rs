@@ -185,6 +185,7 @@ mod tests {
     fn streaming_parse_completes() {
         let mut parser = AttributeParser::<ExplicitLittleEndian>::default();
         let mut handler = DataSetHandler::default();
+        //handler.print = true;
         let bytes = make_encapsulated_pixel_data_empty_bot();
 
         match parser.parse(&mut handler, &bytes[0..100], 0) {

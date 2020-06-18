@@ -34,13 +34,15 @@ impl<T: 'static + Encoding> ValueParser<T> for EncapsulatedPixelDataParser<T> {
         bytes: &[u8],
         position: usize,
     ) -> Result<ParseResult, ParseError> {
-        // iterate over remaining bytes parsing them
         let mut remaining_bytes = bytes;
         let mut bytes_consumed = 0;
+
+        // iterate over remaining bytes parsing them
         while !remaining_bytes.is_empty() {
-            // if no bytes remaining, read the tag/length
+            // if no bytes remaining, we are at a new item so read the
+            // tag and length
             if self.remaining_byte_count == 0 {
-                // make sure we have enough byte to read tag and length
+                // read tag and length
                 if remaining_bytes.len() < 8 {
                     return Ok(ParseResult::incomplete(bytes_consumed));
                 }
@@ -70,6 +72,8 @@ impl<T: 'static + Encoding> ValueParser<T> for EncapsulatedPixelDataParser<T> {
                     });
                 }
 
+                // set remaining_byte_count so we know how much data to stream
+                // to the handler
                 self.remaining_byte_count = length;
             }
 
@@ -84,7 +88,7 @@ impl<T: 'static + Encoding> ValueParser<T> for EncapsulatedPixelDataParser<T> {
             if self.item_number == 0 {
                 handler.basic_offset_table(attribute, value_bytes);
             } else {
-                handler.pixel_data_fragment(attribute, value_bytes);
+                handler.pixel_data_fragment(attribute, self.item_number, value_bytes);
             }
 
             // update counters
