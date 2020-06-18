@@ -138,3 +138,72 @@ fn is_sequence<T: Encoding>(bytes: &[u8]) -> bool {
     let item_tag = Tag::from_bytes::<T>(&bytes[0..4]);
     item_tag == tag::ITEM
 }
+
+#[cfg(test)]
+mod tests {
+
+    use super::AttributeParser;
+    use crate::encoding::ExplicitLittleEndian;
+    use crate::handler::data_set::DataSetHandler;
+    use crate::value_parser::ParseState;
+
+    fn make_encapsulated_pixel_data_empty_bot() -> Vec<u8> {
+        let mut bytes = vec![];
+        // Tag/VR/Length
+        bytes.extend_from_slice(&vec![
+            0xE0, 0x7F, 0x10, 0x00, b'O', b'B', 0, 0, 0xFF, 0xFF, 0xFF, 0xFF,
+        ]);
+        // Basic Offset Table (Empty)
+        bytes.extend_from_slice(&vec![0xFE, 0xFF, 0x00, 0xE0, 0, 0, 0, 0]);
+        // Fragment #1 (250 zeros)
+        bytes.extend_from_slice(&vec![0xFE, 0xFF, 0x00, 0xE0, 250, 0, 0, 0]);
+        bytes.extend_from_slice(&vec![0; 250]);
+        // end with sequence item delimeter
+        bytes.extend_from_slice(&vec![0xFE, 0xFF, 0xDD, 0xE0, 0, 0, 0, 0]);
+
+        bytes
+    }
+
+    #[test]
+    fn full_parse_completes() {
+        let mut parser = AttributeParser::<ExplicitLittleEndian>::default();
+        let mut handler = DataSetHandler::default();
+        let bytes = make_encapsulated_pixel_data_empty_bot();
+
+        match parser.parse(&mut handler, &bytes[..], 0) {
+            Ok(result) => {
+                assert_eq!(result.bytes_consumed, bytes.len());
+                assert_eq!(result.state, ParseState::Completed);
+            }
+            Err(_error) => {
+                assert!(false); // should not happen
+            }
+        };
+    }
+
+    #[test]
+    fn streaming_parse_completes() {
+        let mut parser = AttributeParser::<ExplicitLittleEndian>::default();
+        let mut handler = DataSetHandler::default();
+        let bytes = make_encapsulated_pixel_data_empty_bot();
+
+        match parser.parse(&mut handler, &bytes[0..100], 0) {
+            Ok(result) => {
+                assert_eq!(result.bytes_consumed, 100);
+                assert_eq!(result.state, ParseState::Incomplete);
+            }
+            Err(_error) => {
+                assert!(false); // should not happen
+            }
+        };
+        match parser.parse(&mut handler, &bytes[100..], 0) {
+            Ok(result) => {
+                assert_eq!(result.bytes_consumed, bytes.len() - 100);
+                assert_eq!(result.state, ParseState::Completed);
+            }
+            Err(_error) => {
+                assert!(false); // should not happen
+            }
+        };
+    }
+}

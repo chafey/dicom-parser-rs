@@ -75,7 +75,7 @@ impl Handler for DataSetHandler {
     fn basic_offset_table(&mut self, _attribute: &Attribute, data: &[u8]) -> HandlerResult {
         if self.print {
             println!(
-                "{:-<width$}  \\ basic offsett table of len {:?}",
+                "{:-<width$}  \\ basic offset table of len {:?}",
                 "-",
                 data.len(),
                 width = (self.depth * 2)

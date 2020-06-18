@@ -65,5 +65,4 @@ Actively being developed (June 18, 2020)
 * Separate undefined length logic from known length logic
   * SequenceItemDataParser->SequenceItemDataUndefinedLengthParser
   * SequenceParser -> SequenceUndefinedLengthParser 
-* Consider consolidating PixelDataFragmentParser and BasicOffsetTableParser into EncapsulatedPixelDataParser
 * Refactor parse_tag_and_length() so we don't have two of them - perhaps replace with parse_attribute()?
