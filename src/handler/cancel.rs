@@ -3,13 +3,23 @@ use crate::handler::{Handler, HandlerResult};
 
 pub type CancelFN = fn(&Attribute) -> bool;
 
+/// Implements the Handler trait that will cancel the parse if the provided
+/// Cancel function returns true or forward/proxy all functions to another
+/// Handler implementation.  Some use cases do not require parsing the full
+/// DICOM DataSet and encapsulating the stop parsing in a function (perhaps
+/// a closure) can aid in readability of processing logic.
 pub struct CancelHandler<'t> {
+    /// true if the parse has been canceled, false otherwise
     pub canceled: bool,
+    /// the Handler to forward/proxy function calls to
     pub handler: &'t mut dyn Handler,
+    /// The function to call to see if the parse should be cancelled
     pub cancel_fn: CancelFN,
 }
 
 impl<'t> CancelHandler<'t> {
+    /// Creates a new CancelHanlder given a handler to proxy/forward functions
+    /// to and a function that returns true when the parse should be canceled
     pub fn new(handler: &'t mut dyn Handler, cancel_fn: CancelFN) -> CancelHandler<'t> {
         CancelHandler {
             canceled: false,

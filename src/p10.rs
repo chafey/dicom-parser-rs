@@ -7,8 +7,19 @@ use crate::meta_information;
 use crate::meta_information::MetaInformation;
 use crate::value_parser::ParseError;
 
+/// Parses a DICOM P10 Instance.  Returns the corresponding MetaInformation or
+/// a ParseError if an error occurs during parse.
+///
+/// # Arguments
+///
+/// * `handler` - The Handler to invoke when parsing the DataSet
+/// * `bytes`   - bytes from a DICOM P10 instance.  Can be the entire file or
+///               the beginning part of the file.  If the entire file is not
+///               provided and the parse is not Cancelled, an error may be
+///               returned
+///
 pub fn parse<'a, T: Handler>(
-    callback: &'a mut T,
+    handler: &'a mut T,
     bytes: &mut [u8],
 ) -> Result<MetaInformation, ParseError> {
     let meta = meta_information::parse(&bytes).unwrap();
@@ -16,16 +27,16 @@ pub fn parse<'a, T: Handler>(
     let result = match &meta.transfer_syntax_uid[..] {
         "1.2.840.10008.1.2" => {
             // implicit little endian
-            parse_full::<ImplicitLittleEndian>(callback, remaining_bytes, meta.end_position)
+            parse_full::<ImplicitLittleEndian>(handler, remaining_bytes, meta.end_position)
         }
         "1.2.840.10008.1.2.2" => {
             // explicit big endian
-            parse_full::<ExplicitBigEndian>(callback, remaining_bytes, meta.end_position)
+            parse_full::<ExplicitBigEndian>(handler, remaining_bytes, meta.end_position)
         }
         "1.2.840.10008.1.2.1.99" => panic!("deflated not suported yet"),
         _ => {
             // explicit little endian
-            parse_full::<ExplicitLittleEndian>(callback, remaining_bytes, meta.end_position)
+            parse_full::<ExplicitLittleEndian>(handler, remaining_bytes, meta.end_position)
         }
     };
     match result {

@@ -9,6 +9,8 @@ pub struct DataSetHandler {
     pub print: bool,
 }
 
+/// Implementation of Handler that prints out the result and collects all
+/// attributes and associated data in a DataSet instance
 impl Handler for DataSetHandler {
     fn attribute(
         &mut self,

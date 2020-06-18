@@ -8,16 +8,26 @@ use crate::prefix;
 use crate::tag::Tag;
 use std::str;
 
+/// MetaInformation includes the required attributes from the DICOM P10 Header
 #[derive(Debug)]
 pub struct MetaInformation {
+    /// The SOP Class UID
     pub media_storage_sop_class_uid: String,
+    /// The SOP Instance UID
     pub media_storage_sop_instance_uid: String,
+    /// The Transfer Syntax UID
     pub transfer_syntax_uid: String,
+    /// The Implementation Class UID
     pub implementation_class_uid: String,
+    /// The offset from the beginning of the file that the DICOM P10 header
+    /// ends at
     pub end_position: usize,
+    /// DataSet instance that contains all attributes and data parsed from the
+    /// P10 Header including non required attributes
     pub data_set: DataSet,
 }
 
+/// Helper function to find the index of a given attribute in an array of Attributes
 fn find_element_index(attributes: &[Attribute], tag: Tag) -> Result<usize, ()> {
     for (index, attribute) in attributes.iter().enumerate() {
         if attribute.tag == tag {
@@ -27,6 +37,7 @@ fn find_element_index(attributes: &[Attribute], tag: Tag) -> Result<usize, ()> {
     Err(())
 }
 
+/// Helper function to return the data of an element in a DataSet as a UTF8 string.
 fn get_element(dataset: &DataSet, tag: Tag) -> Result<String, ()> {
     let index = find_element_index(&dataset.attributes, tag)?;
     let attribute = &dataset.attributes[index];
@@ -40,6 +51,12 @@ fn get_element(dataset: &DataSet, tag: Tag) -> Result<String, ()> {
     Ok(String::from(value))
 }
 
+/// Parses the DICOM P10 Header and returns it as a MetaInformation instance
+///
+/// # Arguments
+///
+/// * `bytes` - bytes containg the entire DICOM P10 Header including the
+///             preamble
 pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
     if !prefix::detect(bytes) {
         return Err(());

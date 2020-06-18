@@ -29,7 +29,7 @@ Read about the [design rationale for this library](DESIGN.md)
 
 ## Status
 
-Actively being developed (June 17, 2020)
+Actively being developed (June 18, 2020)
 
 ## To Do's
 

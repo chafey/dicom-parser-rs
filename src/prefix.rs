@@ -1,3 +1,6 @@
+/// Detects the presence of a valid DICOM P10 Header Prefix.  A valid
+/// prefix consists of 132 bytes with the string "DICM" at location
+/// 128.  The first 128 bytes are usually 0 but do not have to be
 pub fn detect(bytes: &[u8]) -> bool {
     // check length
     if bytes.len() < 132 {
