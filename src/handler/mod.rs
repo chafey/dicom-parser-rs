@@ -64,7 +64,12 @@ pub trait Handler {
     /// This function may be invoked multiple times for the same attribute
     /// due to streaming.  Handler implementations are responsible for
     /// concatenating the received data in this case
-    fn basic_offset_table(&mut self, _attribute: &Attribute, _data: &[u8], _complete: bool) -> HandlerResult {
+    fn basic_offset_table(
+        &mut self,
+        _attribute: &Attribute,
+        _data: &[u8],
+        _complete: bool,
+    ) -> HandlerResult {
         HandlerResult::Continue
     }
     /// Invoked for each pixel data fragment parsed in an encapsulated pixel
@@ -79,7 +84,7 @@ pub trait Handler {
         _attribute: &Attribute,
         _fragment_number: usize,
         _data: &[u8],
-        _complete: bool
+        _complete: bool,
     ) -> HandlerResult {
         HandlerResult::Continue
     }

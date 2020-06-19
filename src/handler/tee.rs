@@ -54,7 +54,12 @@ impl Handler for TeeHandler<'_> {
             .iter_mut()
             .for_each(|handler| handler.end_sequence(attribute))
     }
-    fn basic_offset_table(&mut self, attribute: &Attribute, data: &[u8], complete: bool) -> HandlerResult {
+    fn basic_offset_table(
+        &mut self,
+        attribute: &Attribute,
+        data: &[u8],
+        complete: bool,
+    ) -> HandlerResult {
         if self
             .handlers
             .iter_mut()
@@ -73,7 +78,7 @@ impl Handler for TeeHandler<'_> {
         attribute: &Attribute,
         fragment_number: usize,
         data: &[u8],
-        complete: bool
+        complete: bool,
     ) -> HandlerResult {
         if self
             .handlers

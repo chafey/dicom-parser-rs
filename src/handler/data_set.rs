@@ -73,7 +73,12 @@ impl Handler for DataSetHandler {
         }
     }
 
-    fn basic_offset_table(&mut self, _attribute: &Attribute, data: &[u8], complete: bool) -> HandlerResult {
+    fn basic_offset_table(
+        &mut self,
+        _attribute: &Attribute,
+        data: &[u8],
+        complete: bool,
+    ) -> HandlerResult {
         if self.print {
             println!(
                 "{:-<width$}  \\ basic offset table of len {:?} complete={}",
@@ -91,7 +96,7 @@ impl Handler for DataSetHandler {
         _attribute: &Attribute,
         fragment_number: usize,
         data: &[u8],
-        complete: bool
+        complete: bool,
     ) -> HandlerResult {
         if self.print {
             println!(

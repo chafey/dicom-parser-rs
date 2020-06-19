@@ -57,7 +57,12 @@ impl Handler for CancelHandler<'_> {
     fn end_sequence(&mut self, attribute: &Attribute) {
         self.handler.end_sequence(&attribute)
     }
-    fn basic_offset_table(&mut self, attribute: &Attribute, data: &[u8], complete: bool) -> HandlerResult {
+    fn basic_offset_table(
+        &mut self,
+        attribute: &Attribute,
+        data: &[u8],
+        complete: bool,
+    ) -> HandlerResult {
         self.handler.basic_offset_table(&attribute, data, complete)
     }
     fn pixel_data_fragment(
@@ -65,7 +70,7 @@ impl Handler for CancelHandler<'_> {
         attribute: &Attribute,
         fragment_number: usize,
         data: &[u8],
-        complete: bool
+        complete: bool,
     ) -> HandlerResult {
         self.handler
             .pixel_data_fragment(&attribute, fragment_number, data, complete)
