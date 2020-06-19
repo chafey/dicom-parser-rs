@@ -22,7 +22,7 @@
                 }
             },
             "args": [
-                "dul_streaming_parse_completes"
+                "valid_meta_information"
             ],
             "cwd": "${workspaceFolder}"
         }

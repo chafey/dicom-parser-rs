@@ -16,42 +16,57 @@ impl Handler for TeeHandler<'_> {
         position: usize,
         data_offset: usize,
     ) -> HandlerResult {
-        for handler in &mut self.handlers {
-            handler.attribute(attribute, position, data_offset);
+        if self
+            .handlers
+            .iter_mut()
+            .map(|handler| handler.attribute(attribute, position, data_offset))
+            .filter(|handler_result| handler_result == &HandlerResult::Cancel)
+            .count()
+            > 0
+        {
+            HandlerResult::Cancel
+        } else {
+            HandlerResult::Continue
         }
-        HandlerResult::Continue
     }
     fn data(&mut self, attribute: &Attribute, data: &[u8]) {
-        for handler in &mut self.handlers {
-            handler.data(attribute, data);
-        }
+        self.handlers
+            .iter_mut()
+            .for_each(|handler| handler.data(attribute, data))
     }
     fn start_sequence(&mut self, attribute: &Attribute) {
-        for handler in &mut self.handlers {
-            handler.start_sequence(attribute);
-        }
+        self.handlers
+            .iter_mut()
+            .for_each(|handler| handler.start_sequence(attribute))
     }
     fn start_sequence_item(&mut self, attribute: &Attribute) {
-        for handler in &mut self.handlers {
-            handler.start_sequence_item(attribute);
-        }
+        self.handlers
+            .iter_mut()
+            .for_each(|handler| handler.start_sequence_item(attribute))
     }
     fn end_sequence_item(&mut self, attribute: &Attribute) {
-        for handler in &mut self.handlers {
-            handler.end_sequence_item(attribute);
-        }
+        self.handlers
+            .iter_mut()
+            .for_each(|handler| handler.end_sequence_item(attribute))
     }
     fn end_sequence(&mut self, attribute: &Attribute) {
-        for handler in &mut self.handlers {
-            handler.end_sequence(attribute);
-        }
+        self.handlers
+            .iter_mut()
+            .for_each(|handler| handler.end_sequence(attribute))
     }
     fn basic_offset_table(&mut self, attribute: &Attribute, data: &[u8]) -> HandlerResult {
-        for handler in &mut self.handlers {
-            handler.basic_offset_table(attribute, data);
+        if self
+            .handlers
+            .iter_mut()
+            .map(|handler| handler.basic_offset_table(attribute, data))
+            .filter(|handler_result| handler_result == &HandlerResult::Cancel)
+            .count()
+            > 0
+        {
+            HandlerResult::Cancel
+        } else {
+            HandlerResult::Continue
         }
-
-        HandlerResult::Continue
     }
     fn pixel_data_fragment(
         &mut self,
@@ -59,9 +74,17 @@ impl Handler for TeeHandler<'_> {
         fragment_number: usize,
         data: &[u8],
     ) -> HandlerResult {
-        for handler in &mut self.handlers {
-            handler.pixel_data_fragment(attribute, fragment_number, data);
+        if self
+            .handlers
+            .iter_mut()
+            .map(|handler| handler.pixel_data_fragment(attribute, fragment_number, data))
+            .filter(|handler_result| handler_result == &HandlerResult::Cancel)
+            .count()
+            > 0
+        {
+            HandlerResult::Cancel
+        } else {
+            HandlerResult::Continue
         }
-        HandlerResult::Continue
     }
 }

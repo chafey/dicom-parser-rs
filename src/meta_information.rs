@@ -74,8 +74,8 @@ pub fn parse<'a, T: Handler>(
     let mut data_set_handler = DataSetHandler::default();
 
     let mut tee_handler = TeeHandler::default();
-    tee_handler.handlers.push(&mut data_set_handler);
     tee_handler.handlers.push(handler);
+    tee_handler.handlers.push(&mut data_set_handler);
 
     // create a CancelHandler that will cancel the parse when we see an attribute that has a
     // tag not in group 2 (All meta information tags are group 2)
@@ -145,6 +145,7 @@ pub mod tests {
     fn valid_meta_information() {
         let bytes = make_p10_header();
         let mut handler = DataSetHandler::default();
+        handler.print = true;
         match parse(&mut handler, &bytes) {
             Ok(meta) => {
                 assert_eq!(meta.data_set.attributes.len(), 6);
