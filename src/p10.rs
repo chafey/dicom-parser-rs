@@ -20,9 +20,9 @@ use crate::value_parser::ParseError;
 ///
 pub fn parse<'a, T: Handler>(
     handler: &'a mut T,
-    bytes: &mut [u8],
+    bytes: &[u8],
 ) -> Result<MetaInformation, ParseError> {
-    let meta = meta_information::parse(&bytes).unwrap();
+    let meta = meta_information::parse(handler, &bytes)?;
     let remaining_bytes = &bytes[meta.end_position..];
     let result = match &meta.transfer_syntax_uid[..] {
         "1.2.840.10008.1.2" => {
@@ -66,7 +66,7 @@ mod tests {
         let mut handler = DataSetHandler::default();
         let result = parse(&mut handler, &mut bytes);
         assert!(result.is_ok());
-        assert_eq!(handler.dataset.attributes.len(), 1);
+        assert_eq!(handler.dataset.attributes.len(), 7);
     }
     #[test]
     fn explicit_little_endian() {
@@ -75,7 +75,7 @@ mod tests {
         //handler.print = true;
         let result = parse(&mut handler, &mut bytes);
         assert!(result.is_ok());
-        assert_eq!(257, handler.dataset.attributes.len());
+        assert_eq!(265, handler.dataset.attributes.len());
     }
 
     #[test]
@@ -85,7 +85,7 @@ mod tests {
         //handler.print = true;
         let result = parse(&mut handler, &mut bytes);
         assert!(result.is_ok());
-        assert_eq!(257, handler.dataset.attributes.len());
+        assert_eq!(265, handler.dataset.attributes.len());
     }
 
     #[test]
@@ -95,7 +95,7 @@ mod tests {
         //handler.print = true;
         let result = parse(&mut handler, &mut bytes);
         assert!(result.is_ok());
-        assert_eq!(257, handler.dataset.attributes.len());
+        assert_eq!(265, handler.dataset.attributes.len());
     }
 
     #[test]
@@ -106,7 +106,7 @@ mod tests {
         //handler.print = true;
         let result = parse(&mut handler, &mut bytes);
         assert!(result.is_ok());
-        assert_eq!(157, handler.dataset.attributes.len());
+        assert_eq!(165, handler.dataset.attributes.len());
     }
 
     #[test]
@@ -117,6 +117,6 @@ mod tests {
         //handler.print = true;
         let result = parse(&mut handler, &mut bytes);
         assert!(result.is_ok());
-        assert_eq!(94, handler.dataset.attributes.len());
+        assert_eq!(102, handler.dataset.attributes.len());
     }
 }

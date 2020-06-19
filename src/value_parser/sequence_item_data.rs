@@ -121,7 +121,7 @@ mod tests {
                 assert_eq!(result.bytes_consumed, 12);
                 assert_eq!(result.state, ParseState::Completed);
             }
-            Err(_parse_result) => panic!("AHHH"),
+            Err(_parse_result) => panic!("Let's play Global Thermonuclear War"),
         }
     }
 
@@ -144,7 +144,7 @@ mod tests {
                 assert_eq!(result.bytes_consumed, 0);
                 assert_eq!(result.state, ParseState::Incomplete);
             }
-            Err(_parse_error) => panic!("AHHH"),
+            Err(_parse_error) => panic!("Let's play Global Thermonuclear War"),
         }
     }
 
@@ -167,7 +167,7 @@ mod tests {
                 assert_eq!(result.bytes_consumed, 20);
                 assert_eq!(result.state, ParseState::Completed);
             }
-            Err(_) => panic!("AHHH"),
+            Err(_) => panic!("Let's play Global Thermonuclear War"),
         };
     }
 
@@ -191,7 +191,7 @@ mod tests {
                 assert_eq!(result.state, ParseState::Incomplete);
             }
             Err(_error) => {
-                panic!("AHHH");
+                panic!("Let's play Global Thermonuclear War");
             }
         }
     }
@@ -215,7 +215,7 @@ mod tests {
                 assert_eq!(result.bytes_consumed, 12);
                 assert_eq!(result.state, ParseState::Incomplete);
             }
-            Err(_error) => panic!("AHHH"),
+            Err(_error) => panic!("Let's play Global Thermonuclear War"),
         }
     }
 }

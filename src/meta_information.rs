@@ -4,8 +4,11 @@ use crate::data_set_parser::parse_full;
 use crate::encoding::ExplicitLittleEndian;
 use crate::handler::cancel::CancelHandler;
 use crate::handler::data_set::DataSetHandler;
+use crate::handler::tee::TeeHandler;
+use crate::handler::Handler;
 use crate::prefix;
 use crate::tag::Tag;
+use crate::value_parser::ParseError;
 use std::str;
 
 /// MetaInformation includes the required attributes from the DICOM P10 Header
@@ -28,17 +31,20 @@ pub struct MetaInformation {
 }
 
 /// Helper function to find the index of a given attribute in an array of Attributes
-fn find_element_index(attributes: &[Attribute], tag: Tag) -> Result<usize, ()> {
+fn find_element_index(attributes: &[Attribute], tag: Tag) -> Result<usize, ParseError> {
     for (index, attribute) in attributes.iter().enumerate() {
         if attribute.tag == tag {
             return Ok(index);
         }
     }
-    Err(())
+    Err(ParseError {
+        reason: "missing required tag",
+        position: 132,
+    })
 }
 
 /// Helper function to return the data of an element in a DataSet as a UTF8 string.
-fn get_element(dataset: &DataSet, tag: Tag) -> Result<String, ()> {
+fn get_element(dataset: &DataSet, tag: Tag) -> Result<String, ParseError> {
     let index = find_element_index(&dataset.attributes, tag)?;
     let attribute = &dataset.attributes[index];
     let bytes = if dataset.data[index][attribute.length - 1] != 0 {
@@ -57,26 +63,38 @@ fn get_element(dataset: &DataSet, tag: Tag) -> Result<String, ()> {
 ///
 /// * `bytes` - bytes containg the entire DICOM P10 Header including the
 ///             preamble
-pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
-    if !prefix::detect(bytes) {
-        return Err(());
-    }
+pub fn parse<'a, T: Handler>(
+    handler: &'a mut T,
+    bytes: &[u8],
+) -> Result<MetaInformation, ParseError> {
+    // validate that we have a P10 Header Prefix
+    prefix::validate(bytes)?;
 
+    // create DataSetHandler to accumulate the attributes found during the parse
     let mut data_set_handler = DataSetHandler::default();
 
-    let mut handler = CancelHandler::new(&mut data_set_handler, |x: &Attribute| x.tag.group != 2);
+    let mut tee_handler = TeeHandler::default();
+    tee_handler.handlers.push(&mut data_set_handler);
+    tee_handler.handlers.push(handler);
 
-    let end_position = match parse_full::<ExplicitLittleEndian>(&mut handler, &bytes[132..], 132) {
-        Ok((bytes_consumed, _cancelled)) => {
-            // note, we expect to be cancelled, but don't check for it as it is possible
-            // that the caller is only passing in the header
-            bytes_consumed + 132
-        }
-        Err(_parse_error) => return Err(()),
-    };
+    // create a CancelHandler that will cancel the parse when we see an attribute that has a
+    // tag not in group 2 (All meta information tags are group 2)
+    let mut handler = CancelHandler::new(&mut tee_handler, |x: &Attribute| x.tag.group != 2);
 
+    // attempt to fully parse the p10 header.  _cancelled will typically be true.
+    // If _cancelled is false, we may  not have a complete p10 header - we can't
+    // distinguish between these two until we validate the contents (which we do
+    // afterwards)
+    let (bytes_consumed, _cancelled) =
+        parse_full::<ExplicitLittleEndian>(&mut handler, &bytes[132..], 132)?;
+
+    // calculate the end position of the p10 header by adding the prefix length
+    // to the number of bytes consumed parsing the meta information
+    let end_position = 132 + bytes_consumed;
+
+    // extract the valules of the required attributes.  Note that get_element()
+    // returns an error if a required attribute is not found
     let data_set = data_set_handler.dataset;
-
     let meta = MetaInformation {
         media_storage_sop_class_uid: get_element(&data_set, Tag::new(0x02, 0x02))?,
         media_storage_sop_instance_uid: get_element(&data_set, Tag::new(0x02, 0x03))?,
@@ -92,6 +110,7 @@ pub fn parse(bytes: &[u8]) -> Result<MetaInformation, ()> {
 #[cfg(test)]
 pub mod tests {
     use super::parse;
+    use crate::handler::data_set::DataSetHandler;
 
     fn make_preamble_and_prefix() -> Vec<u8> {
         let mut bytes = vec![];
@@ -125,7 +144,14 @@ pub mod tests {
     #[test]
     fn valid_meta_information() {
         let bytes = make_p10_header();
-        let meta = parse(&bytes).unwrap();
-        assert_eq!(meta.data_set.attributes.len(), 6);
+        let mut handler = DataSetHandler::default();
+        match parse(&mut handler, &bytes) {
+            Ok(meta) => {
+                assert_eq!(meta.data_set.attributes.len(), 6);
+            }
+            Err(_parse_error) => {
+                assert!(false);
+            }
+        };
     }
 }

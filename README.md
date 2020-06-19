@@ -36,8 +36,6 @@ Actively being developed (June 18, 2020)
 * Reconsider DataSet object - either delete or make it complete (it is not useful currently)
   * Consider removing DataSetHandler to test code?
 * Add no_std configuration?
-* Add more unit tests
-* Add inline source documentation
 * Add example applications
   * dump to DICOM JSON format
   * dump to text (in DCMTK dcmdump format) - requires data dictionary though

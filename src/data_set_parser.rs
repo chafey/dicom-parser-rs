@@ -157,7 +157,7 @@ mod tests {
                     }
                     offset += parse_result.bytes_consumed;
                 }
-                Err(_error) => panic!("Parse Errored"),
+                Err(_error) => panic!("Let's play Global Thermonuclear War"),
             }
         }
         assert_eq!(157, handler.dataset.attributes.len());
@@ -179,7 +179,7 @@ mod tests {
                     }
                     offset += parse_result.bytes_consumed;
                 }
-                Err(_error) => panic!("Parse Errored"),
+                Err(_error) => panic!("Let's play Global Thermonuclear War"),
             }
         }
         assert_eq!(94, handler.dataset.attributes.len());

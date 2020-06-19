@@ -1,6 +1,7 @@
 #[cfg(test)]
 pub mod tests {
 
+    use crate::handler::data_set::DataSetHandler;
     use crate::meta_information;
     use crate::meta_information::MetaInformation;
     use std::fs::File;
@@ -15,7 +16,12 @@ pub mod tests {
 
     pub fn read_data_set_bytes_from_file(filepath: &str) -> (MetaInformation, Vec<u8>) {
         let bytes = read_file(&filepath);
-        let meta = meta_information::parse(&bytes).unwrap();
+        let mut handler = DataSetHandler::default();
+
+        let meta = match meta_information::parse(&mut handler, &bytes) {
+            Ok(meta) => meta,
+            Err(_parse_error) => panic!("Let's play Global Thermonuclear War"),
+        };
         //println!("meta.end_position={}", meta.end_position);
         let end_position = meta.end_position;
         (meta, (&bytes[end_position..]).to_vec())
