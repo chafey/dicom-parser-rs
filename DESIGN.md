@@ -3,13 +3,14 @@
 ## Scope
 
 This DICOM parsing library takes a minimalist approach similar to the
-CornerstoneJS JavaScript dicom-parser library.  The minimalist approach
-targets providing the minimum functionality possible but designed to be
-flexible so it can be used as a building block for more complex functionality
-as found in other more comprehensive DICOM libraries.  This library therefore
-is focused on doing one thing and one thing only - parsing DICOM binary byte
-streams.  This focused piece of functionality is useful for many use cases
-but not all.  It is in scope that this library has the right design to be
+CornerstoneJS JavaScript dicom-parser library.  The goal of the minimalist
+approach is to provide the least ammount of functionality that is still
+useful and designed in a way where it can be used as a building block
+to do more complex things.  This library therefore is focused on doing
+one thing and one thing only - parsing DICOM binary byte streams.  
+This focused piece of functionality is enough to support the needs for
+many use cases.  Those that need more functionality can layer it on top
+of this library.  It is in scope that this library has the right design to be
 used as a building block to do more complex things such as writing DICOM
 binary byte streams, DICOM JSON, de-identification, image decompression, etc.
 
@@ -20,11 +21,9 @@ first was the CornerstoneJS DICOM Parser which started out as a quick and dirty
 hack to support my CornerstoneJS development.  It grew over time due to my own
 needs to use it in a production application as well as others who
 provided fixes and feature enhancments.  While the original design has held up
-fairly well for its intended purpose of parsing an entire DICOM P10 instance,
-there are several things I have wanted to change in it based on new 
-requirements/needs and an improved understanding of DICOM.  Some of this
-improved understanding was learned due to fixing issues in the CornersoneJS
-DICOM parser library.
+fairly well for its intended purpose of parsing an entire DICOM P10 instance, 
+there are new requirements that I want out of a dicom parser that require
+a new design.  
 
 ## Data Dictionary
 

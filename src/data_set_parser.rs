@@ -26,14 +26,24 @@ impl<T: 'static + Encoding> DataSetParser<T> {
         bytes: &[u8],
         bytes_from_beginning: usize,
     ) -> Result<ParseResult, ParseError> {
+        // initial state
         let mut remaining_bytes = bytes;
         let mut bytes_consumed = 0;
+
+        // iterate over remaining bytes until empty
         while !remaining_bytes.is_empty() {
+            // initialize position
             let position = bytes_from_beginning + bytes_consumed;
+
+            // pares the remaining bytes
             let result = self.parser.parse(handler, remaining_bytes, position)?;
+
+            // update internal state
             bytes_consumed += result.bytes_consumed;
             self.total_bytes_consumed += result.bytes_consumed;
             remaining_bytes = &remaining_bytes[result.bytes_consumed..];
+
+            // handle the parse result state
             match result.state {
                 ParseState::Cancelled => {
                     return Ok(ParseResult::cancelled(bytes_consumed));
@@ -43,10 +53,12 @@ impl<T: 'static + Encoding> DataSetParser<T> {
                 }
                 ParseState::Completed => {
                     self.parser = AttributeParser::<T>::default();
-                    continue;
+                    continue; // continue on to next attribute
                 }
             }
         }
+        // All bytes parsed, return completed.  Note that we may yet get
+        // additional bytes to parse if data is being streamed
         Ok(ParseResult::completed(bytes_consumed))
     }
 }

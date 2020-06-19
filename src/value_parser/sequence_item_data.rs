@@ -41,26 +41,36 @@ impl<T: 'static + Encoding> ValueParser<T> for SequenceItemDataParser<T> {
             &bytes[0..(self.item_length - self.total_bytes_consumed)]
         };
 
+        // setup a cancel handler based on the item delimitation item
         let mut sequence_item_handler =
             CancelHandler::new(handler, |x: &Attribute| x.tag == tag::ITEMDELIMITATIONITEM);
 
+        // forward bytes to the DataSetParser
         let parse_result =
             self.parser
                 .parse(&mut sequence_item_handler, remaining_bytes, position)?;
 
+        // update internal state
         self.total_bytes_consumed += parse_result.bytes_consumed;
 
+        // if the parse was cancelled due to the item delimitation item, add
+        // the size of the item delimitation item to the bytes consumed
         if sequence_item_handler.canceled {
             self.total_bytes_consumed += 8;
         }
 
         if sequence_item_handler.canceled {
+            // if the parse was cancelled due to hitting the item delimitation item,
+            // we are complete
             Ok(ParseResult::completed(parse_result.bytes_consumed + 8))
         } else if self.total_bytes_consumed == self.item_length {
+            // if we have a known length and have consumed all the bytes, we are complete
             Ok(ParseResult::completed(parse_result.bytes_consumed))
         } else if self.total_bytes_consumed < self.item_length {
+            // if we have a known length and have consumed fewer bytes, we are incomplete
             Ok(ParseResult::incomplete(parse_result.bytes_consumed))
         } else {
+            // not sure this can happen
             Ok(parse_result)
         }
     }

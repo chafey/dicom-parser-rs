@@ -19,24 +19,29 @@ impl<T: 'static + Encoding> ValueParser<T> for DataUndefinedLengthParser<T> {
         bytes: &[u8],
         _position: usize,
     ) -> Result<ParseResult, ParseError> {
-        // scan for sequence delimitation item
-        let (data_length, complete) = match find_end_of_data::<T>(bytes) {
-            Err(()) => (bytes.len() - 8, false),
-            Ok(data_length) => (data_length, true),
-        };
+        // we return immediately if we don't have at least 8 bytes of data
+        // since it takes 8 bytes for the end of data marker
+        if bytes.len() < 8 {
+            return Ok(ParseResult::incomplete(0));
+        }
+
+        // scan for end of marker
+        let (length, end_of_data_marker_found) = find_end_of_data_marker::<T>(bytes);
 
         // notify handler of data
-        handler.data(attribute, &bytes[..data_length]);
+        handler.data(attribute, &bytes[..length]);
 
-        if complete {
-            Ok(ParseResult::completed(data_length + 8))
+        if end_of_data_marker_found {
+            // include the size of the end of data marker in the number of
+            // bytes consumed
+            Ok(ParseResult::completed(length + 8))
         } else {
-            Ok(ParseResult::incomplete(data_length))
+            Ok(ParseResult::incomplete(length))
         }
     }
 }
 
-fn find_end_of_data<T: Encoding>(bytes: &[u8]) -> Result<usize, ()> {
+fn find_end_of_data_marker<T: Encoding>(bytes: &[u8]) -> (usize, bool) {
     let mut position = 0;
     while position <= bytes.len() - 4 {
         let group = T::u16(&bytes[position..position + 2]);
@@ -44,14 +49,17 @@ fn find_end_of_data<T: Encoding>(bytes: &[u8]) -> Result<usize, ()> {
         if group == 0xFFFE {
             let element = T::u16(&bytes[position..position + 2]);
             if element == 0xE0DD {
-                // TODO: Consider verifying zero length?
-
-                return Ok(position - 2);
+                return (position - 2, true);
             }
         }
     }
 
-    Err(())
+    // we get here if we don't find the end of data.  We don't want
+    // to send any bytes from the end of data marker and since it
+    // is possible that bytes currently has some of the end of data
+    // marker already, we reduce the numnber of bytes to send to
+    // the handler by the size of the end of data marker (8).
+    (bytes.len() - 8, false)
 }
 
 #[cfg(test)]

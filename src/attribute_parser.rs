@@ -28,15 +28,19 @@ impl<T: 'static + Encoding> AttributeParser<T> {
     ) -> Result<ParseResult, ParseError> {
         match &mut self.parser {
             None => {
+                // try to parse the attribute
                 let (bytes_consumed, attribute) = match parse_attribute::<T>(bytes) {
                     Ok((bytes_consumed, attribute)) => (bytes_consumed, attribute),
                     Err(()) => {
+                        // not enough bytes to parse the attribute so return incomplete
                         return Ok(ParseResult::incomplete(0));
                     }
                 };
 
                 self.attribute = attribute;
 
+                // notify the handler of the attribute and return cancelled if the handler
+                // cancels it
                 match handler.attribute(&self.attribute, bytes_from_beginning, bytes_consumed) {
                     HandlerResult::Continue => {}
                     HandlerResult::Cancel => {
@@ -44,9 +48,11 @@ impl<T: 'static + Encoding> AttributeParser<T> {
                     }
                 }
 
+                // update internal state
                 let data_position = bytes_from_beginning + bytes_consumed;
                 let remaining_bytes = &bytes[bytes_consumed..];
 
+                // if we have a known length, just get the value field bytes
                 let value_bytes = if attribute.length == 0xFFFF_FFFF
                     || remaining_bytes.len() < attribute.length
                 {
@@ -55,13 +61,19 @@ impl<T: 'static + Encoding> AttributeParser<T> {
                     &remaining_bytes[0..attribute.length]
                 };
 
+                // create the appropriate value parser for this attribute.
                 self.parser = Some(make_parser::<T>(handler, &attribute, value_bytes));
+
+                // parse the value bytes
                 let mut parse_result = self.parser.as_mut().unwrap().parse(
                     handler,
                     &self.attribute,
                     value_bytes,
                     data_position,
                 )?;
+
+                // add in the size of the attribute tag/vr/length to the bytes consumed and
+                // return the parse result
                 parse_result.bytes_consumed += bytes_consumed;
                 Ok(parse_result)
             }

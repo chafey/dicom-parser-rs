@@ -54,7 +54,7 @@ Actively being developed (June 18, 2020)
 * Consider making a cancelled parse resumable?  Should work given that the parser is streaming capable
 * Add P10StreamParser which provides a simplified interface for stream parsing by buffering data from
   incomplete parses
-* Add a handler that aggregates mutliple data callbacks into a single buffer (requires change to make data streamble first)
+* Consider adding a Handler that aggregates mutliple data callbacks into a single buffer 
 
 ## Refactorings
 

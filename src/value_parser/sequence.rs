@@ -34,20 +34,24 @@ impl<T: 'static + Encoding> ValueParser<T> for SequenceParser<T> {
 
         let mut bytes_consumed = 0;
 
+        // iterate over remaining bytes
         while !remaining_bytes.is_empty() {
             match &mut self.parser {
                 None => {
+                    // read the tag and length or return incomplete if not enough
+                    // bytes
                     if remaining_bytes.len() < 8 {
                         return Ok(ParseResult::incomplete(bytes_consumed));
                     }
                     let (tag, length) = parse_tag_and_length::<T>(remaining_bytes);
 
-                    // if we have undefined length, check for sequence delimitation item
+                    // if we have undefined length, return completed if we have a sequence
+                    // delimitation item (which marks the end of the sequence)
                     if attribute.length == 0xFFFF_FFFF && tag == tag::SEQUENCEDELIMITATIONITEM {
                         return Ok(ParseResult::completed(bytes_consumed + 8));
                     }
 
-                    // verify we have a sequence item and return error if not
+                    // verify we have a sequence item tag and return error if not
                     if tag != tag::ITEM {
                         return Err(ParseError {
                             reason: "expected Item tag FFFE,E000",
@@ -55,15 +59,19 @@ impl<T: 'static + Encoding> ValueParser<T> for SequenceParser<T> {
                         });
                     }
 
+                    // update internal state
                     bytes_consumed += 8;
                     self.total_bytes_consumed += 8;
                     remaining_bytes = &remaining_bytes[8..];
 
+                    // notify handle that we are starting a new sequence item
                     handler.start_sequence_item(attribute);
 
+                    // create a new SequenceItemDataParser for this sequence item
                     self.parser = Some(Box::new(SequenceItemDataParser::<T>::new(length)));
                 }
                 Some(parser) => {
+                    // we have a parser so forward the remaining bytes to it to be parsed
                     let parse_result = parser.parse(
                         handler,
                         attribute,
@@ -71,29 +79,31 @@ impl<T: 'static + Encoding> ValueParser<T> for SequenceParser<T> {
                         position + bytes_consumed,
                     )?;
 
+                    // update internal state
                     bytes_consumed += parse_result.bytes_consumed;
                     self.total_bytes_consumed += parse_result.bytes_consumed;
                     remaining_bytes = &remaining_bytes[parse_result.bytes_consumed..];
 
+                    // handle parse result
                     match parse_result.state {
                         ParseState::Cancelled => {
-                            self.parser = None;
                             return Ok(ParseResult::cancelled(bytes_consumed));
                         }
                         ParseState::Incomplete => {
                             return Ok(ParseResult::incomplete(bytes_consumed));
                         }
                         ParseState::Completed => {
-                            // this is what we expect in normal happy path
                             handler.end_sequence_item(attribute);
                             self.parser = None;
-                            continue;
+                            continue; // continue if there are more bytes to parse
                         }
                     }
                 }
             }
         }
 
+        // if we have a known length and have consumed all the bytes, we are complete,
+        // otherwise we are incomplete
         if attribute.length == 0xFFFF_FFFF || self.total_bytes_consumed < attribute.length {
             Ok(ParseResult::incomplete(bytes_consumed))
         } else {
