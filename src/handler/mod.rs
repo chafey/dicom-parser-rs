@@ -40,7 +40,8 @@ pub trait Handler {
     /// # Arguments
     /// * `_attribute` - the Attribute corresponding to this data
     /// * `_data`      - the raw bytes for the value field
-    fn data(&mut self, _attribute: &Attribute, _data: &[u8]) {}
+    /// * `_complete`  - true if this is the data is complete, false if not
+    fn data(&mut self, _attribute: &Attribute, _data: &[u8], _complete: bool) {}
     /// Invoked after attribute() for Sequences Attributes instead of data().
     /// A corresponding call to end_sequence() will be made once the value
     /// field for the sequence is fully parsed.
@@ -63,7 +64,7 @@ pub trait Handler {
     /// This function may be invoked multiple times for the same attribute
     /// due to streaming.  Handler implementations are responsible for
     /// concatenating the received data in this case
-    fn basic_offset_table(&mut self, _attribute: &Attribute, _data: &[u8]) -> HandlerResult {
+    fn basic_offset_table(&mut self, _attribute: &Attribute, _data: &[u8], _complete: bool) -> HandlerResult {
         HandlerResult::Continue
     }
     /// Invoked for each pixel data fragment parsed in an encapsulated pixel
@@ -78,6 +79,7 @@ pub trait Handler {
         _attribute: &Attribute,
         _fragment_number: usize,
         _data: &[u8],
+        _complete: bool
     ) -> HandlerResult {
         HandlerResult::Continue
     }

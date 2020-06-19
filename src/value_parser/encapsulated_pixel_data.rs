@@ -85,10 +85,11 @@ impl<T: 'static + Encoding> ValueParser<T> for EncapsulatedPixelDataParser<T> {
             };
 
             // invoke appropriate function on handler (basic offset table is always first)
+            let complete = self.remaining_byte_count == value_bytes.len(); 
             if self.item_number == 0 {
-                handler.basic_offset_table(attribute, value_bytes);
+                handler.basic_offset_table(attribute, value_bytes, complete);
             } else {
-                handler.pixel_data_fragment(attribute, self.item_number, value_bytes);
+                handler.pixel_data_fragment(attribute, self.item_number, value_bytes, complete);
             }
 
             // update counters

@@ -52,29 +52,32 @@ impl Handler for MetaInformationBuilder<'_> {
         self.data_buffer.clear();
         HandlerResult::Continue
     }
-    fn data(&mut self, attribute: &Attribute, data: &[u8]) {
+    fn data(&mut self, attribute: &Attribute, data: &[u8], complete: bool) {
         if attribute.length == 0 {
             return;
         }
         self.data_buffer.extend_from_slice(data);
-        let bytes = if self.data_buffer[attribute.length - 1] != 0 {
-            &self.data_buffer
-        } else {
-            &self.data_buffer[0..(attribute.length - 1)]
-        };
 
-        if attribute.tag == Tag::new(0x0002, 0x02) {
-            self.meta_information.media_storage_sop_class_uid =
-                String::from(str::from_utf8(&bytes).unwrap());
-        } else if attribute.tag == Tag::new(0x0002, 0x0003) {
-            self.meta_information.media_storage_sop_instance_uid =
-                String::from(str::from_utf8(&bytes).unwrap());
-        } else if attribute.tag == Tag::new(0x0002, 0x0010) {
-            self.meta_information.transfer_syntax_uid =
-                String::from(str::from_utf8(&bytes).unwrap());
-        } else if attribute.tag == Tag::new(0x0002, 0x0012) {
-            self.meta_information.implementation_class_uid =
-                String::from(str::from_utf8(&bytes).unwrap());
+        if complete {
+            let bytes = if self.data_buffer[attribute.length - 1] != 0 {
+                &self.data_buffer
+            } else {
+                &self.data_buffer[0..(attribute.length - 1)]
+            };
+
+            if attribute.tag == Tag::new(0x0002, 0x02) {
+                self.meta_information.media_storage_sop_class_uid =
+                    String::from(str::from_utf8(&bytes).unwrap());
+            } else if attribute.tag == Tag::new(0x0002, 0x0003) {
+                self.meta_information.media_storage_sop_instance_uid =
+                    String::from(str::from_utf8(&bytes).unwrap());
+            } else if attribute.tag == Tag::new(0x0002, 0x0010) {
+                self.meta_information.transfer_syntax_uid =
+                    String::from(str::from_utf8(&bytes).unwrap());
+            } else if attribute.tag == Tag::new(0x0002, 0x0012) {
+                self.meta_information.implementation_class_uid =
+                    String::from(str::from_utf8(&bytes).unwrap());
+            }
         }
     }
 }

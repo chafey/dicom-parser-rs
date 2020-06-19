@@ -29,7 +29,7 @@ impl<T: 'static + Encoding> ValueParser<T> for DataUndefinedLengthParser<T> {
         let (length, end_of_data_marker_found) = find_end_of_data_marker::<T>(bytes);
 
         // notify handler of data
-        handler.data(attribute, &bytes[..length]);
+        handler.data(attribute, &bytes[..length], end_of_data_marker_found);
 
         if end_of_data_marker_found {
             // include the size of the end of data marker in the number of

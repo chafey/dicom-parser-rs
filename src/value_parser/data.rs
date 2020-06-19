@@ -29,7 +29,8 @@ impl<T: 'static + Encoding> ValueParser<T> for DataParser<T> {
         };
 
         // notify handler of data
-        handler.data(attribute, bytes_remaining);
+        let complete = self.total_bytes_consumed + bytes_remaining.len() == attribute.length;
+        handler.data(attribute, bytes_remaining, complete);
 
         // update our internal counter of bytes consumed
         self.total_bytes_consumed += bytes_remaining.len();

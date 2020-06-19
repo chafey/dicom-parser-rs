@@ -33,8 +33,6 @@ Actively being developed (June 18, 2020)
 
 ## To Do's
 
-* Handler::data() should truncate data to attribute.length when not undefined
-* Handler::data() should indicate end of data for attribute
 * Reconsider DataSet object - either delete or make it complete (it is not useful currently)
   * Consider removing DataSetHandler to test code?
 * Add no_std configuration?
