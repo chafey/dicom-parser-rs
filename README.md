@@ -29,7 +29,7 @@ Read about the [design rationale for this library](DESIGN.md)
 
 ## Status
 
-Actively being developed (June 18, 2020)
+Actively being developed (June 19, 2020)
 
 ## To Do's
 
@@ -45,7 +45,7 @@ Actively being developed (June 18, 2020)
 ## Possible Future Functionality
 
 * Consider helpers to convert attribute data into rust types (e.g. strings, numbers, etc)
-  * Note: already have meta_information::get_element() which will return a utf8 string
+  * Note: meta_information already has functionality to convert to utf8 strings
 * Create handler that produces DICOM JSON?
 * Consider adding FilterHandler that filters out handler calls for specific attributes.  
 * Consider adding TagCancelHandler to cancel parsing on specific tag (or tags)
@@ -53,12 +53,12 @@ Actively being developed (June 18, 2020)
 * Add P10StreamParser which provides a simplified interface for stream parsing by buffering data from
   incomplete parses
 * Consider adding a Handler that aggregates mutliple data callbacks into a single buffer 
+* Explore ways to automate mapping from Handler to types in a struct, perhaps using macros?
+  * would be nice to be able to do something like: !map(0x0020, 0x000D, &self.study_instance_uid);
+  * could use this for creating the MetaInformation struct rather than a custom Handler
 
 ## Refactorings
 
-* Change MetaInformation to not use DataSetHandler/DataSet
-  * Custom Handler or a new one that is more flexible
-  * Want to be able to provide access to all MetaInformation attributes
 * Separate undefined length logic from known length logic
   * SequenceItemDataParser->SequenceItemDataUndefinedLengthParser
   * SequenceParser -> SequenceUndefinedLengthParser 
