@@ -22,7 +22,7 @@
                 }
             },
             "args": [
-                "valid_meta_information"
+                "implicit_little_endian"
             ],
             "cwd": "${workspaceFolder}"
         }
