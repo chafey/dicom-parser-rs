@@ -68,7 +68,7 @@ mod tests {
     use super::DataUndefinedLengthParser;
     use crate::attribute::Attribute;
     use crate::encoding::ExplicitLittleEndian;
-    use crate::handler::data_set::DataSetHandler;
+    use crate::test::tests::TestHandler;
     use crate::value_parser::ParseState;
     use crate::value_parser::ValueParser;
 
@@ -83,7 +83,7 @@ mod tests {
     #[test]
     fn full_parse_completes() {
         let mut parser = DataUndefinedLengthParser::<ExplicitLittleEndian>::default();
-        let mut handler = DataSetHandler::default();
+        let mut handler = TestHandler::default();
         let mut attribute = Attribute::default();
         attribute.length = 0xFFFF_FFFF;
         let bytes = make_undefined_length_value();
@@ -101,7 +101,7 @@ mod tests {
     #[test]
     fn dul_streaming_parse_completes() {
         let mut parser = DataUndefinedLengthParser::<ExplicitLittleEndian>::default();
-        let mut handler = DataSetHandler::default();
+        let mut handler = TestHandler::default();
         let mut attribute = Attribute::default();
         attribute.length = 0xFFFF_FFFF;
         let bytes = make_undefined_length_value();

@@ -120,8 +120,8 @@ mod tests {
     use super::EncapsulatedPixelDataParser;
     use crate::attribute::Attribute;
     use crate::encoding::ExplicitLittleEndian;
-    use crate::handler::data_set::DataSetHandler;
     use crate::tag::Tag;
+    use crate::test::tests::TestHandler;
     use crate::value_parser::ParseState;
     use crate::value_parser::ValueParser;
     use crate::vr::VR;
@@ -145,7 +145,7 @@ mod tests {
     #[test]
     fn full_parse_completes() {
         let mut parser = EncapsulatedPixelDataParser::<ExplicitLittleEndian>::default();
-        let mut handler = DataSetHandler::default();
+        let mut handler = TestHandler::default();
         let bytes = make_encapsulated_pixel_data_value_with_empty_bot();
         let mut attribute = Attribute::default();
         attribute.tag = Tag::new(0x7fe0, 0x0010);
@@ -166,7 +166,7 @@ mod tests {
     #[test]
     fn streaming_parse_completes() {
         let mut parser = EncapsulatedPixelDataParser::<ExplicitLittleEndian>::default();
-        let mut handler = DataSetHandler::default();
+        let mut handler = TestHandler::default();
         //handler.print = true;
         let bytes = make_encapsulated_pixel_data_value_with_empty_bot();
         let mut attribute = Attribute::default();

@@ -90,8 +90,8 @@ mod tests {
 
     use super::DataSetParser;
     use crate::encoding::{ExplicitLittleEndian, ImplicitLittleEndian};
-    use crate::handler::data_set::DataSetHandler;
     use crate::test::tests::read_data_set_bytes_from_file;
+    use crate::test::tests::TestHandler;
     use crate::value_parser::ParseError;
     use crate::value_parser::ParseState;
 
@@ -99,7 +99,7 @@ mod tests {
         bytes: &[u8],
         bytes_from_beginning: usize,
     ) -> Result<(ParseState, usize), ParseError> {
-        let mut handler = DataSetHandler::default();
+        let mut handler = TestHandler::default();
         let mut parser = DataSetParser::<ExplicitLittleEndian>::default();
         let result = parser.parse(&mut handler, bytes, bytes_from_beginning)?;
         Ok((result.state, result.bytes_consumed))
@@ -145,7 +145,7 @@ mod tests {
     fn explicit_little_endian_streaming_parse_ok() {
         let (meta, bytes) =
             read_data_set_bytes_from_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm");
-        let mut handler = DataSetHandler::default();
+        let mut handler = TestHandler::default();
         //handler.print = true;
         let mut parser = DataSetParser::<ExplicitLittleEndian>::default();
         let mut offset = 0;
@@ -160,14 +160,14 @@ mod tests {
                 Err(_error) => panic!("Let's play Global Thermonuclear War"),
             }
         }
-        assert_eq!(157, handler.dataset.attributes.len());
+        assert_eq!(157, handler.attributes.len());
     }
 
     #[test]
     fn implicit_little_endian_streaming_parse_ok() {
         let (meta, bytes) =
             read_data_set_bytes_from_file("tests/fixtures/IM00001.implicit_little_endian.dcm");
-        let mut handler = DataSetHandler::default();
+        let mut handler = TestHandler::default();
         //handler.print = true;
         let mut parser = DataSetParser::<ImplicitLittleEndian>::default();
         let mut offset = 0;
@@ -182,6 +182,6 @@ mod tests {
                 Err(_error) => panic!("Let's play Global Thermonuclear War"),
             }
         }
-        assert_eq!(94, handler.dataset.attributes.len());
+        assert_eq!(94, handler.attributes.len());
     }
 }

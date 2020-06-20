@@ -2,7 +2,6 @@
 
 pub mod attribute;
 pub mod attribute_parser;
-pub mod data_set;
 pub mod data_set_parser;
 pub mod encoding;
 pub mod handler;

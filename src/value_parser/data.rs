@@ -50,14 +50,14 @@ mod tests {
     use super::DataParser;
     use crate::attribute::Attribute;
     use crate::encoding::ExplicitLittleEndian;
-    use crate::handler::data_set::DataSetHandler;
+    use crate::test::tests::TestHandler;
     use crate::value_parser::ParseState;
     use crate::value_parser::ValueParser;
 
     #[test]
     fn data_parser_completes() {
         let mut parser = DataParser::<ExplicitLittleEndian>::default();
-        let mut handler = DataSetHandler::default();
+        let mut handler = TestHandler::default();
         let mut attribute = Attribute::default();
         attribute.length = 255;
         let bytes = [0; 255];
@@ -75,7 +75,7 @@ mod tests {
     #[test]
     fn data_parser_streaming_completes() {
         let mut parser = DataParser::<ExplicitLittleEndian>::default();
-        let mut handler = DataSetHandler::default();
+        let mut handler = TestHandler::default();
         let mut attribute = Attribute::default();
         attribute.length = 255;
         let bytes = [0; 255];

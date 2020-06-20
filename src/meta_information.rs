@@ -129,7 +129,7 @@ pub fn parse<'a, T: Handler>(
 #[cfg(test)]
 pub mod tests {
     use super::parse;
-    use crate::handler::data_set::DataSetHandler;
+    use crate::test::tests::TestHandler;
 
     fn make_preamble_and_prefix() -> Vec<u8> {
         let mut bytes = vec![];
@@ -163,7 +163,7 @@ pub mod tests {
     #[test]
     fn valid_meta_information() {
         let bytes = make_p10_header();
-        let mut handler = DataSetHandler::default();
+        let mut handler = TestHandler::default();
         handler.print = true;
         match parse(&mut handler, &bytes) {
             Ok(_meta) => {

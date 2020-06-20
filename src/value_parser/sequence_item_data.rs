@@ -80,10 +80,9 @@ impl<T: 'static + Encoding> ValueParser<T> for SequenceItemDataParser<T> {
 mod tests {
     use super::SequenceItemDataParser;
     use crate::attribute::Attribute;
-    use crate::data_set::DataSet;
     use crate::encoding::ExplicitLittleEndian;
-    use crate::handler::data_set::DataSetHandler;
     use crate::tag::Tag;
+    use crate::test::tests::TestHandler;
     use crate::value_parser::ParseState;
     use crate::value_parser::ValueParser;
 
@@ -106,11 +105,7 @@ mod tests {
     fn known_length_completes() {
         let bytes = make_sequence_item_known_length();
         let mut parser = SequenceItemDataParser::<ExplicitLittleEndian>::new(bytes.len());
-        let mut handler = DataSetHandler {
-            dataset: DataSet::default(),
-            depth: 0,
-            print: false,
-        };
+        let mut handler = TestHandler::default();
         let attribute = Attribute {
             tag: Tag::new(0x0008, 0x0008),
             vr: None,
@@ -129,11 +124,7 @@ mod tests {
     fn partial_known_length_returns_incomplete() {
         let bytes = make_sequence_item_known_length();
         let mut parser = SequenceItemDataParser::<ExplicitLittleEndian>::new(bytes.len());
-        let mut handler = DataSetHandler {
-            dataset: DataSet::default(),
-            depth: 0,
-            print: false,
-        };
+        let mut handler = TestHandler::default();
         let attribute = Attribute {
             tag: Tag::new(0x0008, 0x0008),
             vr: None,
@@ -152,11 +143,7 @@ mod tests {
     fn undefined_length_completes() {
         let bytes = make_sequence_item_undefined_length();
         let mut parser = SequenceItemDataParser::<ExplicitLittleEndian>::new(0xFFFF_FFFF);
-        let mut handler = DataSetHandler {
-            dataset: DataSet::default(),
-            depth: 0,
-            print: false,
-        };
+        let mut handler = TestHandler::default();
         let attribute = Attribute {
             tag: Tag::new(0x0008, 0x0008),
             vr: None,
@@ -175,11 +162,7 @@ mod tests {
     fn partial_undefined_length_returns_incomplete() {
         let bytes = make_sequence_item_undefined_length();
         let mut parser = SequenceItemDataParser::<ExplicitLittleEndian>::new(0xFFFF_FFFF);
-        let mut handler = DataSetHandler {
-            dataset: DataSet::default(),
-            depth: 0,
-            print: false,
-        };
+        let mut handler = TestHandler::default();
         let attribute = Attribute {
             tag: Tag::new(0x0008, 0x0008),
             vr: None,
@@ -200,11 +183,7 @@ mod tests {
     fn partial_in_item_delimetation_item_undefined_length_returns_incomplete() {
         let bytes = make_sequence_item_undefined_length();
         let mut parser = SequenceItemDataParser::<ExplicitLittleEndian>::new(0xFFFF_FFFF);
-        let mut handler = DataSetHandler {
-            dataset: DataSet::default(),
-            depth: 0,
-            print: false,
-        };
+        let mut handler = TestHandler::default();
         let attribute = Attribute {
             tag: Tag::new(0x0008, 0x0008),
             vr: None,

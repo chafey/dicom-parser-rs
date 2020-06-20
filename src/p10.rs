@@ -49,9 +49,9 @@ pub fn parse<'a, T: Handler>(
 mod tests {
 
     use super::parse;
-    use crate::handler::data_set::DataSetHandler;
     use crate::meta_information::tests::make_p10_header;
     use crate::test::tests::read_file;
+    use crate::test::tests::TestHandler;
 
     fn make_p10_file() -> Vec<u8> {
         let mut bytes = make_p10_header();
@@ -63,60 +63,60 @@ mod tests {
     #[test]
     fn explicit_little_endian_parses() {
         let mut bytes = make_p10_file();
-        let mut handler = DataSetHandler::default();
+        let mut handler = TestHandler::default();
         let result = parse(&mut handler, &mut bytes);
         assert!(result.is_ok());
-        assert_eq!(handler.dataset.attributes.len(), 7);
+        assert_eq!(handler.attributes.len(), 7);
     }
     #[test]
     fn explicit_little_endian() {
         let mut bytes = read_file("tests/fixtures/CT1_UNC.explicit_little_endian.dcm");
-        let mut handler = DataSetHandler::default();
+        let mut handler = TestHandler::default();
         //handler.print = true;
         let result = parse(&mut handler, &mut bytes);
         assert!(result.is_ok());
-        assert_eq!(265, handler.dataset.attributes.len());
+        assert_eq!(265, handler.attributes.len());
     }
 
     #[test]
     fn implicit_little_endian() {
         let mut bytes = read_file("tests/fixtures/CT1_UNC.implicit_little_endian.dcm");
-        let mut handler = DataSetHandler::default();
+        let mut handler = TestHandler::default();
         //handler.print = true;
         let result = parse(&mut handler, &mut bytes);
         assert!(result.is_ok());
-        assert_eq!(265, handler.dataset.attributes.len());
+        assert_eq!(265, handler.attributes.len());
     }
 
     #[test]
     fn explicit_big_endian() {
         let mut bytes = read_file("tests/fixtures/CT1_UNC.explicit_big_endian.dcm");
-        let mut handler = DataSetHandler::default();
+        let mut handler = TestHandler::default();
         //handler.print = true;
         let result = parse(&mut handler, &mut bytes);
         assert!(result.is_ok());
-        assert_eq!(265, handler.dataset.attributes.len());
+        assert_eq!(265, handler.attributes.len());
     }
 
     #[test]
     fn ele_sequences_known_lengths() {
         //(0008,9121) @ position 0x376 / 886
         let mut bytes = read_file("tests/fixtures/CT0012.fragmented_no_bot_jpeg_ls.80.dcm");
-        let mut handler = DataSetHandler::default();
+        let mut handler = TestHandler::default();
         //handler.print = true;
         let result = parse(&mut handler, &mut bytes);
         assert!(result.is_ok());
-        assert_eq!(165, handler.dataset.attributes.len());
+        assert_eq!(165, handler.attributes.len());
     }
 
     #[test]
     fn ile_sequences_undefined_lengths() {
         //(0008,9121) @ position 0x376 / 886
         let mut bytes = read_file("tests/fixtures/IM00001.implicit_little_endian.dcm");
-        let mut handler = DataSetHandler::default();
+        let mut handler = TestHandler::default();
         //handler.print = true;
         let result = parse(&mut handler, &mut bytes);
         assert!(result.is_ok());
-        assert_eq!(102, handler.dataset.attributes.len());
+        assert_eq!(102, handler.attributes.len());
     }
 }
