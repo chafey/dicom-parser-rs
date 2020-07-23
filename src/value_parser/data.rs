@@ -23,7 +23,7 @@ impl<T: 'static + Encoding> ValueParser<T> for DataParser<T> {
     ) -> Result<ParseResult, ParseError> {
         // get slice of bytes based on how many we have already parsed for this value field
         let bytes_remaining = if bytes.len() > attribute.length - self.total_bytes_consumed {
-            &bytes[attribute.length - self.total_bytes_consumed..]
+            &bytes[..attribute.length - self.total_bytes_consumed]
         } else {
             bytes
         };
