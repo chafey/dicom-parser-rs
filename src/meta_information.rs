@@ -164,10 +164,10 @@ pub mod tests {
     fn valid_meta_information() {
         let bytes = make_p10_header();
         let mut handler = TestHandler::default();
-        handler.print = true;
+        //handler.print = true;
         match parse(&mut handler, &bytes) {
             Ok(_meta) => {
-                println!("{:?}", _meta);
+                //println!("{:?}", _meta);
                 //assert_eq!(meta.data_set.attributes.len(), 6);
             }
             Err(_parse_error) => {

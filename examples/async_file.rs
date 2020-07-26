@@ -16,14 +16,14 @@ impl Handler for TestHandler {
     fn attribute(
         &mut self,
         attribute: &Attribute,
-        position: usize,
-        data_offset: usize,
+        _position: usize,
+        _data_offset: usize,
     ) -> HandlerResult {
         println!("{:-<width$}{:?} ", " ", attribute, width = (self.depth * 2));
         HandlerResult::Continue
     }
 
-    fn data(&mut self, _attribute: &Attribute, data: &[u8], complete: bool) {
+    fn data(&mut self, _attribute: &Attribute, data: &[u8], _complete: bool) {
         println!(
             "{:-<width$} data of length {:?}",
             " ",
@@ -51,8 +51,8 @@ impl Handler for TestHandler {
     fn basic_offset_table(
         &mut self,
         _attribute: &Attribute,
-        data: &[u8],
-        complete: bool,
+        _data: &[u8],
+        _complete: bool,
     ) -> HandlerResult {
         println!("BasicOffsetTable");
         HandlerResult::Continue
@@ -61,9 +61,9 @@ impl Handler for TestHandler {
     fn pixel_data_fragment(
         &mut self,
         _attribute: &Attribute,
-        fragment_number: usize,
+        _fragment_number: usize,
         data: &[u8],
-        complete: bool,
+        _complete: bool,
     ) -> HandlerResult {
         println!("Pixle Data Fragment of length {:?} ", data.len());
         HandlerResult::Continue
