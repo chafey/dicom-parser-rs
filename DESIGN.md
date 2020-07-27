@@ -10,7 +10,7 @@ to do more complex things.  This library therefore is focused on doing
 one thing and one thing only - parsing DICOM binary byte streams.  
 This focused piece of functionality is enough to support the needs for
 many use cases.  Those that need more functionality can layer it on top
-of this library.  It is in scope that this library has the right design to be
+of this library.  It is not in scope for this library has the right design to be
 used as a building block to do more complex things such as writing DICOM
 binary byte streams, DICOM JSON, de-identification, image decompression, etc.
 
