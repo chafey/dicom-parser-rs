@@ -7,17 +7,17 @@ use std::fs::File;
 use std::io::Read;
 use std::str;
 
-static STUDYINSTANCEUID: Tag = Tag {
+const STUDYINSTANCEUID: Tag = Tag {
     group: 0x0020,
     element: 0x000D,
 };
 
-static SERIESINSTANCEUID: Tag = Tag {
+const SERIESINSTANCEUID: Tag = Tag {
     group: 0x0020,
     element: 0x000E,
 };
 
-static SOPINSTANCEUID: Tag = Tag {
+const SOPINSTANCEUID: Tag = Tag {
     group: 0x0008,
     element: 0x0018,
 };
@@ -33,14 +33,11 @@ pub struct SOPInstanceIdentificationHandler {
 
 impl SOPInstanceIdentificationHandler {
     fn is_tag_wanted(tag: Tag) -> bool {
-        if tag == STUDYINSTANCEUID {
-            true
-        } else if tag == SERIESINSTANCEUID {
-            true
-        } else if tag == SOPINSTANCEUID {
-            true
-        } else {
-            false
+        match tag {
+            STUDYINSTANCEUID => true,
+            SERIESINSTANCEUID => true,
+            SOPINSTANCEUID => true,
+            _ => false,
         }
     }
 }

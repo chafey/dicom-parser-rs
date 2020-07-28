@@ -1,7 +1,7 @@
 use crate::encoding::Encoding;
 use std::fmt;
 
-#[derive(Default, Eq, PartialOrd, Clone, Copy)]
+#[derive(Default, PartialEq, Eq, PartialOrd, Clone, Copy)]
 pub struct Tag {
     pub group: u16,
     pub element: u16,
@@ -26,12 +26,6 @@ impl Tag {
 impl fmt::Debug for Tag {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_fmt(format_args!("({:04X},{:04X})", self.group, self.element))
-    }
-}
-
-impl PartialEq for Tag {
-    fn eq(&self, right: &Tag) -> bool {
-        self.group == right.group && self.element == right.element
     }
 }
 
